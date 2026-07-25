@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology — The Amalgamator</title>
+<style>
+  :root { --ink:#1A2E33; --paper:#F6F1E4; --accent:#B23A18; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.6 Georgia,'Times New Roman',serif; }
+  main { max-width:760px; margin:0 auto; padding:40px 20px 80px; }
+  h1 { font-size:30px; line-height:1.15; margin:0 0 6px; }
+  .kicker { text-transform:uppercase; letter-spacing:.12em; font-size:12px; font-weight:700; opacity:.72; font-family:system-ui,sans-serif; }
+  h2 { font-size:21px; margin:38px 0 10px; border-bottom:2px solid var(--ink); padding-bottom:5px; }
+  h3 { font-size:16px; margin:22px 0 6px; }
+  a { color:var(--accent); }
+  code { background:#fff; border:1px solid rgba(26,46,51,.25); border-radius:3px; padding:1px 5px; font-size:14px; }
+  table { border-collapse:collapse; width:100%; font-size:14px; font-family:system-ui,sans-serif; }
+  th,td { border:1px solid rgba(26,46,51,.3); padding:6px 8px; text-align:left; vertical-align:top; }
+  th { background:#fff; }
+  .dl { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; font-family:system-ui,sans-serif; font-weight:700; font-size:14px; border-radius:999px; padding:9px 16px; margin:6px 8px 6px 0; }
+  .note { background:#fff; border-left:4px solid var(--accent); padding:10px 14px; font-size:15px; }
+  ul { padding-left:22px; }
+  footer { margin-top:50px; font-size:13px; opacity:.75; font-family:system-ui,sans-serif; }
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">The Amalgamator · Methodology</p>
+  <h1>How the numbers are made</h1>
+  <p>This page documents every input, calculation and assumption in the tool so an analyst can
+     reproduce the model rather than infer it from interface copy. The tool itself is at
+     <a href="./">the main page</a>.</p>
+
+  <p>
+    <a class="dl" href="./the-amalgamator-data.csv" download>Download the full dataset (CSV, 67 councils)</a>
+  </p>
+
+  <h2>1. Data sources</h2>
+  <table>
+    <tr><th>Field</th><th>Source</th><th>Vintage</th></tr>
+    <tr><td>Population</td><td>Stats NZ subnational population estimates, republished in the DIA data release below</td><td>2024 estimate</td></tr>
+    <tr><td>Land area</td><td>Stats NZ (Datafinder), via the DIA release</td><td>2025</td></tr>
+    <tr><td>Rates revenue, actual</td><td>Council 2023/24 annual reports — statement of comprehensive revenue and expense, incl. penalties and remissions. GST-exclusive.</td><td>2023/24 (Buller: 2021/22, the only council DIA could not source)</td></tr>
+    <tr><td>Rates revenue, forecast</td><td>Council 2025/26 annual plans / 2025–34 long-term plans. GST-exclusive.</td><td>2025/26</td></tr>
+    <tr><td>Residential properties</td><td>NZ Taxpayers' Union, Ratepayers' Report 2026 (column labelled "Households")</td><td>Year ended 30 June 2025</td></tr>
+    <tr><td>Average residential rates bill</td><td>NZ Taxpayers' Union, Ratepayers' Report 2026, from annual reports and LGOIMA requests. GST-inclusive, as billed.</td><td>2024/25</td></tr>
+    <tr><td>Rating units</td><td>Compiled per council from annual reports, long-term plans and regional valuation rolls; best-available count with a status flag.</td><td>Mostly 2024/25; flags mark older, projected, draft and proxy counts</td></tr>
+  </table>
+
+  <h3>Source links</h3>
+  <ul>
+    <li>Department of Internal Affairs — <a href="https://www.dia.govt.nz/local-government-performance-metrics">Data release for council profiles, July 2025</a> (updated October 2025). Crown copyright, CC BY 4.0.</li>
+    <li>Stats NZ — <a href="https://infoshare.stats.govt.nz/">Infoshare</a> (population) and <a href="https://datafinder.stats.govt.nz/">Datafinder</a> (land area). Crown copyright, CC BY 4.0.</li>
+    <li>NZ Taxpayers' Union — <a href="https://ratepayersreport.nz/">Ratepayers' Report 2026</a>. Independent, non-government source with its own terms.</li>
+  </ul>
+
+  <div class="note">
+    <strong>Known data caveats, stated plainly.</strong>
+    (1) The Ratepayers' Report column labelled "Households" behaves as a <em>dwelling count</em>, not occupied
+    households: nine bach-heavy districts imply under two residents per dwelling (Thames-Coromandel 1.2), which is
+    impossible for occupied households. The tool therefore calls it "residential properties" throughout.
+    (2) Chatham Islands is absent from both the Ratepayers' Report and the rating-units dataset; its property count is
+    an estimate and it shows "no data" on the bill basis.
+    (3) Western Bay of Plenty, Westland and Waitaki declined or did not supply an average bill.
+    (4) The DIA and Ratepayers' Report population figures disagree by up to 2.8% for some councils (different
+    vintages); the tool uses DIA population everywhere.
+    (5) Rating-unit counts mix confirmed actuals (51 councils) with older, projected, draft and proxy figures — the
+    status is flagged per row in the CSV and on the comparator rows in the tool.
+  </div>
+
+  <h2>2. GST treatment</h2>
+  <p>Rates <em>bills</em> are GST-inclusive (what a ratepayer is charged); rates <em>revenue</em> in financial
+     statements is GST-exclusive. Comparing them directly overstates one side by 15%, and produced four councils whose
+     implied residential take exceeded their total take — an impossibility. The tool therefore puts everything on a
+     <strong>GST-inclusive footing</strong>: revenue-derived figures are multiplied by 1.15 so all four measures are
+     comparable and match what a ratepayer is billed. The CSV supplies revenue GST-exclusive as reported; apply
+     ×1.15 to reproduce the tool's figures.</p>
+
+  <h2>3. Calculations</h2>
+  <p>Let <code>R</code> be a council's rates revenue for the chosen year (× 1.15), <code>P</code> its 2024 population,
+     <code>D</code> its residential property count, <code>U</code> its rating units, and <code>B</code> its published
+     average residential bill.</p>
+  <table>
+    <tr><th>Measure</th><th>Per council</th><th>Merged-group blend</th><th>Nature</th></tr>
+    <tr><td>Avg residential bill (default)</td><td><code>B</code></td><td><code>Σ(B·D) ÷ ΣD</code> — property-weighted mean of published bills</td><td>An actual bill, as published</td></tr>
+    <tr><td>Per rating unit</td><td><code>R ÷ U</code></td><td><code>ΣR ÷ ΣU</code></td><td>Normalisation, not a bill</td></tr>
+    <tr><td>Per person</td><td><code>R ÷ P</code></td><td><code>ΣR ÷ ΣP</code></td><td>Normalisation</td></tr>
+  </table>
+  <p><strong>A measure deliberately not offered.</strong> An earlier version included "per residential property"
+     (<code>R ÷ D</code>). It was removed: it divides the <em>whole</em> rates take — commercial, industrial and farm
+     rates included — by a count of residential dwellings only, muddling the rating base with a residential measure;
+     and the dwelling count itself includes unoccupied holiday homes. The residential property count <code>D</code> is
+     retained solely as the weighting in the bill blend, and remains in the CSV for transparency.</p>
+  <p>The change shown for each council is <code>blend − own value</code>: an immediate, fully harmonised
+     redistribution of today's revenue. Blends require at least two members with usable data; members without data are
+     excluded from the blend and shown as "no data". The optional "trim" slider multiplies the revenue-derived take by
+     <code>(1 − s%)</code> and is a hypothetical illustration, not an evidenced savings model. It never applies to the
+     published-bill basis.</p>
+  <p><strong>Regional mandate:</strong> a group's combined 2024 population divided by the total population of the
+     territorial authorities in the region(s) its members span. The greater-than-50% threshold reflects reporting that
+     the reform lets a coalition holding a majority of a region's population lodge a proposal covering the whole
+     region, including objecting councils. This is as reported, not legal advice.</p>
+  <p><strong>Population share bars</strong> show each member's share of the merged population. They are not a model of
+     voting power: wards, councillor numbers and community-board arrangements are set by each proposal and are not
+     modelled here.</p>
+
+  <h2>4. Scenario assumptions</h2>
+  <p>The opening map ("Where talks stand, mid-July") is a snapshot of reporting as at 24 July 2026 — Local Democracy
+     Reporting / The Post (Justin Wong), RNZ, and The Spinoff (Joel MacManus, 24 July 2026) — resolved into one group
+     per council. Where reporting showed a council backing competing options, or objecting to a grouping it appears
+     in, the one-group-per-council data model cannot represent that; the map is an illustrative scenario, not a
+     statement of any council's agreement. Other presets (a single Wellington authority; the ten-council Waikato
+     grouping; one council per region) are illustrative constructions for comparison.</p>
+
+  <h2>5. What is not modelled</h2>
+  <ul>
+    <li><strong>Transition costs and phasing.</strong> Establishment costs, rates caps, phased harmonisation, legacy
+        differentials, targeted rates and ring-fenced legacy debt all defer, smooth or alter the redistribution shown.
+        MartinJenkins' July 2026 estimates (e.g. ~$269m to establish a Wellington metro authority) illustrate the
+        scale. The tool's figures are the end-state redistribution, applied instantly — no real amalgamation has
+        worked that way.</li>
+    <li><strong>Governance design and representation.</strong> Wards, Māori wards, councillor numbers, community
+        boards or community councils, and local voice arrangements.</li>
+    <li><strong>The regional-council layer.</strong> All figures are territorial-council only. The 11 regional
+        councils' separate rates are excluded, so no figure is a household's complete rates bill; the four existing
+        unitary authorities (Gisborne, Nelson, Tasman, Marlborough) already include regional functions and are not
+        strictly like-for-like.</li>
+    <li><strong>Property-level incidence.</strong> Rates are levied on land or capital value with differentials and
+        targeted rates; averages hide a wide spread within every district.</li>
+    <li><strong>Water services reform</strong>, debt positions, service levels, asset condition, and population growth
+        after 2024 (forecast-year figures use 2024 population, overstating per-person figures by up to ~8% in the
+        fastest-growing districts).</li>
+  </ul>
+
+  <h2>6. Reproducing the model</h2>
+  <ol>
+    <li>Download the <a href="./the-amalgamator-data.csv">CSV</a>.</li>
+    <li>Gross up the two revenue columns by ×1.15.</li>
+    <li>Apply the formulas in section 3 to any set of councils.</li>
+    <li>Compare against the tool with the same set selected. Every figure should match to the dollar.</li>
+  </ol>
+
+  <footer>
+    The Amalgamator · licensed CC BY 4.0 (application); Crown data CC BY 4.0 (DIA, Stats NZ); Ratepayers' Report data
+    © NZ Taxpayers' Union under its own terms. Independent project, not affiliated with any data provider.
+    <a href="https://github.com/YOUR-USERNAME/the-amalgamator">Source on GitHub</a>.
+  </footer>
+</main>
+</body>
+</html>

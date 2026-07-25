@@ -267,7 +267,10 @@ COUNCILS.forEach((c) => { if (!c.locked) REGION_POP[c.region] = (REGION_POP[c.re
 
 const IDX_OF = Object.fromEntries(COUNCILS.map((c, i) => [c.id, i]));
 const BASIS_CODE = { person: "p", household: "h", unit: "u", bill: "b" };
-const CODE_BASIS = { p: "person", h: "household", u: "unit", b: "bill" };
+// "h" (per residential property) was removed from the UI: it divided the whole
+// rates take by a dwelling count, muddling the rating base with a residential
+// measure. Old share links carrying it fall back to per rating unit.
+const CODE_BASIS = { p: "person", h: "unit", u: "unit", b: "bill" };
 const b36 = (n) => n.toString(36).padStart(2, "0");
 
 function encodeMap(groups, assignment, basis, year) {
@@ -457,9 +460,10 @@ function ShareBar({ members, color, compact }) {
   const sorted = [...members].sort((a, b) => b.pop - a.pop);
   const pct = (m) => (m.pop / total) * 100;
   const top = sorted[0], bottom = sorted[sorted.length - 1];
+  const barLabel = sorted.slice(0, 3).map((m) => `${m.name} ${Math.round(pct(m))}%`).join(", ") + (sorted.length > 3 ? `, and ${sorted.length - 3} smaller` : "");
   return (
     <div className={"share" + (compact ? " shareCompact" : "")}>
-      <div className="shareBar">
+      <div className="shareBar" role="img" aria-label={`Population share: ${barLabel}`}>
         {sorted.map((m, i) => (<div key={m.id} className="shareSeg" style={{ width: pct(m) + "%", background: color, opacity: Math.max(0.34, 1 - i * 0.13) }} title={`${m.name}: ${pct(m).toFixed(1)}%`} />))}
         <div className="shareMid" aria-hidden="true" />
       </div>
@@ -553,11 +557,14 @@ export default function App() {
   const [suggestIdx, setSuggestIdx] = useState({});
   const [year, setYear] = useState("r26");
   const [savings, setSavings] = useState(0);
-  const [basis, setBasis] = useState("bill"); // "bill" | "unit" | "household" | "person" — bill is the default: it is the only figure that is an actual bill
+  const [basis, setBasis] = useState("bill"); // "bill" | "unit" | "person" — bill is the default: it is the only figure that is an actual bill
   const [loaded, setLoaded] = useState(false);
   const [sharedView, setSharedView] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [copyMsg, setCopyMsg] = useState("");
+  const [showHow, setShowHow] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
+  const [scenarios, setScenarios] = useState([]); // saved snapshots for comparison (max 3)
   const saveTimer = useRef(null);
   const dirty = useRef(false); // user has interacted before/while hydration ran
 
@@ -581,7 +588,10 @@ export default function App() {
       }
       const activeId = gids.has(s.activeId) ? s.activeId : s.groups[0].id;
       const nextUid = Number.isFinite(s.uid) ? s.uid : s.groups.length + 1;
-      return { groups: s.groups, assignment: asg, activeId, uid: nextUid };
+      const scenarios = Array.isArray(s.scenarios)
+        ? s.scenarios.filter((x) => x && typeof x.name === "string" && Array.isArray(x.groups) && x.assignment && typeof x.assignment === "object").slice(0, 3)
+        : [];
+      return { groups: s.groups, assignment: asg, activeId, uid: nextUid, scenarios };
     } catch (e) { return null; }
   };
 
@@ -612,6 +622,7 @@ export default function App() {
           setGroups(v.groups);
           setAssignment(v.assignment);
           setActiveId(v.activeId);
+          setScenarios(v.scenarios);
           uid = v.uid;
         }
       }
@@ -625,10 +636,10 @@ export default function App() {
     saveTimer.current = setTimeout(() => {
       try {
         if (typeof window !== "undefined" && window.localStorage)
-          window.localStorage.setItem(STORE_KEY, JSON.stringify({ groups, assignment, activeId, uid }));
+          window.localStorage.setItem(STORE_KEY, JSON.stringify({ groups, assignment, activeId, uid, scenarios }));
       } catch (e) { /* non-fatal (private mode / quota) */ }
     }, 500);
-  }, [groups, assignment, activeId, loaded, sharedView]);
+  }, [groups, assignment, activeId, scenarios, loaded, sharedView]);
 
   const clearHash = () => {
     try {
@@ -647,10 +658,70 @@ export default function App() {
     try {
       const raw = typeof window !== "undefined" && window.localStorage ? window.localStorage.getItem(STORE_KEY) : null;
       const v = raw ? validateState(JSON.parse(raw)) : null;
-      if (v) { setGroups(v.groups); setAssignment(v.assignment); setActiveId(v.activeId); uid = v.uid; return; }
+      if (v) { setGroups(v.groups); setAssignment(v.assignment); setActiveId(v.activeId); setScenarios(v.scenarios); uid = v.uid; return; }
     } catch (e) { /* fall through */ }
     const g = { id: newId(), name: "New council 1", color: COLORS[0] };
     setGroups([g]); setAssignment({}); setActiveId(g.id);
+  };
+
+  // Snapshot the current map as a named scenario (max 3) for side-by-side comparison.
+  const saveScenario = () => {
+    if (stats.valid.length === 0) { setCopyMsg("Build at least one valid group (2+ councils) before saving a scenario."); return; }
+    dirty.current = true;
+    setScenarios((sc) => {
+      const name = "Scenario " + "ABC"[sc.length % 3];
+      const next = [...sc, { name, groups: groups.map((g) => ({ ...g })), assignment: { ...assignment } }];
+      return next.slice(-3);
+    });
+    setShowCompare(true);
+  };
+  const dropScenario = (i) => { dirty.current = true; setScenarios((sc) => sc.filter((_, k) => k !== i)); };
+  const loadScenario = (i) => {
+    const sc = scenarios[i]; if (!sc) return;
+    dirty.current = true;
+    setGroups(sc.groups.map((g) => ({ ...g })));
+    setAssignment({ ...sc.assignment });
+    setActiveId(sc.groups[0] ? sc.groups[0].id : activeId);
+  };
+
+  // Bill-basis outcome per council for any snapshot — fixed basis so columns are comparable.
+  const outcomesOf = (snapGroups, snapAssignment) => {
+    const byG = {};
+    snapGroups.forEach((g) => (byG[g.id] = []));
+    COUNCILS.forEach((c) => { const gid = snapAssignment[c.id]; if (gid && byG[gid]) byG[gid].push(c); });
+    const out = {};
+    Object.values(byG).forEach((members) => {
+      if (members.length < 2) return;
+      const w = members.filter((m) => m.avgRes != null && m.hh);
+      if (w.length < 2) { members.forEach((m) => (out[m.id] = null)); return; }
+      const bl = w.reduce((t, m) => t + m.avgRes * m.hh, 0) / w.reduce((t, m) => t + m.hh, 0);
+      members.forEach((m) => (out[m.id] = m.avgRes != null ? bl - m.avgRes : null));
+    });
+    return out;
+  };
+
+  const comparison = useMemo(() => {
+    if (!scenarios.length) return null;
+    const cols = [{ name: "Current", out: outcomesOf(groups, assignment) }, ...scenarios.map((sc) => ({ name: sc.name, out: outcomesOf(sc.groups, sc.assignment) }))];
+    const ids = [...new Set(cols.flatMap((c) => Object.keys(c.out)))];
+    const rows = ids.map((cid) => ({ c: BY_ID[cid], cells: cols.map((col) => (cid in col.out ? col.out[cid] : undefined)) }))
+      .sort((a, b) => a.c.name.localeCompare(b.c.name));
+    return { cols, rows };
+  }, [scenarios, groups, assignment]);
+
+  const exportComparison = () => {
+    if (!comparison) return;
+    const head = ["council", ...comparison.cols.map((c) => c.name + " (Δ avg residential bill, $/yr)")].join(",");
+    const lines = comparison.rows.map((r) => [
+      '"' + r.c.name + '"',
+      ...r.cells.map((v) => (v === undefined ? "not in scenario" : v === null ? "no data" : Math.round(v))),
+    ].join(","));
+    const blob = new Blob([head + "\n" + lines.join("\n")], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "amalgamator-comparison.csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
   };
 
   const makeShareLink = async () => {
@@ -676,7 +747,6 @@ export default function App() {
   //  bill      -> the council's own published average residential rates bill
   const perValue = (c, b = basis) => {
     if (b === "bill") return c.avgRes ?? null;            // already GST-inclusive
-    if (b === "household") return c.hh ? (c[year] * GST) / c.hh : null;
     if (b === "unit") return c.ru ? (c[year] * GST) / c.ru : null;
     return (c[year] * GST) / c.pop;
   };
@@ -718,11 +788,6 @@ export default function App() {
       const wsum = withBill.reduce((s, m) => s + m.avgRes * m.hh, 0);
       const hh = withBill.reduce((s, m) => s + m.hh, 0);
       blended = wsum / hh;
-    } else if (b === "household") {
-      const withHh = members.filter((m) => m.hh);
-      if (withHh.length < 2) return { blended: null, rows: [], usable: withHh.length };
-      const rev = withHh.reduce((s, m) => s + m[year], 0) * save * GST;
-      blended = rev / withHh.reduce((s, m) => s + m.hh, 0);
     } else if (b === "unit") {
       const withRu = members.filter((m) => m.ru);
       if (withRu.length < 2) return { blended: null, rows: [], usable: withRu.length };
@@ -817,8 +882,8 @@ export default function App() {
 
   const groupById = useMemo(() => Object.fromEntries(groups.map((g) => [g.id, g])), [groups]);
   const isBill = basis === "bill";
-  const unit = basis === "household" ? "per residential property" : basis === "unit" ? "per rating unit" : isBill ? "avg residential bill" : "per person";
-  const unitShort = basis === "household" ? "/prop" : basis === "unit" ? "/unit" : isBill ? " bill" : "/pp";
+  const unit = basis === "unit" ? "per rating unit" : isBill ? "avg residential bill" : "per person";
+  const unitShort = basis === "unit" ? "/unit" : isBill ? " bill" : "/pp";
   const yearLabel = year === "r24" ? "2023/24 actual" : "2025/26 forecast";
   const pieceValue = (c) => { const v = perValue(c); return v == null ? "—" : money(v); };
   // A council's data-vintage caveat, shown only where it actually bites: Buller's
@@ -866,6 +931,7 @@ export default function App() {
   return (
     <div className="app">
       <style>{CSS}</style>
+      <a className="skip" href="#map">Skip to the map</a>
 
       {sharedView && (
         <div className="sharedBanner">
@@ -892,7 +958,41 @@ export default function App() {
           <button onClick={() => applyPreset("regional")}>{PRESETS.regional.label}</button>
           <button className="ghost" onClick={clearAll}>Start again</button>
           <button className="shareBtn" onClick={makeShareLink}>Share this map</button>
+          <button className="ghost" onClick={() => setShowHow((v) => !v)} aria-expanded={showHow}>How this works</button>
         </div>
+        {showHow && (
+          <section className="how" aria-label="How this works">
+            <h2>How this works</h2>
+            <p><strong>Inputs.</strong> 2024 population and 2025 land area (Stats NZ, via DIA's July 2025 council
+            profiles release); rates revenue for 2023/24 (actual) and 2025/26 (forecast) from council accounts,
+            GST-exclusive as reported; residential property counts and each council's published average residential
+            bill for 2024/25 (NZ Taxpayers' Union Ratepayers' Report, GST-inclusive); and best-available rating-unit
+            counts with data-quality flags.</p>
+            <p><strong>What it computes.</strong> Pick councils into a group and the tool blends them as one entity:
+            the default view blends their published residential bills weighted by property count; the other two
+            views spread the combined rates take (grossed up 15% so it's GST-inclusive like a bill) across people or
+            rating units. A per-residential-property view was deliberately left out: dividing the whole take — which
+            includes commercial and farm rates — by a residential dwelling count muddles the rating base with a
+            residential measure, and the dwelling count itself includes empty holiday homes. The change shown per council is the blend minus its own figure —
+            an immediate, fully harmonised redistribution of today's revenue. The regional-mandate figure is the
+            group's share of its region's 2024 population, against the reported majority threshold for lodging a
+            proposal that covers objecting councils.</p>
+            <p><strong>Assumptions.</strong> One denominator vintage (2024 population) everywhere; revenue held at
+            published levels; harmonisation assumed instant and uniform; the optional "trim" is a hypothetical cut to
+            the whole take, not an evidenced savings estimate; the opening map resolves late-July 2026 reporting into
+            one group per council even where positions were contested.</p>
+            <p><strong>Not modelled.</strong> Transition costs and phasing (establishment costs, rates caps, phased
+            harmonisation, legacy differentials and ring-fenced debt — these defer or smooth everything shown);
+            governance design and representation (wards, Māori wards, councillor numbers, community boards);
+            the regional-council rates layer, so nothing here is a complete bill; property-level incidence (rates are
+            levied on value with differentials, and averages hide a wide spread); water reform, debt, service levels
+            and post-2024 growth.</p>
+            <p className="howLinks">
+              Full methodology, formulas and known data caveats: <a href="methodology.html">methodology page</a> ·
+              <a href="the-amalgamator-data.csv" download> download the dataset (CSV)</a>
+            </p>
+          </section>
+        )}
         {(shareUrl || copyMsg) && (
           <div className="sharePanel">
             <p className="shareMsg">{copyMsg}</p>
@@ -992,22 +1092,20 @@ export default function App() {
                     </div>
                     <span className="basisTier">Normalisations — not bills</span>
                     <div className="basis">
-                      {[["unit", "Per rating unit"], ["household", "Per residential property"], ["person", "Per person"]].map(([k, l]) => (
+                      {[["unit", "Per rating unit"], ["person", "Per person"]].map(([k, l]) => (
                         <button key={k} className={"basisBtn" + (basis === k ? " basisOn" : "")} onClick={() => setBasis(k)} aria-pressed={basis === k}>{l}</button>
                       ))}
                     </div>
                   </div>
                   <div className="blended">
                     <span className="blendedLabel">Blended<br />{unit}</span>
-                    <span className="blendedValue">{money(activeRates.blended)}</span>
+                    <span className="blendedValue" aria-live="polite">{money(activeRates.blended)}</span>
                   </div>
                   <p className="scopeLine">
                     {isBill
                       ? "What an average home pays. Residential properties only — no commercial or industrial rates."
                       : basis === "unit"
                       ? "The whole rates take — including commercial, industrial and targeted rates — divided across every rateable property. Higher than a household bill wherever there's a big commercial base."
-                      : basis === "household"
-                      ? "The whole rates take — including commercial and industrial rates — divided by residential properties. Counts every house and bach whether or not anyone lives in it, so it is not a per-household figure."
                       : "The whole rates take — including commercial and industrial rates — divided by residents. Not what anyone is billed."}
                   </p>
                   {!isBill && (
@@ -1045,7 +1143,7 @@ export default function App() {
                     </div>
                   )}
                   {activeRates.blended == null ? (
-                    <p className="ratesNote">Fewer than two of these councils supplied an average residential bill, so there's nothing to blend. Try per person, per residential property or per rating unit.</p>
+                    <p className="ratesNote">Fewer than two of these councils supplied an average residential bill, so there's nothing to blend. Try per person or per rating unit.</p>
                   ) : (
                     <ul className="deltas">
                       {activeRates.rows.map(({ m, now, then, delta, pctDelta }) => {
@@ -1053,7 +1151,7 @@ export default function App() {
                           const reason = isBill
                             ? (m.id === "chathams" ? "Not in the Ratepayers' Report" : "Council didn't supply an average bill")
                             : basis === "unit" ? "Not in the rating-units dataset"
-                            : (m.id === "chathams" ? "Not in the property-count dataset" : "No property count");
+                            : "Not in the rating-units dataset";
                           return (
                             <li key={m.id} className="delta">
                               <div className="deltaTop">
@@ -1094,11 +1192,6 @@ export default function App() {
                       within any district, the weighting denominator is an approximation, and a merger would set new
                       differentials and phase them in over years. Western Bay of Plenty, Westland and Waitaki didn't
                       supply a figure and Chatham Islands isn't in the report, so those show as no data.</>
-                    ) : basis === "household" ? (
-                      <>{yearLabel} rates revenue divided by the number of residential properties. Note this counts
-                      dwellings, including holiday homes with nobody living in them — in bach districts like
-                      Thames-Coromandel there are roughly twice as many dwellings as resident households, so this is a
-                      per-property figure and not a per-household one. Direction of travel, not a bill.</>
                     ) : basis === "unit" ? (
                       <>{yearLabel} rates revenue divided by <strong>rating units</strong> — every separately rateable
                       property (homes, farms, commercial sites, baches). A rough per-property normalisation: real bills
@@ -1146,12 +1239,54 @@ export default function App() {
         )}
       </div>
 
-      <main className="map">
+      <section className="compareBar">
+        <button className="ghost" onClick={saveScenario}>Save map as scenario</button>
+        {scenarios.map((sc, i) => (
+          <span key={i} className="scChip">
+            <button className="scLoad" onClick={() => loadScenario(i)} title="Load this scenario">{sc.name}</button>
+            <button className="scDrop" onClick={() => dropScenario(i)} aria-label={`Delete ${sc.name}`}>×</button>
+          </span>
+        ))}
+        {scenarios.length > 0 && (
+          <button className="ghost" onClick={() => setShowCompare((v) => !v)} aria-expanded={showCompare}>
+            {showCompare ? "Hide comparison" : "Compare"}
+          </button>
+        )}
+      </section>
+      {showCompare && comparison && (
+        <section className="compare" aria-label="Scenario comparison">
+          <div className="compareHead">
+            <h2>Scenarios compared — change in avg residential bill, $/year</h2>
+            <button className="ghost" onClick={exportComparison}>Download CSV</button>
+          </div>
+          <div className="compareScroll">
+            <table>
+              <thead>
+                <tr><th scope="col">Council</th>{comparison.cols.map((c) => (<th key={c.name} scope="col">{c.name}</th>))}</tr>
+              </thead>
+              <tbody>
+                {comparison.rows.map((r) => (
+                  <tr key={r.c.id}>
+                    <th scope="row">{r.c.name}</th>
+                    {r.cells.map((v, i) => (
+                      <td key={i} className={v == null ? "cmpNa" : v > 0 ? "cmpUp" : v < 0 ? "cmpDown" : ""}>
+                        {v === undefined ? "—" : v === null ? "no data" : signed(v)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="ratesNote">Councils not grouped in a scenario show "—". All columns use the published-bill
+          basis so they're comparable; "no data" means too few councils in that group supplied a bill.</p>
+        </section>
+      )}
+
+      <main className="map" id="map">
         <p className="mapNote">
           {isBill
             ? "Each piece shows the council's own average residential rates bill, 2024/25."
-            : basis === "household"
-            ? `Each piece shows rates revenue ÷ residential properties, ${yearLabel}.`
             : basis === "unit"
             ? `Each piece shows rates revenue ÷ rating units, ${yearLabel}.`
             : `Each piece shows rates revenue ÷ population, ${yearLabel}.`}
@@ -1249,7 +1384,8 @@ export default function App() {
               non-government source from the figures above. The report labels the property count "households", but it
               behaves as a <strong>dwelling count</strong>: nine bach-heavy districts imply under two residents per
               dwelling (Thames-Coromandel 1.2), which is impossible for occupied households. It is treated here as
-              residential properties, not households. Western Bay of Plenty, Westland and Waitaki declined or did not
+              residential properties, not households, and is used only to weight the residential-bill blend — it is
+              not offered as a rates denominator. Western Bay of Plenty, Westland and Waitaki declined or did not
               supply an average bill; Chatham Islands isn't in the report, so its property count is an estimate.
             </dd>
             <dt>Rating units</dt>
@@ -1343,7 +1479,7 @@ const CSS = `
   padding-bottom: 84px;
 }
 a { color: inherit; }
-.muted { opacity: 0.62; }
+.muted { opacity: 0.75; }
 .up { color: var(--up); }
 .down { color: var(--down); }
 .flat { color: #6a7a80; }
@@ -1368,13 +1504,13 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .presets button:active { transform: scale(0.97); }
 
 .tray { background: var(--paper); border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); padding: 12px 16px 14px; margin-top: 18px; }
-.trayLabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; opacity: 0.65; margin: 0 auto 8px; max-width: 760px; }
+.trayLabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; opacity: 0.72; margin: 0 auto 8px; max-width: 760px; }
 .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; max-width: 760px; margin: 0 auto; }
 .chip { font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; background: #fff; border: 1.5px solid rgba(26,46,51,0.25); border-radius: 999px; padding: 7px 12px; cursor: pointer; white-space: nowrap; color: var(--ink); }
 .chip .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--c); flex: none; }
 .chipActive { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
 .chipName { font-weight: 600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
-.chipMeta { font-size: 11px; opacity: 0.6; }
+.chipMeta { font-size: 11px; opacity: 0.72; }
 .addChip { border-style: dashed; font-weight: 600; }
 
 .editor { max-width: 760px; margin: 12px auto 0; display: grid; gap: 9px; }
@@ -1390,7 +1526,7 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .verdict { font-size: 13px; font-weight: 600; }
 .dissolve { font: inherit; font-size: 12px; font-weight: 600; background: transparent; border: 1.5px solid var(--up); color: var(--up); border-radius: 999px; padding: 5px 11px; cursor: pointer; }
 
-.shareHead { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; opacity: 0.6; margin-top: 2px; }
+.shareHead { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; opacity: 0.72; margin-top: 2px; }
 .share { display: grid; gap: 6px; }
 .shareBar { position: relative; display: flex; width: 100%; height: 22px; border: 1.5px solid var(--ink); border-radius: 4px; overflow: hidden; background: #fff; }
 .shareCompact .shareBar { height: 13px; border-width: 1px; }
@@ -1399,8 +1535,8 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .shareMid { position: absolute; left: 50%; top: 0; bottom: 0; width: 0; border-left: 2px dashed rgba(26,46,51,0.85); }
 .shareLegend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; }
 .shareVerdict { font-size: 13px; line-height: 1.45; margin: 0; }
-.shareCaveat { font-size: 11px; line-height: 1.4; opacity: 0.6; margin: 3px 0 0; }
-.presetNote { font-size: 11.5px; line-height: 1.45; opacity: 0.62; margin: 8px 0 0; max-width: 60ch; }
+.shareCaveat { font-size: 11px; line-height: 1.4; opacity: 0.72; margin: 3px 0 0; }
+.presetNote { font-size: 11.5px; line-height: 1.45; opacity: 0.72; margin: 8px 0 0; max-width: 60ch; }
 .nudge { font-size: 12px; line-height: 1.4; margin: 0; padding: 6px 9px; background: rgba(241,143,1,0.14); border-left: 3px solid #F18F01; border-radius: 3px; }
 
 .rates { display: grid; gap: 10px; }
@@ -1409,14 +1545,38 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .blendedValue { font-size: clamp(30px, 9vw, 44px); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
 .basis { display: flex; gap: 6px; flex-wrap: wrap; }
 .basisGroup { display: grid; gap: 5px; }
-.basisTier { font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; font-weight: 700; opacity: 0.55; }
+.basisTier { font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; font-weight: 700; opacity: 0.72; }
 .scopeLine { font-size: 12px; line-height: 1.45; margin: 0; padding: 7px 9px; background: rgba(26,46,51,0.05); border-radius: 4px; }
 .diverge { font-size: 12.5px; line-height: 1.5; padding: 9px 11px; background: rgba(241,143,1,0.15); border-left: 3px solid #B23A18; border-radius: 3px; }
 .diverge strong { color: #B23A18; }
+.skip { position:absolute; left:-9999px; top:0; background: var(--ink); color:#fff; padding:10px 16px; font-weight:700; z-index:50; border-radius:0 0 6px 0; }
+.skip:focus { left:0; }
+button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: 2px; }
+button, .piece { touch-action: manipulation; }
+.how { background:#fff; border:2px solid var(--ink); border-radius:8px; padding:14px 16px; margin-top:12px; display:grid; gap:8px; }
+.how h2 { font-size:16px; margin:0; }
+.how p { font-size:12.5px; line-height:1.55; margin:0; }
+.howLinks a { color: var(--accent-ink); font-weight:700; }
+.compareBar { max-width: 1140px; margin: 0 auto; padding: 10px 18px 0; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.compareBar .ghost, .compare .ghost { font:inherit; font-size:12px; font-weight:700; background:transparent; color:var(--ink); border:1.5px solid var(--ink); border-radius:999px; padding:7px 13px; cursor:pointer; }
+.scChip { display:inline-flex; align-items:stretch; border:1.5px solid var(--ink); border-radius:999px; overflow:hidden; background:#fff; }
+.scLoad { font:inherit; font-size:12px; font-weight:700; border:none; background:transparent; color:var(--ink); padding:7px 10px 7px 13px; cursor:pointer; }
+.scDrop { font:inherit; font-size:14px; font-weight:700; border:none; border-left:1.5px solid rgba(26,46,51,0.3); background:transparent; color:var(--ink); padding:0 10px; cursor:pointer; }
+.compare { max-width:1140px; margin:10px auto 0; padding:0 18px; }
+.compareHead { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.compare h2 { font-size:15px; margin:0; }
+.compareScroll { overflow-x:auto; border:1.5px solid rgba(26,46,51,0.3); border-radius:6px; background:#fff; margin-top:8px; }
+.compare table { border-collapse:collapse; width:100%; font-size:12.5px; }
+.compare th, .compare td { padding:6px 10px; border-bottom:1px solid rgba(26,46,51,0.14); text-align:right; white-space:nowrap; }
+.compare th[scope="row"], .compare thead th:first-child { text-align:left; }
+.compare thead th { position:sticky; top:0; background:#fff; border-bottom:2px solid var(--ink); }
+.cmpUp { color: var(--up); font-weight:700; }
+.cmpDown { color: var(--down); font-weight:700; }
+.cmpNa { opacity:0.72; }
 .caveat { border: 1.5px solid rgba(26,46,51,0.3); border-radius: 5px; background: #fff; padding: 0; }
 .caveat summary { font-size: 12px; font-weight: 700; padding: 8px 11px; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 7px; }
 .caveat summary::-webkit-details-marker { display: none; }
-.caveat summary::before { content: "▸"; font-size: 10px; opacity: 0.6; }
+.caveat summary::before { content: "▸"; font-size: 10px; opacity: 0.72; }
 .caveat[open] summary::before { content: "▾"; }
 .caveat[open] summary { border-bottom: 1px solid rgba(26,46,51,0.15); }
 .caveat p { font-size: 11.5px; line-height: 1.55; margin: 0; padding: 9px 11px 0; opacity: 0.82; }
@@ -1425,7 +1585,7 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .mandate { border: 1.5px solid rgba(26,46,51,0.3); border-radius: 5px; padding: 9px 11px; display: grid; gap: 5px; background: #fff; }
 .mandateYes { border-color: var(--ink); border-width: 2px; background: rgba(46,125,82,0.08); }
 .mandateTop { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.mandateHead { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; opacity: 0.6; }
+.mandateHead { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; opacity: 0.72; }
 .mandatePct { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
 .mandateYes .mandatePct { color: #2E7D52; }
 .mandateBody { font-size: 12.5px; line-height: 1.5; margin: 0; }
@@ -1462,7 +1622,7 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .region { margin-top: 16px; }
 .regionHead { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; }
 .regionName { font-weight: 700; font-size: 14px; }
-.regionCount { font-size: 11px; opacity: 0.55; }
+.regionCount { font-size: 11px; opacity: 0.72; }
 .board { display: grid; grid-template-columns: repeat(auto-fill, ${COL_W}px); row-gap: 8px; padding-right: ${PIECE_W - COL_W}px; }
 .cell { width: ${COL_W}px; height: ${PIECE_H}px; }
 .pieceWrap { width: ${PIECE_W}px; height: ${PIECE_H}px; transition: filter 0.15s, transform 0.15s; }
@@ -1491,7 +1651,7 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .sources { margin-top: 30px; border-top: 2px solid var(--ink); padding-top: 14px; }
 .sources h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 800; margin: 0 0 10px; }
 .sources dl { margin: 0; display: grid; gap: 9px; }
-.sources dt { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.65; }
+.sources dt { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.72; }
 .sources dd { margin: 2px 0 0; font-size: 13px; line-height: 1.5; }
 .sourceNote { font-size: 11.5px; line-height: 1.55; opacity: 0.7; margin-top: 14px; }
 .licence { font-size: 11.5px; line-height: 1.55; opacity: 0.7; margin-top: 10px; }
