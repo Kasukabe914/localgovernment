@@ -2626,12 +2626,36 @@ export default function App() {
   const shareResult = async () => {
     const url = makeUrl();
     setShareUrl(url);
+    const ratesSummary =
+      rates.blended == null
+        ? "Residential rates: there is not enough published data to model this combination."
+        : falling.length > 0 && rising.length > 0
+          ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; ${falling.length} council ${falling.length === 1 ? "area" : "areas"} could pay less and ${rising.length} could pay more.`
+          : falling.length > 0
+            ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; every council area with data could pay less.`
+            : rising.length > 0
+              ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; every council area with data could pay more.`
+              : `Residential rates: the modelled blended average is ${money(rates.blended)} a year; the published averages are already very similar.`;
+    const shareText = [
+      "I used The Amalgamator to explore what might happen if these councils combined.",
+      "",
+      `Proposed name: ${councilName}`,
+      `Councils combined: ${members.map((m) => m.name).join(", ")}`,
+      `Population: ${totalPopulation.toLocaleString("en-NZ")}`,
+      `Land area: ${Math.round(totalArea).toLocaleString("en-NZ")} km²`,
+      ratesSummary,
+      `${largest.name} would account for ${largestShare}% of the merged population.`,
+      "",
+      "View the full result and try another combination:",
+      url,
+      "",
+      "Independent modelling tool — not an official proposal or a prediction of any household's rates.",
+    ].join("\n");
     if (navigator.share) {
       try {
         await navigator.share({
-          title: councilName,
-          text: `I combined ${members.map((m) => m.name).join(", ")} in The Amalgamator.`,
-          url,
+          title: `${councilName} — The Amalgamator`,
+          text: shareText,
         });
         setShareMessage("Shared.");
         return;
