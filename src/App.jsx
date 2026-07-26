@@ -2305,6 +2305,7 @@ button, .piece { touch-action: manipulation; }
 const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
   (region) => COUNCILS.filter((c) => c.region === region && !c.locked).length >= 2
 );
+const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
 
 function simpleRates(members) {
   const usable = members.filter((m) => m.avgRes != null && m.hh);
@@ -2330,6 +2331,56 @@ function simpleRates(members) {
     rows,
     missing: members.filter((m) => m.avgRes == null),
   };
+}
+
+function ShareIcon({ type }) {
+  if (type === "link") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M10 13a5 5 0 0 0 7.1.1l2-2A5 5 0 0 0 12 4l-1.2 1.2" />
+        <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.2-1.2" />
+      </svg>
+    );
+  }
+  if (type === "email") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m4 7 8 6 8-6" />
+      </svg>
+    );
+  }
+  if (type === "whatsapp") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M20.5 11.6a8.4 8.4 0 0 1-12.4 7.3L3.5 20l1.2-4.4a8.4 8.4 0 1 1 15.8-4Z" />
+        <path d="M8.2 7.8c.5 3.9 2.5 6 6.3 6.6" />
+        <path d="m8.2 7.8 1.9-.9 1.4 2.5-1.1 1.2M14.5 14.4l1.1-1.2 2.4 1.5-.8 1.8" />
+      </svg>
+    );
+  }
+  if (type === "facebook") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path className="simpleShareSolid" d="M14 8h3V4h-3c-3.3 0-5 2-5 5v3H6v4h3v6h4v-6h3.5l.5-4h-4V9c0-.7.3-1 1-1Z" />
+      </svg>
+    );
+  }
+  if (type === "linkedin") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle className="simpleShareSolid" cx="6" cy="5.5" r="2" />
+        <path className="simpleShareSolid" d="M4 9h4v11H4zM11 9h3.8v1.5c.8-1.2 2-2 3.8-2 3.1 0 4.4 2 4.4 5.5v6h-4v-5.3c0-1.7-.6-2.7-1.9-2.7-1.5 0-2.1 1-2.1 3.1V20h-4z" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle className="simpleShareSolid" cx="5" cy="12" r="2" />
+      <circle className="simpleShareSolid" cx="12" cy="12" r="2" />
+      <circle className="simpleShareSolid" cx="19" cy="12" r="2" />
+    </svg>
+  );
 }
 
 function ResultShareBar({ members }) {
@@ -2369,13 +2420,16 @@ export default function App() {
   const [customName, setCustomName] = useState("");
   const [shareMessage, setShareMessage] = useState("");
   const [shareUrl, setShareUrl] = useState("");
+  const [linkedInDraft, setLinkedInDraft] = useState("");
   const [talksActive, setTalksActive] = useState(false);
 
   useEffect(() => {
     try {
       const match = /[#&]m=([^&]+)/.exec(window.location.hash || "");
-      if (!match) return;
-      const decoded = decodeMap(decodeURIComponent(match[1]));
+      const queryCode = new URLSearchParams(window.location.search).get("m");
+      const sharedCode = queryCode || (match ? match[1] : "");
+      if (!sharedCode) return;
+      const decoded = decodeMap(decodeURIComponent(sharedCode));
       if (!decoded || !decoded.groups.length) return;
       const first = decoded.groups[0];
       const ids = Object.entries(decoded.assignment)
@@ -2511,6 +2565,10 @@ export default function App() {
   const largestShare = largest && totalPopulation ? Math.round((largest.pop / totalPopulation) * 100) : 0;
   const rising = rates.rows.filter((row) => row.change > 0);
   const falling = rates.rows.filter((row) => row.change < 0);
+  const maxRateChange = Math.max(
+    1,
+    ...rates.rows.map((row) => Math.abs(row.change || 0))
+  );
 
   const startRegion = () => {
     if (!region) return;
@@ -2552,12 +2610,14 @@ export default function App() {
     setSelectedIds(ids);
     setCustomName(combination.name);
     setShareMessage("");
+    setLinkedInDraft("");
     setScreen("result");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleCouncil = (id) => {
     setShareMessage("");
+    setLinkedInDraft("");
     setSelectedIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
     );
@@ -2567,12 +2627,14 @@ export default function App() {
     if (selectedIds.length < 2) return;
     setCustomName("");
     setShareMessage("");
+    setLinkedInDraft("");
     setScreen("result");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const editSelection = () => {
     setShareMessage("");
+    setLinkedInDraft("");
     setScreen("build");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -2580,7 +2642,7 @@ export default function App() {
   const startOver = () => {
     try {
       if (/^https?:$/.test(window.location.protocol)) {
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        window.history.replaceState(null, "", window.location.pathname);
       }
     } catch (error) {
       // Clearing a fragment is optional in embedded previews.
@@ -2593,6 +2655,7 @@ export default function App() {
     setCustomName("");
     setShareMessage("");
     setShareUrl("");
+    setLinkedInDraft("");
     setTalksActive(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -2604,12 +2667,18 @@ export default function App() {
     if (!code) return "";
     try {
       if (/^https?:$/.test(window.location.protocol)) {
-        return `${window.location.origin}${window.location.pathname}#m=${code}`;
+        const isLocalPreview = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(
+          window.location.hostname
+        );
+        const baseUrl = isLocalPreview
+          ? PUBLIC_APP_URL
+          : `${window.location.origin}${window.location.pathname}`;
+        return `${baseUrl}?m=${code}`;
       }
     } catch (error) {
-      // Fall back to a fragment in local or embedded environments.
+      // Fall back to the public site in local or embedded environments.
     }
-    return `#m=${code}`;
+    return `${PUBLIC_APP_URL}?m=${code}`;
   };
 
   const copyLink = async () => {
@@ -2623,34 +2692,154 @@ export default function App() {
     }
   };
 
+  const buildShareText = (url) => {
+    const names = members.map((member) => member.name);
+    const councilsPhrase =
+      names.length === 2
+        ? `${names[0]} and ${names[1]}`
+        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    const ratesBullet =
+      rates.blended == null
+        ? "Not enough published residential-rates data to model this combination"
+        : falling.length > 0 && rising.length > 0
+          ? `Modelled blended average residential rate: ${money(rates.blended)} a year — ${falling.length} council ${falling.length === 1 ? "area" : "areas"} could pay less and ${rising.length} could pay more`
+          : falling.length > 0
+            ? `Modelled blended average residential rate: ${money(rates.blended)} a year — every council area with data could pay less`
+            : rising.length > 0
+              ? `Modelled blended average residential rate: ${money(rates.blended)} a year — every council area with data could pay more`
+              : `Modelled blended average residential rate: ${money(rates.blended)} a year — the published averages are already very similar`;
+    return [
+      `What if ${councilsPhrase} councils combined?`,
+      "",
+      `I explored that question using The Amalgamator. The model calls the new authority “${councilName}”.`,
+      "",
+      "At a glance:",
+      `• ${totalPopulation.toLocaleString("en-NZ")} residents across ${Math.round(totalArea).toLocaleString("en-NZ")} km²`,
+      `• ${ratesBullet}`,
+      `• ${largest.name} would represent ${largestShare}% of the merged population`,
+      "",
+      "Explore the full result or try a different combination:",
+      url,
+      "",
+      "The Amalgamator is an independent modelling tool. This is not an official proposal or a prediction of any household’s rates.",
+    ].join("\n");
+  };
+
+  const buildEmailText = (url) => {
+    const names = members.map((member) => member.name);
+    const councilsPhrase =
+      names.length === 2
+        ? `${names[0]} and ${names[1]}`
+        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    const ratesLine =
+      rates.blended == null
+        ? "There is not enough published residential-rates data to model this combination."
+        : `The modelled blended average residential rate is ${money(rates.blended)} a year.`;
+    return [
+      `What if ${councilsPhrase} councils combined?`,
+      "",
+      "Open this result in the Local government amalgamator:",
+      url,
+      "",
+      `The model calls the combined authority “${councilName}”, serving ${totalPopulation.toLocaleString("en-NZ")} residents across ${Math.round(totalArea).toLocaleString("en-NZ")} km². ${ratesLine}`,
+      "",
+      "This is independent modelling, not an official proposal or a prediction of any household’s rates.",
+    ].join("\r\n");
+  };
+
+  const buildLinkedInText = (url) => {
+    const baseText = buildShareText(url);
+    const [opening, , introduction, , heading, ...rest] = baseText.split("\n");
+    const disclaimerIndex = rest.findIndex((line) => line.startsWith("The Amalgamator is"));
+    const resultLines = disclaimerIndex >= 0 ? rest.slice(0, disclaimerIndex) : rest;
+    return [
+      opening,
+      "",
+      introduction,
+      "",
+      heading,
+      ...resultLines.slice(0, 3),
+      "",
+      "Would this make local government stronger — or create new trade-offs?",
+      "",
+      "Explore the model and try your own combination:",
+      url,
+      "",
+      "Independent modelling only — not an official proposal or a household rates forecast.",
+      "",
+      "#LocalGovernment #NewZealand #PublicPolicy",
+    ].join("\n");
+  };
+
+  const copyTextForExternalShare = (text) => {
+    let copied = false;
+    const temporaryField = document.createElement("textarea");
+    temporaryField.value = text;
+    temporaryField.setAttribute("readonly", "");
+    temporaryField.style.position = "fixed";
+    temporaryField.style.opacity = "0";
+    document.body.appendChild(temporaryField);
+    temporaryField.focus();
+    temporaryField.select();
+    try {
+      copied = document.execCommand("copy");
+    } catch (error) {
+      copied = false;
+    }
+    temporaryField.remove();
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+      return true;
+    }
+    return copied;
+  };
+
+  const openShareChannel = (channel) => {
+    const url = makeUrl();
+    const names = members.map((member) => member.name);
+    const councilsPhrase =
+      names.length === 2
+        ? `${names[0]} and ${names[1]}`
+        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    const title = `What if ${councilsPhrase} councils combined?`;
+    const shareText = buildShareText(url);
+    const emailText = buildEmailText(url);
+    const linkedInText = buildLinkedInText(url);
+    const destinations = {
+      email: `https://outlook.office.com/mail/deeplink/compose?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(emailText)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+    };
+    const labels = {
+      email: "Outlook",
+      whatsapp: "WhatsApp",
+      facebook: "Facebook",
+      linkedin: "LinkedIn",
+    };
+    const destination = destinations[channel];
+    if (!destination) return;
+    setShareUrl(url);
+    if (channel !== "linkedin") setLinkedInDraft("");
+    setShareMessage(`Opening ${labels[channel]}…`);
+    if (channel === "linkedin") {
+      setLinkedInDraft(linkedInText);
+      const copied = copyTextForExternalShare(linkedInText);
+      window.open(destination, "_blank", "noopener,noreferrer");
+      setShareMessage(
+        copied
+          ? "LinkedIn does not fill post text automatically. Your suggested post is copied — paste it into the post box."
+          : "LinkedIn does not fill post text automatically. Copy the suggested post below, then paste it into LinkedIn.",
+      );
+      return;
+    }
+    window.open(destination, "_blank", "noopener,noreferrer");
+  };
+
   const shareResult = async () => {
     const url = makeUrl();
     setShareUrl(url);
-    const ratesSummary =
-      rates.blended == null
-        ? "Residential rates: there is not enough published data to model this combination."
-        : falling.length > 0 && rising.length > 0
-          ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; ${falling.length} council ${falling.length === 1 ? "area" : "areas"} could pay less and ${rising.length} could pay more.`
-          : falling.length > 0
-            ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; every council area with data could pay less.`
-            : rising.length > 0
-              ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; every council area with data could pay more.`
-              : `Residential rates: the modelled blended average is ${money(rates.blended)} a year; the published averages are already very similar.`;
-    const shareText = [
-      "I used The Amalgamator to explore what might happen if these councils combined.",
-      "",
-      `Proposed name: ${councilName}`,
-      `Councils combined: ${members.map((m) => m.name).join(", ")}`,
-      `Population: ${totalPopulation.toLocaleString("en-NZ")}`,
-      `Land area: ${Math.round(totalArea).toLocaleString("en-NZ")} km²`,
-      ratesSummary,
-      `${largest.name} would account for ${largestShare}% of the merged population.`,
-      "",
-      "View the full result and try another combination:",
-      url,
-      "",
-      "Independent modelling tool — not an official proposal or a prediction of any household's rates.",
-    ].join("\n");
+    const shareText = buildShareText(url);
     if (navigator.share) {
       try {
         await navigator.share({
@@ -3058,35 +3247,57 @@ export default function App() {
                           ? `Every council area with data could pay more.`
                           : "Published averages are already very similar."}
                   </p>
-                  <div className="simpleRateRows">
-                    {rates.rows.map((row) => (
-                      <div className="simpleRateRow" key={row.council.id}>
-                        <div>
-                          <strong>{row.council.name}</strong>
-                          <span>
-                            {row.before == null
-                              ? "No published average bill"
-                              : `${money(row.before)} now`}
-                          </span>
+                  <div className="simpleRateChart">
+                    <div className="simpleRateAxis" aria-hidden="true">
+                      <span>Could pay less</span>
+                      <span>Could pay more</span>
+                    </div>
+                    <div className="simpleRateRows">
+                      {rates.rows.map((row) => (
+                        <div className="simpleRateRow" key={row.council.id}>
+                          <div className="simpleRateCopy">
+                            <strong>{row.council.name}</strong>
+                            <span>
+                              {row.before == null
+                                ? "No published average bill"
+                                : `${money(row.before)} now`}
+                            </span>
+                          </div>
+                          {row.change == null ? (
+                            <span className="simpleNoData">No data</span>
+                          ) : (
+                            <>
+                              <strong
+                                className={
+                                  row.change > 0
+                                    ? "simpleUp"
+                                    : row.change < 0
+                                      ? "simpleDown"
+                                      : "simpleFlat"
+                                }
+                              >
+                                {row.change > 0 ? "+" : row.change < 0 ? "−" : ""}
+                                {money(Math.abs(row.change))} a year
+                              </strong>
+                              <div className="simpleRateBar" aria-hidden="true">
+                                <span className="simpleRateZero" />
+                                {row.change !== 0 && (
+                                  <span
+                                    className={`simpleRateFill ${row.change > 0 ? "simpleRateMore" : "simpleRateLess"}`}
+                                    style={{
+                                      width: `${Math.max(
+                                        2,
+                                        (Math.abs(row.change) / maxRateChange) * 50
+                                      )}%`,
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            </>
+                          )}
                         </div>
-                        {row.change == null ? (
-                          <span className="simpleNoData">No data</span>
-                        ) : (
-                          <strong
-                            className={
-                              row.change > 0
-                                ? "simpleUp"
-                                : row.change < 0
-                                  ? "simpleDown"
-                                  : "simpleFlat"
-                            }
-                          >
-                            {row.change > 0 ? "+" : row.change < 0 ? "−" : ""}
-                            {money(Math.abs(row.change))} a year
-                          </strong>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </>
               )}
@@ -3096,7 +3307,8 @@ export default function App() {
                 <p>
                   This blends each council’s published 2024/25 average residential bill,
                   weighted by household count. It shows the direction of redistribution,
-                  not a forecast for an individual property.
+                  not a forecast for an individual property. The bars share one scale
+                  within this result, so the longest bar is the largest dollar change.
                 </p>
                 <p>
                   Real mergers use property values, targeted rates, differentials, caps,
@@ -3128,15 +3340,50 @@ export default function App() {
                 <h2>Share {councilName}</h2>
                 <p>The link reopens this exact combination.</p>
               </div>
-              <div className="simpleShareActions">
-                <button className="simplePrimary" type="button" onClick={shareResult}>
-                  Share result
+              <div className="simpleShareActions" aria-label="Sharing options">
+                <button className="simpleShareIconButton simpleShareCopy" type="button" onClick={copyLink} aria-label="Copy link" title="Copy link">
+                  <ShareIcon type="link" />
                 </button>
-                <button className="simpleSecondary" type="button" onClick={copyLink}>
-                  Copy link
+                <button className="simpleShareIconButton simpleShareEmail" type="button" onClick={() => openShareChannel("email")} aria-label="Share with Outlook" title="Outlook">
+                  <ShareIcon type="email" />
                 </button>
+                <button className="simpleShareIconButton simpleShareWhatsApp" type="button" onClick={() => openShareChannel("whatsapp")} aria-label="Share on WhatsApp" title="WhatsApp">
+                  <ShareIcon type="whatsapp" />
+                </button>
+                <button className="simpleShareIconButton simpleShareFacebook" type="button" onClick={() => openShareChannel("facebook")} aria-label="Share on Facebook" title="Facebook">
+                  <ShareIcon type="facebook" />
+                </button>
+                <button className="simpleShareIconButton simpleShareLinkedIn" type="button" onClick={() => openShareChannel("linkedin")} aria-label="Share on LinkedIn; suggested post text will be copied" title="LinkedIn — copies suggested post text">
+                  <ShareIcon type="linkedin" />
+                </button>
+                {typeof navigator !== "undefined" && navigator.share && (
+                  <button className="simpleShareIconButton simpleShareMore" type="button" onClick={shareResult} aria-label="More sharing apps" title="More apps">
+                    <ShareIcon type="more" />
+                  </button>
+                )}
               </div>
               {shareMessage && <p className="simpleShareMessage" role="status">{shareMessage}</p>}
+              {linkedInDraft && (
+                <div className="simpleLinkedInDraft">
+                  <label htmlFor="simpleLinkedInDraft">Suggested LinkedIn post</label>
+                  <textarea
+                    id="simpleLinkedInDraft"
+                    readOnly
+                    value={linkedInDraft}
+                    onFocus={(event) => event.target.select()}
+                  />
+                  <button
+                    className="simpleSecondary"
+                    type="button"
+                    onClick={() => {
+                      const copied = copyTextForExternalShare(linkedInDraft);
+                      setShareMessage(copied ? "LinkedIn post text copied — paste it into the post box." : "Select and copy the post text above.");
+                    }}
+                  >
+                    Copy post text again
+                  </button>
+                </div>
+              )}
               {shareUrl && shareMessage === "Copy the link below." && (
                 <input
                   className="simpleShareInput"
@@ -3849,24 +4096,71 @@ const SIMPLE_CSS = `
   margin-bottom: 20px;
   font-size: 18px;
 }
+.simpleRateChart {
+  display: grid;
+  gap: 4px;
+}
+.simpleRateAxis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+.simpleRateAxis span:first-child {
+  padding-right: 9px;
+  text-align: right;
+}
+.simpleRateAxis span:last-child { padding-left: 9px; }
 .simpleRateRows {
   display: grid;
   border-top: 1px solid var(--line);
 }
 .simpleRateRow {
   padding: 14px 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  gap: 8px 18px;
   border-bottom: 1px solid var(--line);
 }
-.simpleRateRow > div { display: grid; }
-.simpleRateRow > div span {
+.simpleRateCopy { display: grid; }
+.simpleRateCopy span {
   color: var(--ink-soft);
   font-size: 13px;
 }
 .simpleRateRow > strong { text-align: right; }
+.simpleRateBar {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 10px;
+  overflow: hidden;
+  background: rgba(25, 48, 54, 0.09);
+  border-radius: 999px;
+}
+.simpleRateZero {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-left: 2px solid rgba(25, 48, 54, 0.48);
+}
+.simpleRateFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.simpleRateLess {
+  right: 50%;
+  background: var(--good);
+  border-radius: 999px 0 0 999px;
+}
+.simpleRateMore {
+  left: 50%;
+  background: var(--bad);
+  border-radius: 0 999px 999px 0;
+}
 .simpleUp { color: var(--bad); }
 .simpleDown { color: var(--good); }
 .simpleFlat,
@@ -3916,8 +4210,65 @@ const SIMPLE_CSS = `
 .simpleSharePanel > div:first-child p:last-child { color: rgba(255, 255, 255, 0.72); }
 .simpleShareActions {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
+}
+.simpleShareIconButton {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  color: var(--white);
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease, background 120ms ease;
+}
+.simpleShareIconButton svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.simpleShareIconButton .simpleShareSolid {
+  fill: currentColor;
+  stroke: none;
+}
+.simpleShareIconButton:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+.simpleShareIconButton:active { transform: translateY(0); }
+.simpleShareCopy {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.simpleShareEmail {
+  color: var(--ink);
+  background: var(--white);
+  border-color: var(--white);
+}
+.simpleShareWhatsApp {
+  background: #218c55;
+  border-color: #218c55;
+}
+.simpleShareFacebook {
+  background: #1877f2;
+  border-color: #1877f2;
+}
+.simpleShareLinkedIn {
+  background: #0a66c2;
+  border-color: #0a66c2;
+}
+.simpleShareMore {
+  background: rgba(255, 255, 255, 0.08);
+  border-style: dashed;
 }
 .simpleSharePanel .simpleSecondary {
   color: var(--white);
@@ -3928,6 +4279,22 @@ const SIMPLE_CSS = `
   margin: 14px 0 0;
   font-size: 13px;
   font-weight: 700;
+}
+.simpleLinkedInDraft {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.simpleLinkedInDraft label {
+  font-size: 13px;
+  font-weight: 800;
+}
+.simpleLinkedInDraft textarea {
+  min-height: 190px;
+  resize: vertical;
+}
+.simpleLinkedInDraft .simpleSecondary {
+  justify-self: start;
 }
 .simpleShareInput { margin-top: 10px; }
 
