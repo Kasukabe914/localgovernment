@@ -474,12 +474,12 @@ function ShareBar({ members, color, compact }) {
             {sorted.length > 3 && <span className="legendItem muted">+{sorted.length - 3} more</span>}
           </div>
           <p className="shareVerdict">
-            {top.pop / total > 0.5 ? (<><strong>{top.name}</strong> would make up {Math.round(pct(top))}% of the merged population on its own — more than everyone else combined.</>)
+            {top.pop / total > 0.5 ? (<><strong>{top.name}</strong> would make up {Math.round(pct(top))}% of the merged population on its own, more than everyone else combined.</>)
               : pct(top) >= 35 ? (<><strong>{top.name}</strong> would be the largest share at {Math.round(pct(top))}%, but under half the total; no single district would be an outright majority of residents.</>)
               : (<>No district would exceed {Math.round(pct(top))}% of the merged population. It's spread fairly evenly across {sorted.length} of them.</>)}{" "}
             <span className="muted">{bottom.name} would be {pct(bottom) < 1 ? "under 1" : Math.round(pct(bottom))}%.</span>
           </p>
-          <p className="shareCaveat">Population share, not voting power — how councillors, wards and local boards would be arranged is set by each proposal, not modelled here.</p>
+          <p className="shareCaveat">Population share, not voting power: how councillors, wards and local boards would be arranged is set by each proposal, not modelled here.</p>
         </>
       )}
     </div>
@@ -735,7 +735,7 @@ export default function App() {
     setShareUrl(url);
     try {
       await navigator.clipboard.writeText(url);
-      setCopyMsg("Link copied — anyone who opens it sees this exact map.");
+      setCopyMsg("Link copied. Anyone who opens it sees this exact map.");
     } catch (e) {
       setCopyMsg("Copy the link below to share this map.");
     }
@@ -948,7 +948,7 @@ export default function App() {
         <p className="kicker">Local government reform · Aotearoa New Zealand</p>
         <h1>The Amalgamator</h1>
         <p className="standfirst">
-          Every non-Auckland council has been told to team up with its neighbours — or have a merger imposed on it.
+          Every non-Auckland council has been told to team up with its neighbours, or have a merger imposed on it.
           Pick a new council, tap the pieces to build it, then see who runs the place and whose rates move.
         </p>
         <div className="presets">
@@ -971,9 +971,9 @@ export default function App() {
             <p><strong>What it computes.</strong> Pick councils into a group and the tool blends them as one entity:
             the default view blends their published residential bills weighted by property count; the other two
             views spread the combined rates take (grossed up 15% so it's GST-inclusive like a bill) across people or
-            rating units. A per-residential-property view was deliberately left out: dividing the whole take — which
-            includes commercial and farm rates — by a residential dwelling count muddles the rating base with a
-            residential measure, and the dwelling count itself includes empty holiday homes. The change shown per council is the blend minus its own figure —
+            rating units. A per-residential-property view was deliberately left out: dividing the whole take (which
+            includes commercial and farm rates) by a residential dwelling count muddles the rating base with a
+            residential measure, and the dwelling count itself includes empty holiday homes. The change shown per council is the blend minus its own figure:
             an immediate, fully harmonised redistribution of today's revenue. The regional-mandate figure is the
             group's share of its region's 2024 population, against the reported majority threshold for lodging a
             proposal that covers objecting councils.</p>
@@ -982,7 +982,7 @@ export default function App() {
             the whole take, not an evidenced savings estimate; the opening map resolves late-July 2026 reporting into
             one group per council even where positions were contested.</p>
             <p><strong>Not modelled.</strong> Transition costs and phasing (establishment costs, rates caps, phased
-            harmonisation, legacy differentials and ring-fenced debt — these defer or smooth everything shown);
+            harmonisation, legacy differentials and ring-fenced debt, which defer or smooth everything shown);
             governance design and representation (wards, Māori wards, councillor numbers, community boards);
             the regional-council rates layer, so nothing here is a complete bill; property-level incidence (rates are
             levied on value with differentials, and averages hide a wide spread); water reform, debt, service levels
@@ -1008,14 +1008,14 @@ export default function App() {
           </div>
         )}
         <p className="presetNote">
-          The opening map is a snapshot of reporting in late July 2026, not an official proposal — and a council can be
+          The opening map is a snapshot of reporting in late July 2026, not an official proposal, and a council can be
           backing more than one option at once, which this model can't show. Proposals are due 9 August. Objecting isn't
           the same as escaping: check the regional mandate figure on any group you build.
         </p>
       </header>
 
       <div className="tray">
-        <div className="trayLabel">Your new councils — tap one to make it the active piece colour</div>
+        <div className="trayLabel">Your new councils. Tap one to make it the active piece colour</div>
         <div className="chips">
           {groups.map((g) => {
             const s = stats.byGroup[g.id];
@@ -1049,8 +1049,8 @@ export default function App() {
                 {(() => {
                   const islands = new Set(activeMembers.map((m) => (REGIONS_S.includes(m.region) ? "S" : "N")));
                   const regions = new Set(activeMembers.map((m) => m.region));
-                  if (islands.size > 1) return <p className="nudge">Heads up: this group spans both islands — amalgamations are meant to be between neighbours, but you're free to test anything.</p>;
-                  if (regions.size >= 3) return <p className="nudge">This spans {regions.size} regions — a stretch geographically, though the tool won't stop you.</p>;
+                  if (islands.size > 1) return <p className="nudge">Heads up: this group spans both islands. Amalgamations are meant to be between neighbours, but you're free to test anything.</p>;
+                  if (regions.size >= 3) return <p className="nudge">This spans {regions.size} regions, a stretch geographically, though the tool won't stop you.</p>;
                   return null;
                 })()}
 
@@ -1068,7 +1068,7 @@ export default function App() {
                         <>
                           More than half of {mandate.regions.length === 1 ? mandate.regions[0] : "the regions"} by
                           population. Under the reform, a coalition on more than half a region's population can lodge a
-                          proposal covering the whole region — including councils that object.{" "}
+                          proposal covering the whole region, including councils that object.{" "}
                           {mandate.others.length > 0 ? (
                             <>That would sweep in {mandate.others.length} council{mandate.others.length > 1 ? "s" : ""} not in this group: {mandate.others.map((c) => c.name).join(", ")}.</>
                           ) : (<>Every council in the region is already in this group.</>)}
@@ -1090,7 +1090,7 @@ export default function App() {
                     <div className="basis">
                       <button className={"basisBtn" + (basis === "bill" ? " basisOn" : "")} onClick={() => setBasis("bill")} aria-pressed={basis === "bill"}>Avg residential bill</button>
                     </div>
-                    <span className="basisTier">Normalisations — not bills</span>
+                    <span className="basisTier">Normalisations, not bills</span>
                     <div className="basis">
                       {[["unit", "Per rating unit"], ["person", "Per person"]].map(([k, l]) => (
                         <button key={k} className={"basisBtn" + (basis === k ? " basisOn" : "")} onClick={() => setBasis(k)} aria-pressed={basis === k}>{l}</button>
@@ -1103,10 +1103,10 @@ export default function App() {
                   </div>
                   <p className="scopeLine">
                     {isBill
-                      ? "What an average home pays. Residential properties only — no commercial or industrial rates."
+                      ? "What an average home pays. Residential properties only: no commercial or industrial rates."
                       : basis === "unit"
-                      ? "The whole rates take — including commercial, industrial and targeted rates — divided across every rateable property. Higher than a household bill wherever there's a big commercial base."
-                      : "The whole rates take — including commercial and industrial rates — divided by residents. Not what anyone is billed."}
+                      ? "The whole rates take, including commercial, industrial and targeted rates, divided across every rateable property. Higher than a household bill wherever there's a big commercial base."
+                      : "The whole rates take, including commercial and industrial rates, divided by residents. Not what anyone is billed."}
                   </p>
                   {!isBill && (
                     <div className="years">
@@ -1126,7 +1126,7 @@ export default function App() {
                         Wellington metro authority would cost about $269m up front against $930m of savings spread over
                         25 years; a Wairarapa authority $42m to establish, with the loss of Wellington subsidies capable
                         of wiping out its $170m of savings; and a Horowhenua–Kāpiti merger $58m to establish against
-                        $240m. This slider models none of that — it just trims the take.
+                        $240m. This slider models none of that; it just trims the take.
                       </p>
                     </div>
                   )}
@@ -1139,7 +1139,7 @@ export default function App() {
                         </span>
                       ))}{" "}
                       {divergence.length > 2 ? `(${divergence.length - 2} more also flip.) ` : ""}
-                      The measures differ because the total rates take is spread over all rateable property — commercial, industrial and farm land included — while a residential bill is only what a home is charged. Where a district has little commercial property, its households carry more of the load than the per-property average suggests. For what a homeowner actually pays, use the bill basis.
+                      The measures differ because the total rates take is spread over all rateable property (commercial, industrial and farm land included) while a residential bill is only what a home is charged. Where a district has little commercial property, its households carry more of the load than the per-property average suggests. For what a homeowner actually pays, use the bill basis.
                     </div>
                   )}
                   {activeRates.blended == null ? (
@@ -1188,25 +1188,25 @@ export default function App() {
                   <p className="ratesNote">
                     {isBill ? (
                       <>Each council's own published average residential rates bill (2024/25), blended across the group
-                      weighted by household count. Closest thing to a real bill here — but "average" hides a wide spread
+                      weighted by household count. Closest thing to a real bill here, but "average" hides a wide spread
                       within any district, the weighting denominator is an approximation, and a merger would set new
                       differentials and phase them in over years. Western Bay of Plenty, Westland and Waitaki didn't
                       supply a figure and Chatham Islands isn't in the report, so those show as no data.</>
                     ) : basis === "unit" ? (
-                      <>{yearLabel} rates revenue divided by <strong>rating units</strong> — every separately rateable
+                      <>{yearLabel} rates revenue divided by <strong>rating units</strong>: every separately rateable
                       property (homes, farms, commercial sites, baches). A rough per-property normalisation: real bills
                       use land or capital value, targeted rates, uniform charges and differentials, so this isn't an
                       actual bill. Some counts are older, projected, draft or a proxy (flagged on the rows). Direction of
                       travel only.</>
                     ) : (
-                      <>{yearLabel} rates revenue spread evenly across residents. Rates aren't levied per head — they're
-                      on property value — and mergers phase differentials in over years, so this is a normalisation, not
-                      a bill. All figures use 2024 population, including the 2025/26 forecast — so for fast-growing
+                      <>{yearLabel} rates revenue spread evenly across residents. Rates aren't levied per head (they're
+                      on property value) and mergers phase differentials in over years, so this is a normalisation, not
+                      a bill. All figures use 2024 population, including the 2025/26 forecast, so for fast-growing
                       districts the forecast per-person figure runs high: about 8% for Selwyn, 6% for Hamilton, against
                       almost nothing for Wellington City or Nelson. That gap flatters slow-growing districts in any
                       comparison.</>
                     )}{" "}
-                    <span className="muted">Territorial-council figures only — the separate regional-council rates layer isn't included, and the four existing unitary councils (Gisborne, Nelson, Tasman, Marlborough) already fold regional functions in, so they aren't strictly like-for-like.{!isBill && savings > 0 ? " The trim is a hypothetical cut to the whole rates take, not an evidenced merger-savings estimate." : ""}</span>
+                    <span className="muted">Territorial-council figures only: the separate regional-council rates layer isn't included, and the four existing unitary councils (Gisborne, Nelson, Tasman, Marlborough) already fold regional functions in, so they aren't strictly like-for-like.{!isBill && savings > 0 ? " The trim is a hypothetical cut to the whole rates take, not an evidenced merger-savings estimate." : ""}</span>
                   </p>
 
                   <details className="caveat">
@@ -1222,8 +1222,8 @@ export default function App() {
                       of each former council area.
                     </p>
                     <p className="caveatApply">
-                      Applied to this tool: the figures above are an <em>immediate, fully harmonised</em> redistribution
-                      — every property in the merged entity treated identically from day one. No real amalgamation has
+                      Applied to this tool: the figures above are an <em>immediate, fully harmonised</em> redistribution:
+                      every property in the merged entity treated identically from day one. No real amalgamation has
                       worked that way. Expect the direction to hold and the timing and size to differ, often for years.
                     </p>
                   </details>
@@ -1256,7 +1256,7 @@ export default function App() {
       {showCompare && comparison && (
         <section className="compare" aria-label="Scenario comparison">
           <div className="compareHead">
-            <h2>Scenarios compared — change in avg residential bill, $/year</h2>
+            <h2>Scenarios compared: change in avg residential bill, $/year</h2>
             <button className="ghost" onClick={exportComparison}>Download CSV</button>
           </div>
           <div className="compareScroll">
@@ -1301,14 +1301,14 @@ export default function App() {
         <h2>Your map of New Zealand</h2>
         <p>
           {stats.valid.length === 0
-            ? `No valid proposals yet — a proposal needs at least two councils. ${stats.nonEmpty.length > 0 ? "You've got some single councils on their own." : ""}`
+            ? `No valid proposals yet. A proposal needs at least two councils. ${stats.nonEmpty.length > 0 ? "You've got some single councils on their own." : ""}`
             : `${stats.valid.length} valid ${stats.valid.length === 1 ? "proposal" : "proposals"} (2+ councils each) covering ${stats.placed} of ${stats.eligible} territorial authorities. ${stats.remaining} still on their own.`}
         </p>
         {stats.biggest && (() => {
           const bp = stats.byGroup[stats.biggest.id].pop, cp = BY_ID.christchurch.pop;
           return (
             <p>
-              Your biggest creation is <strong>{stats.biggest.name}</strong> at <strong>{fmtPop(bp)}</strong> people —{" "}
+              Your biggest creation is <strong>{stats.biggest.name}</strong> at <strong>{fmtPop(bp)}</strong> people,{" "}
               {bp > cp
                 ? "bigger than Christchurch City, currently the largest council outside Auckland."
                 : bp === cp
@@ -1333,7 +1333,7 @@ export default function App() {
                   </div>
                   <ShareBar members={m} color={g.color} compact />
                   <div className="ledgerFoot">
-                    {m.length === 1 ? (<span className="warn">Only one council — not a valid proposal</span>) : (
+                    {m.length === 1 ? (<span className="warn">Only one council, not a valid proposal</span>) : (
                       <>
                         <span>{m.length} councils · {top.name} {shareFrac > 0.5 ? `is ${share}% of residents` : `is the largest at ${share}%`}</span>
                         {(() => {
@@ -1364,13 +1364,13 @@ export default function App() {
           <h3>Sources</h3>
           <dl>
             <dt>Rates revenue, 2023/24 actual</dt>
-            <dd>Council 2023/24 annual reports — statement of comprehensive revenue and expense, including penalties and remissions.</dd>
+            <dd>Council 2023/24 annual reports: statement of comprehensive revenue and expense, including penalties and remissions.</dd>
             <dt>Rates revenue, 2025/26 forecast</dt>
-            <dd>Council 2025/26 annual plans or 2025–34 long-term plans — prospective statement of comprehensive revenue and expense, including penalties and remissions.</dd>
+            <dd>Council 2025/26 annual plans or 2025–34 long-term plans: prospective statement of comprehensive revenue and expense, including penalties and remissions.</dd>
             <dt>Population, 2024</dt>
             <dd>
-              Stats NZ, subnational population estimates (Infoshare). The 2024 estimate is used throughout — for
-              population shares and for both rates years — so every figure shares one denominator. Estimates are rounded
+              Stats NZ, subnational population estimates (Infoshare). The 2024 estimate is used throughout, for
+              population shares and for both rates years, so every figure shares one denominator. Estimates are rounded
               (mostly to the nearest 100, and to 500 or 1,000 for the largest councils), so per-person figures for the
               smallest councils carry about ±1%: Chatham Islands ±0.8%, Mackenzie ±0.9%.
             </dd>
@@ -1384,30 +1384,38 @@ export default function App() {
               non-government source from the figures above. The report labels the property count "households", but it
               behaves as a <strong>dwelling count</strong>: nine bach-heavy districts imply under two residents per
               dwelling (Thames-Coromandel 1.2), which is impossible for occupied households. It is treated here as
-              residential properties, not households, and is used only to weight the residential-bill blend — it is
+              residential properties, not households, and is used only to weight the residential-bill blend; it is
               not offered as a rates denominator. Western Bay of Plenty, Westland and Waitaki declined or did not
               supply an average bill; Chatham Islands isn't in the report, so its property count is an estimate.
             </dd>
             <dt>Rating units</dt>
             <dd>
               Best-available rating-unit count per council, compiled from council annual reports, long-term plans and
-              regional-council valuation rolls. A rating unit is every separately rateable property — the base councils
+              regional-council valuation rolls. A rating unit is every separately rateable property: the base councils
               actually levy on. Most counts are confirmed actuals; some are older, projected, draft or a proxy, flagged
               on the comparator rows. Chatham Islands is not in the dataset.
             </dd>
-            <dt>Compiled by</dt>
+            <dt>Population, land area &amp; rates revenue, sourced from</dt>
             <dd>
               Department of Internal Affairs,{" "}
               <a href="https://www.dia.govt.nz/local-government-performance-metrics" target="_blank" rel="noreferrer">
                 Data release for council profiles – July 2025
               </a>{" "}
-              (updated October 2025). Figures cover the 67 territorial authorities; the 11 regional councils are excluded.
+              (updated October 2025). Figures cover the 67 territorial authorities; the 11 regional councils are
+              excluded. DIA publishes this as raw data; the councils, blends, comparisons and scenarios in this tool
+              are Mischewski Consulting's own work, not a DIA output, and DIA has no connection to this project.
+            </dd>
+            <dt>Not affiliated with</dt>
+            <dd>
+              This is an independent project. It is not produced, endorsed or reviewed by the Department of Internal
+              Affairs, Stats NZ, the NZ Taxpayers' Union, or any council. DIA and Stats NZ publish raw figures under
+              CC BY 4.0; nothing here should be read as an official government output.
             </dd>
             <dt>Who's merging with whom</dt>
             <dd>
               Positions and dates as at 24 July 2026, from Local Democracy Reporting and The Post (Justin Wong), RNZ,
               and MartinJenkins' July 2026 cost analysis. The majority rule described in the regional-mandate box is as
-              reported, not legal advice — check the legislation before relying on it.
+              reported, not legal advice; check the legislation before relying on it.
             </dd>
             <dt>Who's merging with whom</dt>
             <dd>
@@ -1441,14 +1449,39 @@ export default function App() {
           </p>
           <p className="licence">
             This tool is licensed{" "}
-            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC&nbsp;BY&nbsp;4.0</a> —
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC&nbsp;BY&nbsp;4.0</a>:
             reuse or adapt it freely, including commercially, with credit and a link to the licence, and say if you
             changed it. Crown data (DIA, Stats NZ) is separately CC&nbsp;BY&nbsp;4.0; residential property counts and
             average bills are © NZ Taxpayers' Union and carry their own terms. Independent project, not affiliated with
             any of them.{" "}
-            <a href="https://github.com/YOUR-USERNAME/the-amalgamator" target="_blank" rel="noreferrer">Source on GitHub</a>.
+            <a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">Source on GitHub</a>.
           </p>
         </section>
+      </footer>
+
+      <footer className="siteFooter">
+        <div className="sfGrid">
+          <div className="sfCol">
+            <div className="sfTitle">The Amalgamator</div>
+            <p>Build-your-own council maps for Aotearoa New Zealand's local government reform.</p>
+            <p className="sfDisclaim"><strong>Independent modelling tool.</strong> Not official figures, and not a prediction of any household's rates.</p>
+          </div>
+          <div className="sfCol">
+            <div className="sfHead">Site</div>
+            <ul className="sfLinks">
+              <li><a href="methodology.html">Methodology</a></li>
+              <li><a href="the-amalgamator-data.csv" download>Dataset (CSV)</a></li>
+              <li><a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">Source on GitHub</a></li>
+            </ul>
+          </div>
+          <div className="sfCol">
+            <div className="sfHead">Attribution</div>
+            <p>Crown data (DIA, Stats NZ) under CC BY 4.0. Residential property counts and average residential bills © NZ Taxpayers' Union.</p>
+            <p>Operated by Mischewski Consulting.</p>
+            <p className="sfAi">Generated with Anthropic's Claude (Fable and Opus models), directed and reviewed by Mischewski Consulting. Figures were cross-checked against the cited sources; the methodology page shows how to reproduce them.</p>
+          </div>
+        </div>
+        <div className="sfBase">© 2026 Mischewski Consulting · Built for Aotearoa New Zealand</div>
       </footer>
 
       {active && (
@@ -1549,6 +1582,17 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .scopeLine { font-size: 12px; line-height: 1.45; margin: 0; padding: 7px 9px; background: rgba(26,46,51,0.05); border-radius: 4px; }
 .diverge { font-size: 12.5px; line-height: 1.5; padding: 9px 11px; background: rgba(241,143,1,0.15); border-left: 3px solid #B23A18; border-radius: 3px; }
 .diverge strong { color: #B23A18; }
+.siteFooter { background: var(--ink); color: #F6F1E4; margin-top: 34px; padding: 30px 18px 22px; }
+.sfGrid { max-width: 1140px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 26px; }
+@media (max-width: 720px) { .sfGrid { grid-template-columns: 1fr; } }
+.sfTitle { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+.sfHead { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; opacity: 0.8; margin-bottom: 8px; }
+.sfCol p { font-size: 12.5px; line-height: 1.55; margin: 0 0 9px; opacity: 0.92; }
+.sfDisclaim strong { color: #fff; }
+.sfLinks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.sfLinks a { color: #F6F1E4; font-size: 13px; font-weight: 600; }
+.sfAi { opacity: 0.8 !important; font-size: 11.5px !important; }
+.sfBase { max-width: 1140px; margin: 20px auto 0; padding-top: 14px; border-top: 1px solid rgba(246,241,228,0.25); font-size: 12px; opacity: 0.85; }
 .skip { position:absolute; left:-9999px; top:0; background: var(--ink); color:#fff; padding:10px 16px; font-weight:700; z-index:50; border-radius:0 0 6px 0; }
 .skip:focus { left:0; }
 button:focus-visible, input:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent-ink); outline-offset: 2px; }

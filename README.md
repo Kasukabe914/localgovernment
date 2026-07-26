@@ -40,7 +40,7 @@ push to `main`.
 2. On GitHub: **Settings → Pages → Build and deployment → Source → GitHub
    Actions**.
 3. Push (or re-run the workflow). The site publishes to
-   `https://YOUR-USERNAME.github.io/YOUR-REPO/`.
+   `https://kasukabe914.github.io/localgovernment/`.
 
 ### The one thing that trips people up
 
