@@ -3160,7 +3160,6 @@ export default function App() {
               <div>
                 <p className="simpleEyebrow">Keep the conversation going</p>
                 <h2>Share {councilName}</h2>
-                <p>Open a LinkedIn post with a link to this exact combination.</p>
               </div>
               <div className="simpleShareActions">
                 <button
@@ -3168,9 +3167,9 @@ export default function App() {
                   type="button"
                   onClick={shareOnLinkedIn}
                   aria-label={`Share ${councilName} on LinkedIn`}
+                  title="Share on LinkedIn"
                 >
                   <ShareIcon type="linkedin" />
-                  <span>Share on LinkedIn</span>
                 </button>
               </div>
             </article>
@@ -3986,32 +3985,28 @@ const SIMPLE_CSS = `
   color: var(--white);
   border-color: var(--ink);
 }
-.simpleSharePanel .simpleEyebrow,
-.simpleSharePanel > div:first-child p:last-child { color: rgba(255, 255, 255, 0.72); }
+.simpleSharePanel .simpleEyebrow { color: rgba(255, 255, 255, 0.72); }
 .simpleShareActions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
 .simpleLinkedInButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 50px;
-  padding: 12px 20px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
   color: var(--white);
   background: #0a66c2;
   border: 2px solid #0a66c2;
-  border-radius: 999px;
+  border-radius: 50%;
   cursor: pointer;
-  font: inherit;
-  font-weight: 800;
   transition: transform 120ms ease, filter 120ms ease, background 120ms ease;
 }
 .simpleLinkedInButton svg {
-  width: 23px;
-  height: 23px;
+  width: 20px;
+  height: 20px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.9;
@@ -4111,8 +4106,6 @@ const SIMPLE_CSS = `
   }
   .simpleRateRow { align-items: flex-start; }
   .simpleRateRow > strong { max-width: 145px; }
-  .simpleShareActions { justify-content: stretch; }
-  .simpleLinkedInButton { width: 100%; }
   .simpleFooter { flex-direction: column; }
 }
 
