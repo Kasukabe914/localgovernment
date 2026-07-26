@@ -2511,6 +2511,10 @@ export default function App() {
   const largestShare = largest && totalPopulation ? Math.round((largest.pop / totalPopulation) * 100) : 0;
   const rising = rates.rows.filter((row) => row.change > 0);
   const falling = rates.rows.filter((row) => row.change < 0);
+  const maxRateChange = Math.max(
+    1,
+    ...rates.rows.map((row) => Math.abs(row.change || 0))
+  );
 
   const startRegion = () => {
     if (!region) return;
@@ -2623,9 +2627,7 @@ export default function App() {
     }
   };
 
-  const shareResult = async () => {
-    const url = makeUrl();
-    setShareUrl(url);
+  const buildShareText = (url) => {
     const ratesSummary =
       rates.blended == null
         ? "Residential rates: there is not enough published data to model this combination."
@@ -2651,6 +2653,40 @@ export default function App() {
       "",
       "Independent modelling tool — not an official proposal or a prediction of any household's rates.",
     ].join("\n");
+    return shareText;
+  };
+
+  const openShareChannel = (channel) => {
+    const url = makeUrl();
+    const title = `${councilName} — The Amalgamator`;
+    const shareText = buildShareText(url);
+    const destinations = {
+      email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(shareText)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+    };
+    const labels = {
+      email: "your email app",
+      whatsapp: "WhatsApp",
+      facebook: "Facebook",
+      linkedin: "LinkedIn",
+    };
+    const destination = destinations[channel];
+    if (!destination) return;
+    setShareUrl(url);
+    setShareMessage(`Opening ${labels[channel]}…`);
+    if (channel === "email") {
+      window.location.href = destination;
+      return;
+    }
+    window.open(destination, "_blank", "noopener,noreferrer");
+  };
+
+  const shareResult = async () => {
+    const url = makeUrl();
+    setShareUrl(url);
+    const shareText = buildShareText(url);
     if (navigator.share) {
       try {
         await navigator.share({
@@ -3058,35 +3094,57 @@ export default function App() {
                           ? `Every council area with data could pay more.`
                           : "Published averages are already very similar."}
                   </p>
-                  <div className="simpleRateRows">
-                    {rates.rows.map((row) => (
-                      <div className="simpleRateRow" key={row.council.id}>
-                        <div>
-                          <strong>{row.council.name}</strong>
-                          <span>
-                            {row.before == null
-                              ? "No published average bill"
-                              : `${money(row.before)} now`}
-                          </span>
+                  <div className="simpleRateChart">
+                    <div className="simpleRateAxis" aria-hidden="true">
+                      <span>Could pay less</span>
+                      <span>Could pay more</span>
+                    </div>
+                    <div className="simpleRateRows">
+                      {rates.rows.map((row) => (
+                        <div className="simpleRateRow" key={row.council.id}>
+                          <div className="simpleRateCopy">
+                            <strong>{row.council.name}</strong>
+                            <span>
+                              {row.before == null
+                                ? "No published average bill"
+                                : `${money(row.before)} now`}
+                            </span>
+                          </div>
+                          {row.change == null ? (
+                            <span className="simpleNoData">No data</span>
+                          ) : (
+                            <>
+                              <strong
+                                className={
+                                  row.change > 0
+                                    ? "simpleUp"
+                                    : row.change < 0
+                                      ? "simpleDown"
+                                      : "simpleFlat"
+                                }
+                              >
+                                {row.change > 0 ? "+" : row.change < 0 ? "−" : ""}
+                                {money(Math.abs(row.change))} a year
+                              </strong>
+                              <div className="simpleRateBar" aria-hidden="true">
+                                <span className="simpleRateZero" />
+                                {row.change !== 0 && (
+                                  <span
+                                    className={`simpleRateFill ${row.change > 0 ? "simpleRateMore" : "simpleRateLess"}`}
+                                    style={{
+                                      width: `${Math.max(
+                                        2,
+                                        (Math.abs(row.change) / maxRateChange) * 50
+                                      )}%`,
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            </>
+                          )}
                         </div>
-                        {row.change == null ? (
-                          <span className="simpleNoData">No data</span>
-                        ) : (
-                          <strong
-                            className={
-                              row.change > 0
-                                ? "simpleUp"
-                                : row.change < 0
-                                  ? "simpleDown"
-                                  : "simpleFlat"
-                            }
-                          >
-                            {row.change > 0 ? "+" : row.change < 0 ? "−" : ""}
-                            {money(Math.abs(row.change))} a year
-                          </strong>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </>
               )}
@@ -3096,7 +3154,8 @@ export default function App() {
                 <p>
                   This blends each council’s published 2024/25 average residential bill,
                   weighted by household count. It shows the direction of redistribution,
-                  not a forecast for an individual property.
+                  not a forecast for an individual property. The bars share one scale
+                  within this result, so the longest bar is the largest dollar change.
                 </p>
                 <p>
                   Real mergers use property values, targeted rates, differentials, caps,
@@ -3128,13 +3187,27 @@ export default function App() {
                 <h2>Share {councilName}</h2>
                 <p>The link reopens this exact combination.</p>
               </div>
-              <div className="simpleShareActions">
-                <button className="simplePrimary" type="button" onClick={shareResult}>
-                  Share result
-                </button>
-                <button className="simpleSecondary" type="button" onClick={copyLink}>
+              <div className="simpleShareActions" aria-label="Sharing options">
+                <button className="simplePrimary" type="button" onClick={copyLink}>
                   Copy link
                 </button>
+                <button className="simpleSecondary" type="button" onClick={() => openShareChannel("email")}>
+                  Email
+                </button>
+                <button className="simpleSecondary" type="button" onClick={() => openShareChannel("whatsapp")}>
+                  WhatsApp
+                </button>
+                <button className="simpleSecondary" type="button" onClick={() => openShareChannel("facebook")}>
+                  Facebook
+                </button>
+                <button className="simpleSecondary" type="button" onClick={() => openShareChannel("linkedin")}>
+                  LinkedIn
+                </button>
+                {typeof navigator !== "undefined" && navigator.share && (
+                  <button className="simpleSecondary simpleMoreShare" type="button" onClick={shareResult}>
+                    More apps
+                  </button>
+                )}
               </div>
               {shareMessage && <p className="simpleShareMessage" role="status">{shareMessage}</p>}
               {shareUrl && shareMessage === "Copy the link below." && (
@@ -3849,24 +3922,71 @@ const SIMPLE_CSS = `
   margin-bottom: 20px;
   font-size: 18px;
 }
+.simpleRateChart {
+  display: grid;
+  gap: 4px;
+}
+.simpleRateAxis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+.simpleRateAxis span:first-child {
+  padding-right: 9px;
+  text-align: right;
+}
+.simpleRateAxis span:last-child { padding-left: 9px; }
 .simpleRateRows {
   display: grid;
   border-top: 1px solid var(--line);
 }
 .simpleRateRow {
   padding: 14px 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  gap: 8px 18px;
   border-bottom: 1px solid var(--line);
 }
-.simpleRateRow > div { display: grid; }
-.simpleRateRow > div span {
+.simpleRateCopy { display: grid; }
+.simpleRateCopy span {
   color: var(--ink-soft);
   font-size: 13px;
 }
 .simpleRateRow > strong { text-align: right; }
+.simpleRateBar {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 10px;
+  overflow: hidden;
+  background: rgba(25, 48, 54, 0.09);
+  border-radius: 999px;
+}
+.simpleRateZero {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  border-left: 2px solid rgba(25, 48, 54, 0.48);
+}
+.simpleRateFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.simpleRateLess {
+  right: 50%;
+  background: var(--good);
+  border-radius: 999px 0 0 999px;
+}
+.simpleRateMore {
+  left: 50%;
+  background: var(--bad);
+  border-radius: 0 999px 999px 0;
+}
 .simpleUp { color: var(--bad); }
 .simpleDown { color: var(--good); }
 .simpleFlat,
@@ -3915,10 +4035,12 @@ const SIMPLE_CSS = `
 .simpleSharePanel .simpleEyebrow,
 .simpleSharePanel > div:first-child p:last-child { color: rgba(255, 255, 255, 0.72); }
 .simpleShareActions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  flex-wrap: wrap;
 }
+.simpleShareActions button { width: 100%; }
+.simpleShareActions .simpleMoreShare { border-style: dashed; }
 .simpleSharePanel .simpleSecondary {
   color: var(--white);
   border-color: var(--white);
@@ -3972,6 +4094,7 @@ const SIMPLE_CSS = `
   .simpleStart > h1,
   .simplePageHead > h1 { font-size: clamp(42px, 14vw, 64px); }
   .simpleCouncilList { grid-template-columns: 1fr; }
+  .simpleShareActions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .simpleExample {
     align-items: flex-start;
     flex-direction: column;
