@@ -2687,38 +2687,72 @@ export default function App() {
   };
 
   const buildShareText = (url) => {
-    const ratesSummary =
+    const names = members.map((member) => member.name);
+    const councilsPhrase =
+      names.length === 2
+        ? `${names[0]} and ${names[1]}`
+        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    const ratesBullet =
       rates.blended == null
-        ? "Residential rates: there is not enough published data to model this combination."
+        ? "Not enough published residential-rates data to model this combination"
         : falling.length > 0 && rising.length > 0
-          ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; ${falling.length} council ${falling.length === 1 ? "area" : "areas"} could pay less and ${rising.length} could pay more.`
+          ? `Modelled blended average residential rate: ${money(rates.blended)} a year — ${falling.length} council ${falling.length === 1 ? "area" : "areas"} could pay less and ${rising.length} could pay more`
           : falling.length > 0
-            ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; every council area with data could pay less.`
+            ? `Modelled blended average residential rate: ${money(rates.blended)} a year — every council area with data could pay less`
             : rising.length > 0
-              ? `Residential rates: the modelled blended average is ${money(rates.blended)} a year; every council area with data could pay more.`
-              : `Residential rates: the modelled blended average is ${money(rates.blended)} a year; the published averages are already very similar.`;
-    const shareText = [
-      "I used The Amalgamator to explore what might happen if these councils combined.",
+              ? `Modelled blended average residential rate: ${money(rates.blended)} a year — every council area with data could pay more`
+              : `Modelled blended average residential rate: ${money(rates.blended)} a year — the published averages are already very similar`;
+    return [
+      `What if ${councilsPhrase} councils combined?`,
       "",
-      `Proposed name: ${councilName}`,
-      `Councils combined: ${members.map((m) => m.name).join(", ")}`,
-      `Population: ${totalPopulation.toLocaleString("en-NZ")}`,
-      `Land area: ${Math.round(totalArea).toLocaleString("en-NZ")} km²`,
-      ratesSummary,
-      `${largest.name} would account for ${largestShare}% of the merged population.`,
+      `I explored that question using The Amalgamator. The model calls the new authority “${councilName}”.`,
       "",
-      "View the full result and try another combination:",
+      "At a glance:",
+      `• ${totalPopulation.toLocaleString("en-NZ")} residents across ${Math.round(totalArea).toLocaleString("en-NZ")} km²`,
+      `• ${ratesBullet}`,
+      `• ${largest.name} would represent ${largestShare}% of the merged population`,
+      "",
+      "Explore the full result or try a different combination:",
       url,
       "",
-      "Independent modelling tool — not an official proposal or a prediction of any household's rates.",
+      "The Amalgamator is an independent modelling tool. This is not an official proposal or a prediction of any household’s rates.",
     ].join("\n");
-    return shareText;
+  };
+
+  const buildLinkedInText = (url) => {
+    const baseText = buildShareText(url);
+    const [opening, , introduction, , heading, ...rest] = baseText.split("\n");
+    const disclaimerIndex = rest.findIndex((line) => line.startsWith("The Amalgamator is"));
+    const resultLines = disclaimerIndex >= 0 ? rest.slice(0, disclaimerIndex) : rest;
+    return [
+      opening,
+      "",
+      introduction,
+      "",
+      heading,
+      ...resultLines.slice(0, 3),
+      "",
+      "Would this make local government stronger — or create new trade-offs?",
+      "",
+      "Explore the model and try your own combination:",
+      url,
+      "",
+      "Independent modelling only — not an official proposal or a household rates forecast.",
+      "",
+      "#LocalGovernment #NewZealand #PublicPolicy",
+    ].join("\n");
   };
 
   const openShareChannel = (channel) => {
     const url = makeUrl();
-    const title = `${councilName} — The Amalgamator`;
+    const names = members.map((member) => member.name);
+    const councilsPhrase =
+      names.length === 2
+        ? `${names[0]} and ${names[1]}`
+        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    const title = `What if ${councilsPhrase} councils combined?`;
     const shareText = buildShareText(url);
+    const linkedInText = buildLinkedInText(url);
     const destinations = {
       email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(shareText)}`,
       whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
@@ -2737,6 +2771,16 @@ export default function App() {
     setShareMessage(`Opening ${labels[channel]}…`);
     if (channel === "email") {
       window.location.href = destination;
+      return;
+    }
+    if (channel === "linkedin") {
+      const copyPromise = navigator.clipboard?.writeText(linkedInText);
+      window.open(destination, "_blank", "noopener,noreferrer");
+      if (copyPromise) {
+        copyPromise
+          .then(() => setShareMessage("LinkedIn post text copied — paste it into the post box."))
+          .catch(() => setShareMessage("LinkedIn opened. Copy your result text before posting."));
+      }
       return;
     }
     window.open(destination, "_blank", "noopener,noreferrer");
@@ -3259,7 +3303,7 @@ export default function App() {
                 <button className="simpleShareIconButton simpleShareFacebook" type="button" onClick={() => openShareChannel("facebook")} aria-label="Share on Facebook" title="Facebook">
                   <ShareIcon type="facebook" />
                 </button>
-                <button className="simpleShareIconButton simpleShareLinkedIn" type="button" onClick={() => openShareChannel("linkedin")} aria-label="Share on LinkedIn" title="LinkedIn">
+                <button className="simpleShareIconButton simpleShareLinkedIn" type="button" onClick={() => openShareChannel("linkedin")} aria-label="Share on LinkedIn; suggested post text will be copied" title="LinkedIn — copies suggested post text">
                   <ShareIcon type="linkedin" />
                 </button>
                 {typeof navigator !== "undefined" && navigator.share && (
