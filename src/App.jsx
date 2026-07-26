@@ -2306,6 +2306,7 @@ const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
   (region) => COUNCILS.filter((c) => c.region === region && !c.locked).length >= 2
 );
 const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
+const LINKEDIN_SHARE_URL = "https://local-government-amalgamator-share.brendenm.chatgpt.site/";
 
 function simpleRates(members) {
   const usable = members.filter((m) => m.avgRes != null && m.hh);
@@ -2418,9 +2419,6 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [query, setQuery] = useState("");
   const [customName, setCustomName] = useState("");
-  const [shareMessage, setShareMessage] = useState("");
-  const [shareUrl, setShareUrl] = useState("");
-  const [linkedInDraft, setLinkedInDraft] = useState("");
   const [talksActive, setTalksActive] = useState(false);
 
   useEffect(() => {
@@ -2609,15 +2607,11 @@ export default function App() {
     setAllCouncils(regions.length > 1);
     setSelectedIds(ids);
     setCustomName(combination.name);
-    setShareMessage("");
-    setLinkedInDraft("");
     setScreen("result");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleCouncil = (id) => {
-    setShareMessage("");
-    setLinkedInDraft("");
     setSelectedIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
     );
@@ -2626,15 +2620,11 @@ export default function App() {
   const showResult = () => {
     if (selectedIds.length < 2) return;
     setCustomName("");
-    setShareMessage("");
-    setLinkedInDraft("");
     setScreen("result");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const editSelection = () => {
-    setShareMessage("");
-    setLinkedInDraft("");
     setScreen("build");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -2653,9 +2643,6 @@ export default function App() {
     setSelectedIds([]);
     setQuery("");
     setCustomName("");
-    setShareMessage("");
-    setShareUrl("");
-    setLinkedInDraft("");
     setTalksActive(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -2681,178 +2668,13 @@ export default function App() {
     return `${PUBLIC_APP_URL}?m=${code}&share=2`;
   };
 
-  const copyLink = async () => {
-    const url = makeUrl();
-    setShareUrl(url);
-    try {
-      await navigator.clipboard.writeText(url);
-      setShareMessage("Link copied. It includes your councils and name.");
-    } catch (error) {
-      setShareMessage("Copy the link below.");
-    }
-  };
-
-  const buildShareText = (url) => {
-    const names = members.map((member) => member.name);
-    const councilsPhrase =
-      names.length === 2
-        ? `${names[0]} and ${names[1]}`
-        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
-    const ratesBullet =
-      rates.blended == null
-        ? "Not enough published residential-rates data to model this combination"
-        : falling.length > 0 && rising.length > 0
-          ? `Modelled blended average residential rate: ${money(rates.blended)} a year — ${falling.length} council ${falling.length === 1 ? "area" : "areas"} could pay less and ${rising.length} could pay more`
-          : falling.length > 0
-            ? `Modelled blended average residential rate: ${money(rates.blended)} a year — every council area with data could pay less`
-            : rising.length > 0
-              ? `Modelled blended average residential rate: ${money(rates.blended)} a year — every council area with data could pay more`
-              : `Modelled blended average residential rate: ${money(rates.blended)} a year — the published averages are already very similar`;
-    return [
-      `What if ${councilsPhrase} councils combined?`,
-      "",
-      `I explored that question using The Amalgamator. The model calls the new authority “${councilName}”.`,
-      "",
-      "At a glance:",
-      `• ${totalPopulation.toLocaleString("en-NZ")} residents across ${Math.round(totalArea).toLocaleString("en-NZ")} km²`,
-      `• ${ratesBullet}`,
-      `• ${largest.name} would represent ${largestShare}% of the merged population`,
-      "",
-      "Explore the full result or try a different combination:",
-      url,
-      "",
-      "The Amalgamator is an independent modelling tool. This is not an official proposal or a prediction of any household’s rates.",
-    ].join("\n");
-  };
-
-  const buildEmailText = (url) => {
-    const names = members.map((member) => member.name);
-    const councilsPhrase =
-      names.length === 2
-        ? `${names[0]} and ${names[1]}`
-        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
-    const ratesLine =
-      rates.blended == null
-        ? "There is not enough published residential-rates data to model this combination."
-        : `The modelled blended average residential rate is ${money(rates.blended)} a year.`;
-    return [
-      `What if ${councilsPhrase} councils combined?`,
-      "",
-      "Open this result in the Local government amalgamator:",
-      url,
-      "",
-      `The model calls the combined authority “${councilName}”, serving ${totalPopulation.toLocaleString("en-NZ")} residents across ${Math.round(totalArea).toLocaleString("en-NZ")} km². ${ratesLine}`,
-      "",
-      "This is independent modelling, not an official proposal or a prediction of any household’s rates.",
-    ].join("\r\n");
-  };
-
-  const buildLinkedInText = (url) => {
-    const baseText = buildShareText(url);
-    const [opening, , introduction, , heading, ...rest] = baseText.split("\n");
-    const disclaimerIndex = rest.findIndex((line) => line.startsWith("The Amalgamator is"));
-    const resultLines = disclaimerIndex >= 0 ? rest.slice(0, disclaimerIndex) : rest;
-    return [
-      opening,
-      "",
-      introduction,
-      "",
-      heading,
-      ...resultLines.slice(0, 3),
-      "",
-      "Would this make local government stronger — or create new trade-offs?",
-      "",
-      "Explore the model and try your own combination:",
-      url,
-      "",
-      "Independent modelling only — not an official proposal or a household rates forecast.",
-      "",
-      "#LocalGovernment #NewZealand #PublicPolicy",
-    ].join("\n");
-  };
-
-  const copyTextForExternalShare = (text) => {
-    let copied = false;
-    const temporaryField = document.createElement("textarea");
-    temporaryField.value = text;
-    temporaryField.setAttribute("readonly", "");
-    temporaryField.style.position = "fixed";
-    temporaryField.style.opacity = "0";
-    document.body.appendChild(temporaryField);
-    temporaryField.focus();
-    temporaryField.select();
-    try {
-      copied = document.execCommand("copy");
-    } catch (error) {
-      copied = false;
-    }
-    temporaryField.remove();
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).catch(() => {});
-      return true;
-    }
-    return copied;
-  };
-
-  const openShareChannel = (channel) => {
-    const url = makeUrl();
-    const names = members.map((member) => member.name);
-    const councilsPhrase =
-      names.length === 2
-        ? `${names[0]} and ${names[1]}`
-        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
-    const title = `What if ${councilsPhrase} councils combined?`;
-    const shareText = buildShareText(url);
-    const emailText = buildEmailText(url);
-    const linkedInText = buildLinkedInText(url);
-    const destinations = {
-      email: `https://outlook.office.com/mail/deeplink/compose?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(emailText)}`,
-      whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
-    };
-    const labels = {
-      email: "Outlook",
-      whatsapp: "WhatsApp",
-      facebook: "Facebook",
-      linkedin: "LinkedIn",
-    };
-    const destination = destinations[channel];
-    if (!destination) return;
-    setShareUrl(url);
-    if (channel !== "linkedin") setLinkedInDraft("");
-    setShareMessage(`Opening ${labels[channel]}…`);
-    if (channel === "linkedin") {
-      setLinkedInDraft(linkedInText);
-      const copied = copyTextForExternalShare(linkedInText);
-      window.open(destination, "_blank", "noopener,noreferrer");
-      setShareMessage(
-        copied
-          ? "LinkedIn does not fill post text automatically. Your suggested post is copied — paste it into the post box."
-          : "LinkedIn does not fill post text automatically. Copy the suggested post below, then paste it into LinkedIn.",
-      );
-      return;
-    }
-    window.open(destination, "_blank", "noopener,noreferrer");
-  };
-
-  const shareResult = async () => {
-    const url = makeUrl();
-    setShareUrl(url);
-    const shareText = buildShareText(url);
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${councilName} — The Amalgamator`,
-          text: shareText,
-        });
-        setShareMessage("Shared.");
-        return;
-      } catch (error) {
-        if (error && error.name === "AbortError") return;
-      }
-    }
-    await copyLink();
+  const shareOnLinkedIn = () => {
+    const shareUrl = new URL(LINKEDIN_SHARE_URL);
+    shareUrl.searchParams.set("name", councilName);
+    shareUrl.searchParams.set("result", makeUrl());
+    const linkedInUrl =
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.toString())}`;
+    window.open(linkedInUrl, "_blank", "noopener,noreferrer");
   };
 
   const renderCouncilChoice = (council) => {
@@ -3338,61 +3160,18 @@ export default function App() {
               <div>
                 <p className="simpleEyebrow">Keep the conversation going</p>
                 <h2>Share {councilName}</h2>
-                <p>The link reopens this exact combination.</p>
               </div>
-              <div className="simpleShareActions" aria-label="Sharing options">
-                <button className="simpleShareIconButton simpleShareCopy" type="button" onClick={copyLink} aria-label="Copy link" title="Copy link">
-                  <ShareIcon type="link" />
-                </button>
-                <button className="simpleShareIconButton simpleShareEmail" type="button" onClick={() => openShareChannel("email")} aria-label="Share with Outlook" title="Outlook">
-                  <ShareIcon type="email" />
-                </button>
-                <button className="simpleShareIconButton simpleShareWhatsApp" type="button" onClick={() => openShareChannel("whatsapp")} aria-label="Share on WhatsApp" title="WhatsApp">
-                  <ShareIcon type="whatsapp" />
-                </button>
-                <button className="simpleShareIconButton simpleShareFacebook" type="button" onClick={() => openShareChannel("facebook")} aria-label="Share on Facebook" title="Facebook">
-                  <ShareIcon type="facebook" />
-                </button>
-                <button className="simpleShareIconButton simpleShareLinkedIn" type="button" onClick={() => openShareChannel("linkedin")} aria-label="Share on LinkedIn; suggested post text will be copied" title="LinkedIn — copies suggested post text">
+              <div className="simpleShareActions">
+                <button
+                  className="simpleLinkedInButton"
+                  type="button"
+                  onClick={shareOnLinkedIn}
+                  aria-label={`Share ${councilName} on LinkedIn`}
+                  title="Share on LinkedIn"
+                >
                   <ShareIcon type="linkedin" />
                 </button>
-                {typeof navigator !== "undefined" && navigator.share && (
-                  <button className="simpleShareIconButton simpleShareMore" type="button" onClick={shareResult} aria-label="More sharing apps" title="More apps">
-                    <ShareIcon type="more" />
-                  </button>
-                )}
               </div>
-              {shareMessage && <p className="simpleShareMessage" role="status">{shareMessage}</p>}
-              {linkedInDraft && (
-                <div className="simpleLinkedInDraft">
-                  <label htmlFor="simpleLinkedInDraft">Suggested LinkedIn post</label>
-                  <textarea
-                    id="simpleLinkedInDraft"
-                    readOnly
-                    value={linkedInDraft}
-                    onFocus={(event) => event.target.select()}
-                  />
-                  <button
-                    className="simpleSecondary"
-                    type="button"
-                    onClick={() => {
-                      const copied = copyTextForExternalShare(linkedInDraft);
-                      setShareMessage(copied ? "LinkedIn post text copied — paste it into the post box." : "Select and copy the post text above.");
-                    }}
-                  >
-                    Copy post text again
-                  </button>
-                </div>
-              )}
-              {shareUrl && shareMessage === "Copy the link below." && (
-                <input
-                  className="simpleShareInput"
-                  readOnly
-                  value={shareUrl}
-                  onFocus={(event) => event.target.select()}
-                  aria-label="Share link"
-                />
-              )}
             </article>
 
             <div className="simpleEndActions">
@@ -4206,97 +3985,43 @@ const SIMPLE_CSS = `
   color: var(--white);
   border-color: var(--ink);
 }
-.simpleSharePanel .simpleEyebrow,
-.simpleSharePanel > div:first-child p:last-child { color: rgba(255, 255, 255, 0.72); }
+.simpleSharePanel .simpleEyebrow { color: rgba(255, 255, 255, 0.72); }
 .simpleShareActions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  justify-content: flex-end;
 }
-.simpleShareIconButton {
+.simpleLinkedInButton {
   display: grid;
   place-items: center;
-  width: 50px;
-  height: 50px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   color: var(--white);
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.82);
+  background: #0a66c2;
+  border: 2px solid #0a66c2;
   border-radius: 50%;
   cursor: pointer;
   transition: transform 120ms ease, filter 120ms ease, background 120ms ease;
 }
-.simpleShareIconButton svg {
-  width: 23px;
-  height: 23px;
+.simpleLinkedInButton svg {
+  width: 20px;
+  height: 20px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.9;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.simpleShareIconButton .simpleShareSolid {
+.simpleLinkedInButton .simpleShareSolid {
   fill: currentColor;
   stroke: none;
 }
-.simpleShareIconButton:hover {
+.simpleLinkedInButton:hover {
   filter: brightness(1.08);
   transform: translateY(-2px);
 }
-.simpleShareIconButton:active { transform: translateY(0); }
-.simpleShareCopy {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.simpleShareEmail {
-  color: var(--ink);
-  background: var(--white);
-  border-color: var(--white);
-}
-.simpleShareWhatsApp {
-  background: #218c55;
-  border-color: #218c55;
-}
-.simpleShareFacebook {
-  background: #1877f2;
-  border-color: #1877f2;
-}
-.simpleShareLinkedIn {
-  background: #0a66c2;
-  border-color: #0a66c2;
-}
-.simpleShareMore {
-  background: rgba(255, 255, 255, 0.08);
-  border-style: dashed;
-}
-.simpleSharePanel .simpleSecondary {
-  color: var(--white);
-  border-color: var(--white);
-}
-.simpleSharePanel .simpleSecondary:hover { background: var(--white); color: var(--ink); }
-.simpleShareMessage {
-  margin: 14px 0 0;
-  font-size: 13px;
-  font-weight: 700;
-}
-.simpleLinkedInDraft {
-  display: grid;
-  gap: 8px;
-  margin-top: 14px;
-}
-.simpleLinkedInDraft label {
-  font-size: 13px;
-  font-weight: 800;
-}
-.simpleLinkedInDraft textarea {
-  min-height: 190px;
-  resize: vertical;
-}
-.simpleLinkedInDraft .simpleSecondary {
-  justify-self: start;
-}
-.simpleShareInput { margin-top: 10px; }
+.simpleLinkedInButton:active { transform: translateY(0); }
 
 .simpleFooter {
   max-width: 1120px;

@@ -9,7 +9,7 @@ The application guides users through one proposed council at a time:
 - distinguish nearby options from distant councils organised by region;
 - compare indicative residential-rates redistribution;
 - choose from curated council names; and
-- share through email, WhatsApp, Facebook, LinkedIn, the system share sheet, or a copied link that restores the selected combination.
+- share the selected combination through one clear LinkedIn action with a purpose-built link preview.
 
 ## Requirements
 
