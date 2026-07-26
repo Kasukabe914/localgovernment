@@ -2305,6 +2305,7 @@ button, .piece { touch-action: manipulation; }
 const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
   (region) => COUNCILS.filter((c) => c.region === region && !c.locked).length >= 2
 );
+const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
 
 function simpleRates(members) {
   const usable = members.filter((m) => m.avgRes != null && m.hh);
@@ -2424,8 +2425,10 @@ export default function App() {
   useEffect(() => {
     try {
       const match = /[#&]m=([^&]+)/.exec(window.location.hash || "");
-      if (!match) return;
-      const decoded = decodeMap(decodeURIComponent(match[1]));
+      const queryCode = new URLSearchParams(window.location.search).get("m");
+      const sharedCode = queryCode || (match ? match[1] : "");
+      if (!sharedCode) return;
+      const decoded = decodeMap(decodeURIComponent(sharedCode));
       if (!decoded || !decoded.groups.length) return;
       const first = decoded.groups[0];
       const ids = Object.entries(decoded.assignment)
@@ -2634,7 +2637,7 @@ export default function App() {
   const startOver = () => {
     try {
       if (/^https?:$/.test(window.location.protocol)) {
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        window.history.replaceState(null, "", window.location.pathname);
       }
     } catch (error) {
       // Clearing a fragment is optional in embedded previews.
@@ -2658,12 +2661,18 @@ export default function App() {
     if (!code) return "";
     try {
       if (/^https?:$/.test(window.location.protocol)) {
-        return `${window.location.origin}${window.location.pathname}#m=${code}`;
+        const isLocalPreview = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(
+          window.location.hostname
+        );
+        const baseUrl = isLocalPreview
+          ? PUBLIC_APP_URL
+          : `${window.location.origin}${window.location.pathname}`;
+        return `${baseUrl}?m=${code}`;
       }
     } catch (error) {
-      // Fall back to a fragment in local or embedded environments.
+      // Fall back to the public site in local or embedded environments.
     }
-    return `#m=${code}`;
+    return `${PUBLIC_APP_URL}?m=${code}`;
   };
 
   const copyLink = async () => {
