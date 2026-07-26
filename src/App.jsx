@@ -2332,6 +2332,56 @@ function simpleRates(members) {
   };
 }
 
+function ShareIcon({ type }) {
+  if (type === "link") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M10 13a5 5 0 0 0 7.1.1l2-2A5 5 0 0 0 12 4l-1.2 1.2" />
+        <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.2-1.2" />
+      </svg>
+    );
+  }
+  if (type === "email") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="m4 7 8 6 8-6" />
+      </svg>
+    );
+  }
+  if (type === "whatsapp") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M20.5 11.6a8.4 8.4 0 0 1-12.4 7.3L3.5 20l1.2-4.4a8.4 8.4 0 1 1 15.8-4Z" />
+        <path d="M8.2 7.8c.5 3.9 2.5 6 6.3 6.6" />
+        <path d="m8.2 7.8 1.9-.9 1.4 2.5-1.1 1.2M14.5 14.4l1.1-1.2 2.4 1.5-.8 1.8" />
+      </svg>
+    );
+  }
+  if (type === "facebook") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path className="simpleShareSolid" d="M14 8h3V4h-3c-3.3 0-5 2-5 5v3H6v4h3v6h4v-6h3.5l.5-4h-4V9c0-.7.3-1 1-1Z" />
+      </svg>
+    );
+  }
+  if (type === "linkedin") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle className="simpleShareSolid" cx="6" cy="5.5" r="2" />
+        <path className="simpleShareSolid" d="M4 9h4v11H4zM11 9h3.8v1.5c.8-1.2 2-2 3.8-2 3.1 0 4.4 2 4.4 5.5v6h-4v-5.3c0-1.7-.6-2.7-1.9-2.7-1.5 0-2.1 1-2.1 3.1V20h-4z" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle className="simpleShareSolid" cx="5" cy="12" r="2" />
+      <circle className="simpleShareSolid" cx="12" cy="12" r="2" />
+      <circle className="simpleShareSolid" cx="19" cy="12" r="2" />
+    </svg>
+  );
+}
+
 function ResultShareBar({ members }) {
   const total = members.reduce((sum, m) => sum + m.pop, 0) || 1;
   const sorted = [...members].sort((a, b) => b.pop - a.pop);
@@ -3188,24 +3238,24 @@ export default function App() {
                 <p>The link reopens this exact combination.</p>
               </div>
               <div className="simpleShareActions" aria-label="Sharing options">
-                <button className="simplePrimary" type="button" onClick={copyLink}>
-                  Copy link
+                <button className="simpleShareIconButton simpleShareCopy" type="button" onClick={copyLink} aria-label="Copy link" title="Copy link">
+                  <ShareIcon type="link" />
                 </button>
-                <button className="simpleSecondary" type="button" onClick={() => openShareChannel("email")}>
-                  Email
+                <button className="simpleShareIconButton simpleShareEmail" type="button" onClick={() => openShareChannel("email")} aria-label="Share by email" title="Email">
+                  <ShareIcon type="email" />
                 </button>
-                <button className="simpleSecondary" type="button" onClick={() => openShareChannel("whatsapp")}>
-                  WhatsApp
+                <button className="simpleShareIconButton simpleShareWhatsApp" type="button" onClick={() => openShareChannel("whatsapp")} aria-label="Share on WhatsApp" title="WhatsApp">
+                  <ShareIcon type="whatsapp" />
                 </button>
-                <button className="simpleSecondary" type="button" onClick={() => openShareChannel("facebook")}>
-                  Facebook
+                <button className="simpleShareIconButton simpleShareFacebook" type="button" onClick={() => openShareChannel("facebook")} aria-label="Share on Facebook" title="Facebook">
+                  <ShareIcon type="facebook" />
                 </button>
-                <button className="simpleSecondary" type="button" onClick={() => openShareChannel("linkedin")}>
-                  LinkedIn
+                <button className="simpleShareIconButton simpleShareLinkedIn" type="button" onClick={() => openShareChannel("linkedin")} aria-label="Share on LinkedIn" title="LinkedIn">
+                  <ShareIcon type="linkedin" />
                 </button>
                 {typeof navigator !== "undefined" && navigator.share && (
-                  <button className="simpleSecondary simpleMoreShare" type="button" onClick={shareResult}>
-                    More apps
+                  <button className="simpleShareIconButton simpleShareMore" type="button" onClick={shareResult} aria-label="More sharing apps" title="More apps">
+                    <ShareIcon type="more" />
                   </button>
                 )}
               </div>
@@ -4035,12 +4085,67 @@ const SIMPLE_CSS = `
 .simpleSharePanel .simpleEyebrow,
 .simpleSharePanel > div:first-child p:last-child { color: rgba(255, 255, 255, 0.72); }
 .simpleShareActions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
-.simpleShareActions button { width: 100%; }
-.simpleShareActions .simpleMoreShare { border-style: dashed; }
+.simpleShareIconButton {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  color: var(--white);
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease, background 120ms ease;
+}
+.simpleShareIconButton svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.simpleShareIconButton .simpleShareSolid {
+  fill: currentColor;
+  stroke: none;
+}
+.simpleShareIconButton:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+.simpleShareIconButton:active { transform: translateY(0); }
+.simpleShareCopy {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.simpleShareEmail {
+  color: var(--ink);
+  background: var(--white);
+  border-color: var(--white);
+}
+.simpleShareWhatsApp {
+  background: #218c55;
+  border-color: #218c55;
+}
+.simpleShareFacebook {
+  background: #1877f2;
+  border-color: #1877f2;
+}
+.simpleShareLinkedIn {
+  background: #0a66c2;
+  border-color: #0a66c2;
+}
+.simpleShareMore {
+  background: rgba(255, 255, 255, 0.08);
+  border-style: dashed;
+}
 .simpleSharePanel .simpleSecondary {
   color: var(--white);
   border-color: var(--white);
@@ -4094,7 +4199,6 @@ const SIMPLE_CSS = `
   .simpleStart > h1,
   .simplePageHead > h1 { font-size: clamp(42px, 14vw, 64px); }
   .simpleCouncilList { grid-template-columns: 1fr; }
-  .simpleShareActions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .simpleExample {
     align-items: flex-start;
     flex-direction: column;
