@@ -2806,13 +2806,13 @@ export default function App() {
     const emailText = buildEmailText(url);
     const linkedInText = buildLinkedInText(url);
     const destinations = {
-      email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(emailText)}`,
+      email: `https://outlook.office.com/mail/deeplink/compose?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(emailText)}`,
       whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
     };
     const labels = {
-      email: "your email app",
+      email: "Outlook",
       whatsapp: "WhatsApp",
       facebook: "Facebook",
       linkedin: "LinkedIn",
@@ -2822,10 +2822,6 @@ export default function App() {
     setShareUrl(url);
     if (channel !== "linkedin") setLinkedInDraft("");
     setShareMessage(`Opening ${labels[channel]}…`);
-    if (channel === "email") {
-      window.location.href = destination;
-      return;
-    }
     if (channel === "linkedin") {
       setLinkedInDraft(linkedInText);
       const copied = copyTextForExternalShare(linkedInText);
@@ -3348,7 +3344,7 @@ export default function App() {
                 <button className="simpleShareIconButton simpleShareCopy" type="button" onClick={copyLink} aria-label="Copy link" title="Copy link">
                   <ShareIcon type="link" />
                 </button>
-                <button className="simpleShareIconButton simpleShareEmail" type="button" onClick={() => openShareChannel("email")} aria-label="Share by email" title="Email">
+                <button className="simpleShareIconButton simpleShareEmail" type="button" onClick={() => openShareChannel("email")} aria-label="Share with Outlook" title="Outlook">
                   <ShareIcon type="email" />
                 </button>
                 <button className="simpleShareIconButton simpleShareWhatsApp" type="button" onClick={() => openShareChannel("whatsapp")} aria-label="Share on WhatsApp" title="WhatsApp">
