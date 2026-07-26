@@ -262,6 +262,27 @@ const PIECE_W = 112, PIECE_H = 84, COL_W = 84;
 // test below: the reform lets a coalition holding more than half a region's
 // population lodge a proposal covering the whole region, including councils
 // that object to being in it.
+// Which regions border which, so a scoped board can still offer the neighbours
+// a real proposal might reach across (Kāpiti–Horowhenua, Waitaki, Kaikōura).
+const REGION_NEIGHBOURS = {
+  "Northland": ["Auckland"],
+  "Auckland": ["Northland", "Waikato"],
+  "Waikato": ["Auckland", "Bay of Plenty", "Manawatū-Whanganui", "Taranaki"],
+  "Bay of Plenty": ["Waikato", "Gisborne", "Hawke's Bay", "Manawatū-Whanganui"],
+  "Gisborne": ["Bay of Plenty", "Hawke's Bay"],
+  "Hawke's Bay": ["Gisborne", "Bay of Plenty", "Manawatū-Whanganui", "Wellington"],
+  "Taranaki": ["Waikato", "Manawatū-Whanganui"],
+  "Manawatū-Whanganui": ["Taranaki", "Waikato", "Bay of Plenty", "Hawke's Bay", "Wellington"],
+  "Wellington": ["Manawatū-Whanganui", "Hawke's Bay"],
+  "Nelson-Tasman": ["Marlborough", "West Coast"],
+  "Marlborough": ["Nelson-Tasman", "West Coast", "Canterbury"],
+  "West Coast": ["Nelson-Tasman", "Marlborough", "Canterbury", "Otago"],
+  "Canterbury": ["Marlborough", "West Coast", "Otago"],
+  "Otago": ["Canterbury", "West Coast", "Southland"],
+  "Southland": ["Otago"],
+  "Chatham Islands": [],
+};
+
 const REGION_POP = {};
 COUNCILS.forEach((c) => { if (!c.locked) REGION_POP[c.region] = (REGION_POP[c.region] || 0) + c.pop; });
 
@@ -393,6 +414,70 @@ const NICKNAMES = [
   { name: "Edinburgh of the South", anchor: "dunedin", ids: ["clutha", "centralotago", "waitaki", "qldc"], need: 1 },
   { name: "The Goldfields", ids: ["centralotago", "qldc", "clutha", "waitaki"], need: 3 },
   { name: "Otagopolis", ids: ["waitaki", "centralotago", "qldc", "dunedin", "clutha"], need: 4 },
+  // Auckland-adjacent / upper North
+  { name: "The Kauri Coast", ids: ["kaipara", "farnorth", "whangarei"], need: 2 },
+  { name: "Twin Harbours", ids: ["kaipara", "whangarei"], need: 2 },
+  { name: "Tail of the Fish", ids: ["farnorth", "whangarei", "kaipara"], need: 3 },
+  // Waikato / Coromandel
+  { name: "Gold & Gulf", ids: ["thames", "hauraki"], need: 2 },
+  { name: "The Pōhutukawa Coast", ids: ["thames", "hauraki"], need: 2 },
+  { name: "Hobbiton Shire", ids: ["matamata", "waipa", "swaikato"], need: 2 },
+  { name: "The Dairy Belt", ids: ["matamata", "waipa", "swaikato", "hauraki", "waikatod"], need: 3 },
+  { name: "King Country", ids: ["otorohanga", "waitomo", "ruapehu"], need: 2 },
+  { name: "The Great Lake District", anchor: "taupo", ids: ["taupo", "ruapehu", "swaikato"], need: 1 },
+  { name: "Mighty River Council", ids: ["waikatod", "hamilton", "swaikato", "taupo"], need: 3 },
+  // Bay of Plenty / Gisborne
+  { name: "Kiwifruit Country", ids: ["wbop", "tauranga", "opotiki"], need: 2 },
+  { name: "Geyserland", anchor: "rotorua", ids: ["rotorua", "taupo", "whakatane"], need: 1 },
+  { name: "Steam & Surf", ids: ["rotorua", "tauranga", "whakatane"], need: 2 },
+  { name: "The Eastland Council", ids: ["gisborne", "wairoa", "opotiki"], need: 2 },
+  { name: "First Light Council", ids: ["gisborne", "wairoa"], need: 2 },
+  { name: "Tairāwhiti Combined", ids: ["gisborne", "wairoa", "opotiki"], need: 2 },
+  // Hawke's Bay / east
+  { name: "Bay Vintage", ids: ["hastings", "napier", "chb"], need: 2 },
+  { name: "The Heretaunga Council", anchor: "hastings", ids: ["hastings", "napier", "chb", "wairoa"], need: 1 },
+  // Taranaki / Whanganui
+  { name: "Mounga Council", ids: ["newplymouth", "stratford", "staranaki"], need: 2 },
+  { name: "Surf Highway", ids: ["newplymouth", "staranaki"], need: 2 },
+  { name: "Two Rivers", ids: ["whanganui", "rangitikei"], need: 2 },
+  { name: "Volcanic Plateau", ids: ["ruapehu", "taupo", "rangitikei"], need: 2 },
+  { name: "Central Plateau Council", ids: ["ruapehu", "taupo", "rangitikei", "swaikato"], need: 2 },
+  // Manawatū / Horowhenua
+  { name: "The Manawatū Council", ids: ["palmy", "manawatu", "horowhenua", "tararua"], need: 3 },
+  { name: "Tararua Council", ids: ["tararua", "manawatu", "horowhenua", "masterton"], need: 2 },
+  { name: "Kāpiti–Horowhenua", ids: ["kapiti", "horowhenua"], need: 2 },
+  { name: "The Northern Option", ids: ["kapiti", "horowhenua"], need: 2 },
+  // Wellington
+  { name: "Wellington Metro", anchor: "wellington", ids: ["hutt", "upperhutt", "porirua"], need: 3 },
+  { name: "Harbour City Council", anchor: "wellington", ids: ["hutt", "upperhutt", "porirua", "kapiti"], need: 1 },
+  { name: "Two Hutts & Friends", ids: ["hutt", "upperhutt", "wellington", "porirua"], need: 3 },
+  { name: "The Wairarapa", ids: ["masterton", "carterton", "swairarapa"], need: 2 },
+  { name: "Over the Rimutakas", ids: ["masterton", "carterton", "swairarapa"], need: 2 },
+  // Top of the south / Marlborough
+  { name: "Golden Bay & Beyond", anchor: "tasman", ids: ["tasman", "nelson", "buller"], need: 1 },
+  { name: "Top of the South", ids: ["nelson", "tasman", "marlborough"], need: 3 },
+  { name: "The Sounds Council", anchor: "marlborough", ids: ["marlborough", "nelson", "tasman"], need: 1 },
+  // West Coast
+  { name: "Glacier Country", ids: ["westland", "grey"], need: 2 },
+  { name: "Coal & Greenstone", ids: ["buller", "grey", "westland"], need: 2 },
+  { name: "Te Tai Poutini", ids: ["buller", "grey", "westland"], need: 3 },
+  // Canterbury
+  { name: "The Braided Rivers", ids: ["ashburton", "selwyn", "waimakariri", "timaru"], need: 3 },
+  { name: "Canterbury Plains Council", ids: ["ashburton", "selwyn", "waimakariri", "christchurch", "timaru"], need: 3 },
+  { name: "Dark Sky Council", anchor: "mackenzie", ids: ["mackenzie", "waitaki", "timaru"], need: 1 },
+  { name: "Whale Coast", ids: ["kaikoura", "hurunui", "marlborough"], need: 2 },
+  { name: "South Canterbury", ids: ["timaru", "mackenzie", "waimate"], need: 2 },
+  { name: "The Quake Belt", anchor: "christchurch", ids: ["christchurch", "selwyn", "waimakariri", "hurunui", "kaikoura"], need: 2 },
+  // Otago / Southland
+  { name: "The Remarkables Council", anchor: "qldc", ids: ["qldc", "centralotago"], need: 1 },
+  { name: "Central Otago Council", ids: ["centralotago", "qldc", "clutha"], need: 2 },
+  { name: "Pinot Country", ids: ["centralotago", "qldc"], need: 2 },
+  { name: "Steampunk Shire", anchor: "waitaki", ids: ["waitaki", "centralotago", "waimate"], need: 1 },
+  { name: "The Deep South", ids: ["southlandd", "gore", "invercargill", "clutha"], need: 3 },
+  { name: "Gorevercargill", ids: ["gore", "invercargill"], need: 2 },
+  { name: "Bottom of the World", ids: ["southlandd", "invercargill", "gore", "clutha"], need: 3 },
+  { name: "Catlins Coast", ids: ["clutha", "southlandd"], need: 2 },
+  { name: "Fiordland Council", anchor: "southlandd", ids: ["southlandd", "qldc", "invercargill"], need: 1 },
   // Southland
   { name: "Southlandia", ids: ["southlandd", "gore", "invercargill"], need: 2 },
   { name: "The Deep South", ids: ["southlandd", "gore", "invercargill", "clutha"], need: 2 },
@@ -435,6 +520,49 @@ function blend(nameA, nameB) {
   if (out.length > 15) out = out.slice(0, 15);
   return out.charAt(0).toUpperCase() + out.slice(1);
 }
+
+// ---------------------------------------------------------------------------
+// Geographic / cultural touchstones, used to build names when a group has no
+// ready-made nickname. Keyed to the council whose patch the feature sits in.
+// ---------------------------------------------------------------------------
+const FEATURES = {
+  farnorth: ["Ninety Mile", "Cape Rēinga"], whangarei: ["Whangārei Heads"], kaipara: ["Kauri"],
+  thames: ["Coromandel"], hauraki: ["Hauraki"], waikatod: ["Waikato River"], matamata: ["Kaimai"],
+  hamilton: ["Waikato"], waipa: ["Maungatautari"], otorohanga: ["Kiwi House"], swaikato: ["Kinleith"],
+  waitomo: ["Glowworm"], taupo: ["Great Lake"], wbop: ["Kiwifruit"], tauranga: ["Mauao"],
+  rotorua: ["Geyser", "Te Arawa"], whakatane: ["Whakaari"], kawerau: ["Pūtauaki"], opotiki: ["Sunrise"],
+  gisborne: ["First Light", "Tairāwhiti"], wairoa: ["Waikaremoana"], hastings: ["Heretaunga"],
+  napier: ["Art Deco"], chb: ["Ruahine"], newplymouth: ["Taranaki Maunga"], stratford: ["Ring Plain"],
+  staranaki: ["Surf Highway"], ruapehu: ["Ruapehu", "Volcanic"], whanganui: ["Awa", "River City"],
+  rangitikei: ["Rangitīkei"], manawatu: ["Manawatū"], palmy: ["Square"], tararua: ["Tararua"],
+  horowhenua: ["Horowhenua"], kapiti: ["Kāpiti Island"], porirua: ["Pauatahanui"], upperhutt: ["Akatarawa"],
+  hutt: ["Te Awa Kairangi"], wellington: ["Harbour City", "Windy"], masterton: ["Wairarapa"],
+  carterton: ["Daffodil"], swairarapa: ["Palliser"], tasman: ["Abel Tasman", "Golden Bay"],
+  nelson: ["Centre of NZ"], marlborough: ["Sounds", "Sauvignon"], buller: ["Pancake Rocks"],
+  grey: ["Greenstone"], westland: ["Glacier"], kaikoura: ["Whale"], hurunui: ["Hanmer"],
+  waimakariri: ["Waimakariri"], christchurch: ["Garden City", "Ōtautahi"], selwyn: ["Rakaia"],
+  ashburton: ["Hakatere"], timaru: ["Caroline Bay"], mackenzie: ["Dark Sky", "Aoraki"],
+  waimate: ["Whitehorse"], waitaki: ["Steampunk", "Moeraki"], centralotago: ["Pinot", "Rail Trail"],
+  qldc: ["Remarkables", "Whakatipu"], dunedin: ["Ōtepoti", "Albatross"], clutha: ["Catlins"],
+  southlandd: ["Fiordland"], gore: ["Brown Trout"], invercargill: ["Bluff", "Southern"],
+  chathams: ["Rēkohu"],
+};
+const SUFFIXES = ["Council", "District", "Coast", "Country", "Region", "Combined"];
+function featureNames(members) {
+  const sorted = [...members].sort((a, b) => b.pop - a.pop);
+  const pool = [];
+  sorted.forEach((m) => (FEATURES[m.id] || []).forEach((f) => pool.push(f)));
+  if (!pool.length) return [];
+  const out = [];
+  const seedish = members.length + members.reduce((s, m) => s + m.id.length, 0);
+  pool.slice(0, 4).forEach((f, i) => {
+    const suf = SUFFIXES[(seedish + i) % SUFFIXES.length];
+    out.push(f.endsWith("Council") || f.endsWith("City") ? f : `${f} ${suf}`);
+  });
+  if (pool.length >= 2) out.push(`${pool[0]} & ${pool[1]}`);
+  return out;
+}
+
 function nameCandidates(members) {
   if (members.length < 2) return [];
   const sorted = [...members].sort((a, b) => b.pop - a.pop);
@@ -451,7 +579,11 @@ function nameCandidates(members) {
   out.push(`${coreWord(a.name)}–${coreWord(b.name)}`);
   out.push(blend(b.name, a.name));
   if (members.length >= 5) out.push(`${coreWord(a.name)} Metro`);
-  return [...new Set(out)].filter(Boolean);
+  // Feature names sit after hand-written nicknames but ahead of raw blends.
+  const nicks = nicknamesFor(members);
+  const feats = featureNames(members);
+  const rest = out.filter((n) => !nicks.includes(n));
+  return [...new Set([...nicks, ...feats, ...rest])].filter(Boolean);
 }
 
 // ---------------------------------------------------------------------------
@@ -562,6 +694,13 @@ export default function App() {
   const [sharedView, setSharedView] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [copyMsg, setCopyMsg] = useState("");
+  const [cardFor, setCardFor] = useState(null);
+  const [cardImg, setCardImg] = useState(null);
+  const [cardMsg, setCardMsg] = useState("");
+  const cardCanvas = useRef(null);
+  const [step, setStep] = useState(0); // 0 choose region · 1 build · 2 implications · 3 name · 4 share
+  const [scope, setScope] = useState(null); // region name, or "ALL"
+  const [showNeighbours, setShowNeighbours] = useState(false);
   const [showHow, setShowHow] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
   const [scenarios, setScenarios] = useState([]); // saved snapshots for comparison (max 3)
@@ -724,6 +863,8 @@ export default function App() {
     URL.revokeObjectURL(a.href);
   };
 
+  // Render a share card: name huge, map second, one stat third. Canvas keeps it
+  // client-side, which matters because static hosting can't generate previews.
   const makeShareLink = async () => {
     const code = encodeMap(groups, assignment, basis, year);
     if (!code) { setCopyMsg("Add some councils to a group first."); setShareUrl(""); return; }
@@ -759,6 +900,26 @@ export default function App() {
     return map;
   }, [groups, assignment]);
 
+  // Choosing a region must also choose a sensible active group, otherwise taps
+  // on a Wellington board would land in whatever national group was active.
+  const groupTouches = (g, r) => (membersOf[g.id] || []).some((m) => m.region === r);
+  const groupNearby = (g, r) => (membersOf[g.id] || []).some((m) => (REGION_NEIGHBOURS[r] || []).includes(m.region));
+  const groupInScope = (g, r) => r === "ALL" || groupTouches(g, r) || (showNeighbours && groupNearby(g, r));
+  const chooseScope = (r) => {
+    dirty.current = true;
+    setScope(r); setShowNeighbours(false); setStep(1);
+    if (r === "ALL") return;
+    // Prefer the group actually in this region; neighbours are for reach, not defaults.
+    const current = groups.find((g) => g.id === activeId);
+    if (current && groupTouches(current, r)) return;
+    const firstIn = groups.find((g) => groupTouches(g, r));
+    if (firstIn) { setActiveId(firstIn.id); return; }
+    const empty = groups.find((g) => (membersOf[g.id] || []).length === 0);
+    if (empty) { setActiveId(empty.id); return; }
+    const g = { id: newId(), name: "New council " + (groups.length + 1), color: COLORS[groups.length % COLORS.length] };
+    setGroups((gs) => [...gs, g]); setActiveId(g.id);
+  };
+
   const stats = useMemo(() => {
     const byGroup = {};
     let placed = 0;
@@ -774,6 +935,145 @@ export default function App() {
     const eligible = COUNCILS.filter((c) => !c.locked).length;
     return { byGroup, placed, remaining: eligible - placed, nonEmpty, valid, biggest, eligible };
   }, [groups, membersOf]);
+
+  // Draw the card for ONE group and show it, rather than firing a download the
+  // user can't see. Nothing leaves the page until they choose.
+  const drawCard = (g, members) => {
+    const W = 1200, H = 630, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const x = cv.getContext("2d");
+    x.fillStyle = "#F6F1E4"; x.fillRect(0, 0, W, H);
+    x.fillStyle = g.color; x.fillRect(0, 0, W, 14);
+
+    let size = 96;
+    x.fillStyle = "#1A2E33";
+    do { x.font = `800 ${size}px Georgia, serif`; size -= 4; } while (x.measureText(g.name).width > W - 120 && size > 34);
+    x.fillText(g.name, 60, 150);
+
+    x.font = "600 20px system-ui, sans-serif";
+    let cx = 60, cy = 190;
+    members.forEach((m) => {
+      const w = x.measureText(m.name).width + 30;
+      if (cy > H - 320) return; // stop before the taller stats band
+      if (cx + w > W - 60) { cx = 60; cy += 46; }
+      x.fillStyle = g.color; x.globalAlpha = 0.9;
+      x.fillRect(cx, cy, w, 36); x.globalAlpha = 1;
+      x.fillStyle = textOn(g.color);
+      x.fillText(m.name, cx + 15, cy + 25);
+      cx += w + 10;
+    });
+
+    const pop = members.reduce((t, m) => t + m.pop, 0);
+    const cmp = pop > BY_ID.christchurch.pop ? " Bigger than Christchurch." : pop > BY_ID.dunedin.pop ? " Bigger than Dunedin." : "";
+    x.fillStyle = "#1A2E33";
+
+    // Draw a line at the largest size that still fits the card width.
+    const line = (text, y, max, weight = "400") => {
+      let sz = max;
+      do { x.font = `${weight} ${sz}px Georgia, serif`; sz -= 1; }
+      while (x.measureText(text).width > W - 120 && sz > 24);
+      x.fillText(text, 60, y);
+    };
+
+    line(`${pop.toLocaleString("en-NZ")} people. ${members.length} councils.${cmp}`, H - 212, 46, "800");
+
+    // Bill blend + biggest movers, on the published-bill basis
+    const r = ratesFor(members, "bill");
+    if (r && r.blended != null) {
+      const scored = r.rows.filter((q) => q.delta != null);
+      line(`Blended average residential bill: ${money(r.blended)} a year.`, H - 158, 34);
+      if (scored.length >= 2) {
+        const hi = scored[0], lo = scored[scored.length - 1];
+        line(`Biggest rise ${hi.m.name} ${signed(hi.delta)}. Biggest fall ${lo.m.name} ${signed(lo.delta)}.`, H - 110, 34);
+      }
+    }
+
+    // Regional mandate line
+    const regs = [...new Set(members.map((m) => m.region))];
+    const base = regs.reduce((t, rg) => t + (REGION_POP[rg] || 0), 0);
+    if (base) {
+      const share = (pop / base) * 100;
+      const many = regs.length > 1;
+      line(
+        share > 50
+          ? `${share.toFixed(0)}% of its region${many ? "s" : ""}: enough to include councils that object.`
+          : `${share.toFixed(0)}% of its region${many ? "s" : ""} by population.`,
+        H - 62, 34
+      );
+    }
+
+    x.font = "700 24px system-ui, sans-serif"; x.fillStyle = "#B23A18";
+    x.fillText("kasukabe914.github.io/localgovernment", 60, H - 22);
+    return cv;
+  };
+
+  // Which groups can have a card (2+ councils). The user picks one explicitly.
+  const cardable = useMemo(
+    () => groups.filter((g) => (membersOf[g.id] || []).length >= 2),
+    [groups, membersOf]
+  );
+
+  const buildCard = (gid) => {
+    const g = groups.find((x) => x.id === gid);
+    const members = membersOf[gid] || [];
+    if (!g || members.length < 2) return;
+    const cv = drawCard(g, members);
+    setCardFor(gid);
+    setCardImg({ url: cv.toDataURL("image/png"), name: g.name });
+    cardCanvas.current = cv;
+  };
+
+  const cardBlob = () => new Promise((res) => cardCanvas.current.toBlob(res, "image/png"));
+
+  // Moving between steps should land at the top of the new page, not wherever
+  // the previous page happened to be scrolled to.
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    if (typeof window === "undefined") return;
+    const target = document.getElementById("stepTop");
+    if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
+    else if (window.scrollTo) window.scrollTo(0, 0);
+  }, [step]);
+
+  useEffect(() => {
+    if (step === 4 && active && activeMembers.length >= 2) buildCard(active.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, activeId, active && active.name, active && active.color]);
+
+  const downloadCard = async () => {
+    const blob = await cardBlob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${(cardImg?.name || "council").replace(/[^\w]+/g, "-").toLowerCase()}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    setCardMsg("Saved to your downloads.");
+  };
+
+  const shareCard = async () => {
+    const blob = await cardBlob();
+    const file = new File([blob], "council.png", { type: "image/png" });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: cardImg?.name || "My council" });
+        setCardMsg("Shared.");
+      } else {
+        setCardMsg("Your browser can't share files directly. Use Download, or press and hold the image to copy it.");
+      }
+    } catch (e) { /* user cancelled */ }
+  };
+
+  const copyCard = async () => {
+    try {
+      const blob = await cardBlob();
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      setCardMsg("Image copied. Paste it anywhere.");
+    } catch (e) {
+      setCardMsg("Copying images isn't allowed here. Use Download instead.");
+    }
+  };
+
 
   const ratesFor = (members, b = basis) => {
     if (members.length < 2) return null;
@@ -862,22 +1162,27 @@ export default function App() {
   const renameGroup = (gid, name) => { dirty.current = true; setGroups((gs) => gs.map((g) => (g.id === gid ? { ...g, name } : g))); };
   const recolorGroup = (gid, color) => { dirty.current = true; setGroups((gs) => gs.map((g) => (g.id === gid ? { ...g, color } : g))); };
   // Suggestion index is per-group, so group B doesn't start mid-list.
-  const suggestName = () => {
-    if (!active || !candidates.length) return;
-    const i = suggestIdx[active.id] || 0;
-    renameGroup(active.id, candidates[i % candidates.length]);
-    setSuggestIdx((s) => ({ ...s, [active.id]: i + 1 }));
-  };
+  // Name duel: offer exactly two candidates. One is a suggestion you ignore;
+  // five is a menu you scroll past; two is a choice you made.
+  const duelPair = useMemo(() => {
+    if (candidates.length < 2) return null;
+    const i = (suggestIdx[activeId] || 0) * 2;
+    return [candidates[i % candidates.length], candidates[(i + 1) % candidates.length]];
+  }, [candidates, suggestIdx, activeId]);
+  const shuffleDuel = () => setSuggestIdx((sx) => ({ ...sx, [activeId]: (sx[activeId] || 0) + 1 }));
+  const pickName = (n) => { renameGroup(activeId, n); shuffleDuel(); };
   const applyPreset = (key) => {
     dirty.current = true;
     const b = buildPreset(key);
+    const presetScope = { wgtnOne: "Wellington", megatron: "Waikato" }[key] || "ALL";
     setGroups(b.groups); setAssignment(b.assignment); setActiveId(b.activeId); setSuggestIdx({});
+    setScope(presetScope); setShowNeighbours(false); setStep(1);
   };
   const clearAll = () => {
     dirty.current = true;
     const g = { id: newId(), name: "New council 1", color: COLORS[0] };
     setGroups([g]); setAssignment({}); setActiveId(g.id);
-    setSuggestIdx({}); setSavings(0); setYear("r26"); setBasis("bill");
+    setSuggestIdx({}); setSavings(0); setYear("r26"); setBasis("bill"); setScope(null); setShowNeighbours(false); setStep(0);
   };
 
   const groupById = useMemo(() => Object.fromEntries(groups.map((g) => [g.id, g])), [groups]);
@@ -935,7 +1240,7 @@ export default function App() {
 
       {sharedView && (
         <div className="sharedBanner">
-          <span>You're looking at a <strong>shared map</strong>. Your own map is saved and untouched.</span>
+          <span>You're looking at <strong>{groups[0] ? groups[0].name : "a shared map"}</strong>, someone else's map. Think you can do better? Keep it and rename it. Your own map is saved and untouched.</span>
           <span className="sharedActions">
             <button className="sharedKeep" onClick={keepShared}>Keep this one</button>
             <button className="sharedBack" onClick={backToMine}>Back to mine</button>
@@ -957,7 +1262,6 @@ export default function App() {
           <button onClick={() => applyPreset("megatron")}>{PRESETS.megatron.label}</button>
           <button onClick={() => applyPreset("regional")}>{PRESETS.regional.label}</button>
           <button className="ghost" onClick={clearAll}>Start again</button>
-          <button className="shareBtn" onClick={makeShareLink}>Share this map</button>
           <button className="ghost" onClick={() => setShowHow((v) => !v)} aria-expanded={showHow}>How this works</button>
         </div>
         {showHow && (
@@ -993,20 +1297,6 @@ export default function App() {
             </p>
           </section>
         )}
-        {(shareUrl || copyMsg) && (
-          <div className="sharePanel">
-            <p className="shareMsg">{copyMsg}</p>
-            {shareUrl && (
-              <input
-                className="shareInput"
-                readOnly
-                value={shareUrl}
-                onFocus={(e) => e.target.select()}
-                aria-label="Shareable link to this map"
-              />
-            )}
-          </div>
-        )}
         <p className="presetNote">
           The opening map is a snapshot of reporting in late July 2026, not an official proposal, and a council can be
           backing more than one option at once, which this model can't show. Proposals are due 9 August. Objecting isn't
@@ -1014,10 +1304,94 @@ export default function App() {
         </p>
       </header>
 
+      <div id="stepTop" tabIndex={-1} />
+      <nav className="stepper" aria-label="Steps">
+        {["1 · Choose a region", "2 · Build the map", "3 · What it means", "4 · Name it", "5 · Share it"].map((label, i) => {
+          const locked = (i >= 1 && !scope) || (i >= 2 && activeMembers.length < 2);
+          return (
+            <button
+              key={i}
+              className={"stepBtn" + (step === i ? " stepOn" : "") + (locked ? " stepOff" : "")}
+              onClick={() => !locked && setStep(i)}
+              aria-current={step === i ? "step" : undefined}
+              disabled={locked}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {step === 0 && (
+        <section className="page landing">
+          <div className="pageHead">
+            <h2>Which part of the country?</h2>
+            <p className="pageSub">Pick the region you want to redesign. You'll get its councils on a board, with neighbouring regions available if a merger needs to cross a boundary.</p>
+          </div>
+          <div className="regionGrid">
+            {[...REGIONS_N, ...REGIONS_S].filter((r) => r !== "Auckland").map((r) => {
+              const cs = COUNCILS.filter((c) => c.region === r && !c.locked);
+              if (!cs.length) return null;
+              const pop = cs.reduce((t, c) => t + c.pop, 0);
+              return (
+                <button key={r} className="regionCard" onClick={() => chooseScope(r)}>
+                  <span className="regionName">{r}</span>
+                  <span className="regionMeta">{cs.length} council{cs.length > 1 ? "s" : ""} · {fmtPop(pop)} people</span>
+                </button>
+              );
+            })}
+          </div>
+          <button className="regionAll" onClick={() => chooseScope("ALL")}>
+            <span className="regionName">The whole country</span>
+            <span className="regionMeta">All 66 councils outside Auckland · {fmtPop(COUNCILS.filter((c) => !c.locked).reduce((t, c) => t + c.pop, 0))} people</span>
+          </button>
+          <p className="ratesNote">Auckland is excluded throughout: it amalgamated in 2010 and sits outside this round.</p>
+        </section>
+      )}
+
+      {step === 1 && (<>
+      {scope && (
+        <div className="scopeBar">
+          <span className="scopeName">{scope === "ALL" ? "The whole country" : scope}</span>
+          <button className="scopeChange" onClick={() => { setStep(0); setShowNeighbours(false); }}>Change region</button>
+        </div>
+      )}
+      <p className="mapLead">Tap the pieces to build a council. Whatever you tap joins the <strong>active</strong> group, shown at the bottom of the screen and in the list below the map.</p>
+      <main className="map" id="map">
+        <p className="mapNote">
+          {isBill
+            ? "Each piece shows the council's own average residential rates bill, 2024/25."
+            : basis === "unit"
+            ? `Each piece shows rates revenue ÷ rating units, ${yearLabel}.`
+            : `Each piece shows rates revenue ÷ population, ${yearLabel}.`}
+        </p>
+        {scope === "ALL" ? (
+          <>
+            <h2 className="island">Te Ika-a-Māui · North Island</h2>
+            {REGIONS_N.map(renderRegion)}
+            <h2 className="island">Te Waipounamu · South Island</h2>
+            {REGIONS_S.map(renderRegion)}
+          </>
+        ) : (
+          <>
+            {renderRegion(scope)}
+            {(REGION_NEIGHBOURS[scope] || []).filter((r) => r !== "Auckland").length > 0 && (
+              <div className="neighbourWrap">
+                <button className="neighbourToggle" onClick={() => setShowNeighbours((v) => !v)} aria-expanded={showNeighbours}>
+                  {showNeighbours ? "Hide" : "Show"} neighbouring regions
+                  <span className="neighbourHint"> · for mergers that cross a boundary</span>
+                </button>
+                {showNeighbours && (REGION_NEIGHBOURS[scope] || []).filter((r) => r !== "Auckland").map(renderRegion)}
+              </div>
+            )}
+          </>
+        )}
+      </main>
+
       <div className="tray">
-        <div className="trayLabel">Your new councils. Tap one to make it the active piece colour</div>
+        <div className="trayLabel">Your new councils. Tap one to make it active, then tap pieces on the map above.</div>
         <div className="chips">
-          {groups.map((g) => {
+          {groups.filter((g) => !scope || scope === "ALL" || groupInScope(g, scope) || (membersOf[g.id] || []).length === 0).map((g) => {
             const s = stats.byGroup[g.id];
             return (
               <button key={g.id} className={"chip" + (g.id === activeId ? " chipActive" : "")} style={{ "--c": g.color }} onClick={() => setActiveId(g.id)} aria-pressed={g.id === activeId}>
@@ -1032,11 +1406,7 @@ export default function App() {
 
         {active && (
           <div className="editor">
-            <div className="nameRow">
-              <input className="nameInput" value={active.name} onChange={(e) => renameGroup(active.id, e.target.value)} aria-label="Council name" />
-              <button className="suggest" onClick={suggestName} disabled={!candidates.length}>{candidates.length ? "Name it for me" : "Add 2 councils first"}</button>
-            </div>
-            <div className="swatches">
+            <div className="swatches" role="group" aria-label="Group colour">
               {COLORS.map((col) => (<button key={col} className={"swatch" + (col === active.color ? " swatchOn" : "")} style={{ background: col }} onClick={() => recolorGroup(active.id, col)} aria-label={`Set colour ${col}`} aria-pressed={col === active.color} />))}
             </div>
 
@@ -1054,180 +1424,7 @@ export default function App() {
                   return null;
                 })()}
 
-                <div className="shareHead">Population share</div>
-                <ShareBar members={activeMembers} color={active.color} />
-
-                {mandate && (
-                  <div className={"mandate" + (mandate.majority ? " mandateYes" : "")}>
-                    <div className="mandateTop">
-                      <span className="mandateHead">Regional mandate</span>
-                      <span className="mandatePct">{mandate.pct.toFixed(0)}%</span>
-                    </div>
-                    <p className="mandateBody">
-                      {mandate.majority ? (
-                        <>
-                          More than half of {mandate.regions.length === 1 ? mandate.regions[0] : "the regions"} by
-                          population. Under the reform, a coalition on more than half a region's population can lodge a
-                          proposal covering the whole region, including councils that object.{" "}
-                          {mandate.others.length > 0 ? (
-                            <>That would sweep in {mandate.others.length} council{mandate.others.length > 1 ? "s" : ""} not in this group: {mandate.others.map((c) => c.name).join(", ")}.</>
-                          ) : (<>Every council in the region is already in this group.</>)}
-                        </>
-                      ) : (
-                        <>
-                          Under half of {mandate.regions.length === 1 ? mandate.regions[0] : "the regions"} by
-                          population, so this group could not lodge a proposal that carries unwilling neighbours with it.
-                        </>
-                      )}
-                    </p>
-                  </div>
-                )}
-
-                <div className="shareHead">Whose rates move</div>
-                <div className="rates">
-                  <div className="basisGroup">
-                    <span className="basisTier">Closest to a real bill</span>
-                    <div className="basis">
-                      <button className={"basisBtn" + (basis === "bill" ? " basisOn" : "")} onClick={() => setBasis("bill")} aria-pressed={basis === "bill"}>Avg residential bill</button>
-                    </div>
-                    <span className="basisTier">Normalisations, not bills</span>
-                    <div className="basis">
-                      {[["unit", "Per rating unit"], ["person", "Per person"]].map(([k, l]) => (
-                        <button key={k} className={"basisBtn" + (basis === k ? " basisOn" : "")} onClick={() => setBasis(k)} aria-pressed={basis === k}>{l}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="blended">
-                    <span className="blendedLabel">Blended<br />{unit}</span>
-                    <span className="blendedValue" aria-live="polite">{money(activeRates.blended)}</span>
-                  </div>
-                  <p className="scopeLine">
-                    {isBill
-                      ? "What an average home pays. Residential properties only: no commercial or industrial rates."
-                      : basis === "unit"
-                      ? "The whole rates take, including commercial, industrial and targeted rates, divided across every rateable property. Higher than a household bill wherever there's a big commercial base."
-                      : "The whole rates take, including commercial and industrial rates, divided by residents. Not what anyone is billed."}
-                  </p>
-                  {!isBill && (
-                    <div className="years">
-                      {[["r26", "2025/26 forecast"], ["r24", "2023/24 actual"]].map(([k, l]) => (
-                        <button key={k} className={"yearBtn" + (year === k ? " yearOn" : "")} onClick={() => setYear(k)} aria-pressed={year === k}>{l}</button>
-                      ))}
-                    </div>
-                  )}
-                  {!isBill && (
-                    <div className="controls">
-                      <label className="slider">
-                        <span>Hypothetical trim to total rates take: <b>{savings}%</b></span>
-                        <input type="range" min="0" max="15" step="1" value={savings} onChange={(e) => { dirty.current = true; setSavings(+e.target.value); }} />
-                      </label>
-                      <p className="ratesNote">
-                        Mergers cost money before they save any. MartinJenkins estimated in July 2026 that establishing a
-                        Wellington metro authority would cost about $269m up front against $930m of savings spread over
-                        25 years; a Wairarapa authority $42m to establish, with the loss of Wellington subsidies capable
-                        of wiping out its $170m of savings; and a Horowhenua–Kāpiti merger $58m to establish against
-                        $240m. This slider models none of that; it just trims the take.
-                      </p>
-                    </div>
-                  )}
-                  {divergence && (
-                    <div className="diverge">
-                      <strong>These measures disagree.</strong>{" "}
-                      {divergence.slice(0, 2).map((d, i) => (
-                        <span key={d.m.id}>
-                          {i > 0 ? " " : ""}On residential bills <b>{d.m.name}</b> {d.onBill < 0 ? "falls" : "rises"} {signed(d.onBill)}, but on this measure it {d.here < 0 ? "falls" : "rises"} {signed(d.here)}.
-                        </span>
-                      ))}{" "}
-                      {divergence.length > 2 ? `(${divergence.length - 2} more also flip.) ` : ""}
-                      The measures differ because the total rates take is spread over all rateable property (commercial, industrial and farm land included) while a residential bill is only what a home is charged. Where a district has little commercial property, its households carry more of the load than the per-property average suggests. For what a homeowner actually pays, use the bill basis.
-                    </div>
-                  )}
-                  {activeRates.blended == null ? (
-                    <p className="ratesNote">Fewer than two of these councils supplied an average residential bill, so there's nothing to blend. Try per person or per rating unit.</p>
-                  ) : (
-                    <ul className="deltas">
-                      {activeRates.rows.map(({ m, now, then, delta, pctDelta }) => {
-                        if (delta == null) {
-                          const reason = isBill
-                            ? (m.id === "chathams" ? "Not in the Ratepayers' Report" : "Council didn't supply an average bill")
-                            : basis === "unit" ? "Not in the rating-units dataset"
-                            : "Not in the rating-units dataset";
-                          return (
-                            <li key={m.id} className="delta">
-                              <div className="deltaTop">
-                                <span className="deltaName">{m.name}</span>
-                                <span className="deltaVal muted">no data</span>
-                              </div>
-                              <div className="deltaFoot">{reason}{vintageNote(m) ? " · " + vintageNote(m) : ""}</div>
-                            </li>
-                          );
-                        }
-                        const cls = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
-                        const flag = basis === "unit" && m.ruStatus ? ` · ${m.ruStatus} count` : "";
-                        // How much the whole-take-per-property figure exceeds the residential
-                        // bill: effectively the commercial/targeted-rates loading.
-                        const load = basis === "unit" && m.avgRes && m.ru ? ((m[year] * GST) / m.ru) / m.avgRes : null;
-                        return (
-                          <li key={m.id} className="delta">
-                            <div className="deltaTop">
-                              <span className="deltaName">{m.name}</span>
-                              <span className={"deltaVal " + cls}>{signed(delta)}<span className="deltaPct"> {delta > 0 ? "+" : delta < 0 ? "−" : "±"}{Math.abs(pctDelta).toFixed(0)}%</span></span>
-                            </div>
-                            <div className="deltaTrack">
-                              <div className="deltaZero" />
-                              {delta !== 0 && <div className={"deltaFill " + cls} style={{ width: Math.min(50, Math.abs(pctDelta)) + "%" }} />}
-                            </div>
-                            <div className="deltaFoot">{money(now)} → {money(then)} {unit}{flag}{vintageNote(m) ? " · " + vintageNote(m) : ""}
-                              {load != null && <span className={"load" + (load >= 1.35 ? " loadHi" : "")}> · all-property average is {load.toFixed(2)}× the residential bill</span>}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                  <p className="ratesNote">
-                    {isBill ? (
-                      <>Each council's own published average residential rates bill (2024/25), blended across the group
-                      weighted by household count. Closest thing to a real bill here, but "average" hides a wide spread
-                      within any district, the weighting denominator is an approximation, and a merger would set new
-                      differentials and phase them in over years. Western Bay of Plenty, Westland and Waitaki didn't
-                      supply a figure and Chatham Islands isn't in the report, so those show as no data.</>
-                    ) : basis === "unit" ? (
-                      <>{yearLabel} rates revenue divided by <strong>rating units</strong>: every separately rateable
-                      property (homes, farms, commercial sites, baches). A rough per-property normalisation: real bills
-                      use land or capital value, targeted rates, uniform charges and differentials, so this isn't an
-                      actual bill. Some counts are older, projected, draft or a proxy (flagged on the rows). Direction of
-                      travel only.</>
-                    ) : (
-                      <>{yearLabel} rates revenue spread evenly across residents. Rates aren't levied per head (they're
-                      on property value) and mergers phase differentials in over years, so this is a normalisation, not
-                      a bill. All figures use 2024 population, including the 2025/26 forecast, so for fast-growing
-                      districts the forecast per-person figure runs high: about 8% for Selwyn, 6% for Hamilton, against
-                      almost nothing for Wellington City or Nelson. That gap flatters slow-growing districts in any
-                      comparison.</>
-                    )}{" "}
-                    <span className="muted">Territorial-council figures only: the separate regional-council rates layer isn't included, and the four existing unitary councils (Gisborne, Nelson, Tasman, Marlborough) already fold regional functions in, so they aren't strictly like-for-like.{!isBill && savings > 0 ? " The trim is a hypothetical cut to the whole rates take, not an evidenced merger-savings estimate." : ""}</span>
-                  </p>
-
-                  <details className="caveat">
-                    <summary>Why the change shown here may never arrive as shown</summary>
-                    <p>
-                      Changes in rates between the pre- and post-amalgamation periods should be interpreted with
-                      caution. Post-amalgamation rating liabilities may have been affected by transitional arrangements,
-                      including caps on annual increases or decreases, phased harmonisation of former councils' rating
-                      systems, continuation of legacy differentials, targeted rates, and the ring-fencing of legacy debt
-                      or service costs. These arrangements may defer, smooth, or otherwise alter the redistribution of
-                      rates arising from amalgamation. Consequently, the reported post-amalgamation change may not
-                      represent the full effect of the final harmonised rating system or the long-term rating position
-                      of each former council area.
-                    </p>
-                    <p className="caveatApply">
-                      Applied to this tool: the figures above are an <em>immediate, fully harmonised</em> redistribution:
-                      every property in the merged entity treated identically from day one. No real amalgamation has
-                      worked that way. Expect the direction to hold and the timing and size to differ, often for years.
-                    </p>
-                  </details>
-                </div>
+                <button className="nextBtn" onClick={() => setStep(2)}>Next: what it means →</button>
               </>
             ) : (
               <div className="editorRow">
@@ -1282,20 +1479,6 @@ export default function App() {
           basis so they're comparable; "no data" means too few councils in that group supplied a bill.</p>
         </section>
       )}
-
-      <main className="map" id="map">
-        <p className="mapNote">
-          {isBill
-            ? "Each piece shows the council's own average residential rates bill, 2024/25."
-            : basis === "unit"
-            ? `Each piece shows rates revenue ÷ rating units, ${yearLabel}.`
-            : `Each piece shows rates revenue ÷ population, ${yearLabel}.`}
-        </p>
-        <h2 className="island">Te Ika-a-Māui · North Island</h2>
-        {REGIONS_N.map(renderRegion)}
-        <h2 className="island">Te Waipounamu · South Island</h2>
-        {REGIONS_S.map(renderRegion)}
-      </main>
 
       <footer className="summary">
         <h2>Your map of New Zealand</h2>
@@ -1458,6 +1641,286 @@ export default function App() {
           </p>
         </section>
       </footer>
+      </>)}
+
+      {step >= 2 && (() => {
+        const scoped = cardable.filter((g) => !scope || groupInScope(g, scope));
+        const list = scoped.length ? scoped : cardable;
+        return list.length > 1 ? (
+        <div className="switch">
+          <span className="switchLabel">Working on:</span>
+          {list.map((g) => (
+            <button key={g.id} className={"chip" + (g.id === activeId ? " chipActive" : "")} style={{ "--c": g.color }} onClick={() => setActiveId(g.id)} aria-pressed={g.id === activeId}>
+              <span className="dot" /><span className="chipName">{g.name}</span>
+            </button>
+          ))}
+        </div>
+        ) : null;
+      })()}
+
+      {step === 2 && active && activeMembers.length >= 2 && (
+        <section className="page">
+          <div className="pageHead">
+            <h2>What <span style={{ color: active.color }}>{active.name}</span> would mean</h2>
+            <p className="pageSub">{activeMembers.length} councils · {fmtPop(stats.byGroup[active.id].pop)} people · {stats.byGroup[active.id].area.toLocaleString("en-NZ")} km²</p>
+          </div>
+            <div className="shareHead">Population share</div>
+            <ShareBar members={activeMembers} color={active.color} />
+
+            {mandate && (
+              <div className={"mandate" + (mandate.majority ? " mandateYes" : "")}>
+                <div className="mandateTop">
+                  <span className="mandateHead">Regional mandate</span>
+                  <span className="mandatePct">{mandate.pct.toFixed(0)}%</span>
+                </div>
+                <p className="mandateBody">
+                  {mandate.majority ? (
+                    <>
+                      More than half of {mandate.regions.length === 1 ? mandate.regions[0] : "the regions"} by
+                      population. Under the reform, a coalition on more than half a region's population can lodge a
+                      proposal covering the whole region, including councils that object.{" "}
+                      {mandate.others.length > 0 ? (
+                        <>That would sweep in {mandate.others.length} council{mandate.others.length > 1 ? "s" : ""} not in this group: {mandate.others.map((c) => c.name).join(", ")}.</>
+                      ) : (<>Every council in the region is already in this group.</>)}
+                    </>
+                  ) : (
+                    <>
+                      Under half of {mandate.regions.length === 1 ? mandate.regions[0] : "the regions"} by
+                      population, so this group could not lodge a proposal that carries unwilling neighbours with it.
+                    </>
+                  )}
+                </p>
+              </div>
+            )}
+
+            <div className="shareHead">Whose rates move</div>
+            <div className="rates">
+              <div className="basisGroup">
+                <span className="basisTier">Closest to a real bill</span>
+                <div className="basis">
+                  <button className={"basisBtn" + (basis === "bill" ? " basisOn" : "")} onClick={() => setBasis("bill")} aria-pressed={basis === "bill"}>Avg residential bill</button>
+                </div>
+                <span className="basisTier">Normalisations, not bills</span>
+                <div className="basis">
+                  {[["unit", "Per rating unit"], ["person", "Per person"]].map(([k, l]) => (
+                    <button key={k} className={"basisBtn" + (basis === k ? " basisOn" : "")} onClick={() => setBasis(k)} aria-pressed={basis === k}>{l}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="blended">
+                <span className="blendedLabel">Blended<br />{unit}</span>
+                <span className="blendedValue" aria-live="polite">{money(activeRates.blended)}</span>
+              </div>
+              <p className="scopeLine">
+                {isBill
+                  ? "What an average home pays. Residential properties only: no commercial or industrial rates."
+                  : basis === "unit"
+                  ? "The whole rates take, including commercial, industrial and targeted rates, divided across every rateable property. Higher than a household bill wherever there's a big commercial base."
+                  : "The whole rates take, including commercial and industrial rates, divided by residents. Not what anyone is billed."}
+              </p>
+              {!isBill && (
+                <div className="years">
+                  {[["r26", "2025/26 forecast"], ["r24", "2023/24 actual"]].map(([k, l]) => (
+                    <button key={k} className={"yearBtn" + (year === k ? " yearOn" : "")} onClick={() => setYear(k)} aria-pressed={year === k}>{l}</button>
+                  ))}
+                </div>
+              )}
+              {!isBill && (
+                <div className="controls">
+                  <label className="slider">
+                    <span>Hypothetical trim to total rates take: <b>{savings}%</b></span>
+                    <input type="range" min="0" max="15" step="1" value={savings} onChange={(e) => { dirty.current = true; setSavings(+e.target.value); }} />
+                  </label>
+                  <p className="ratesNote">
+                    Mergers cost money before they save any. MartinJenkins estimated in July 2026 that establishing a
+                    Wellington metro authority would cost about $269m up front against $930m of savings spread over
+                    25 years; a Wairarapa authority $42m to establish, with the loss of Wellington subsidies capable
+                    of wiping out its $170m of savings; and a Horowhenua–Kāpiti merger $58m to establish against
+                    $240m. This slider models none of that; it just trims the take.
+                  </p>
+                </div>
+              )}
+              {divergence && (
+                <div className="diverge">
+                  <strong>These measures disagree.</strong>{" "}
+                  {divergence.slice(0, 2).map((d, i) => (
+                    <span key={d.m.id}>
+                      {i > 0 ? " " : ""}On residential bills <b>{d.m.name}</b> {d.onBill < 0 ? "falls" : "rises"} {signed(d.onBill)}, but on this measure it {d.here < 0 ? "falls" : "rises"} {signed(d.here)}.
+                    </span>
+                  ))}{" "}
+                  {divergence.length > 2 ? `(${divergence.length - 2} more also flip.) ` : ""}
+                  The measures differ because the total rates take is spread over all rateable property (commercial, industrial and farm land included) while a residential bill is only what a home is charged. Where a district has little commercial property, its households carry more of the load than the per-property average suggests. For what a homeowner actually pays, use the bill basis.
+                </div>
+              )}
+              {activeRates.blended == null ? (
+                <p className="ratesNote">Fewer than two of these councils supplied an average residential bill, so there's nothing to blend. Try per person or per rating unit.</p>
+              ) : (
+                <ul className="deltas">
+                  {activeRates.rows.map(({ m, now, then, delta, pctDelta }) => {
+                    if (delta == null) {
+                      const reason = isBill
+                        ? (m.id === "chathams" ? "Not in the Ratepayers' Report" : "Council didn't supply an average bill")
+                        : basis === "unit" ? "Not in the rating-units dataset"
+                        : "Not in the rating-units dataset";
+                      return (
+                        <li key={m.id} className="delta">
+                          <div className="deltaTop">
+                            <span className="deltaName">{m.name}</span>
+                            <span className="deltaVal muted">no data</span>
+                          </div>
+                          <div className="deltaFoot">{reason}{vintageNote(m) ? " · " + vintageNote(m) : ""}</div>
+                        </li>
+                      );
+                    }
+                    const cls = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+                    const flag = basis === "unit" && m.ruStatus ? ` · ${m.ruStatus} count` : "";
+                    // How much the whole-take-per-property figure exceeds the residential
+                    // bill: effectively the commercial/targeted-rates loading.
+                    const load = basis === "unit" && m.avgRes && m.ru ? ((m[year] * GST) / m.ru) / m.avgRes : null;
+                    return (
+                      <li key={m.id} className="delta">
+                        <div className="deltaTop">
+                          <span className="deltaName">{m.name}</span>
+                          <span className={"deltaVal " + cls}>{signed(delta)}<span className="deltaPct"> {delta > 0 ? "+" : delta < 0 ? "−" : "±"}{Math.abs(pctDelta).toFixed(0)}%</span></span>
+                        </div>
+                        <div className="deltaTrack">
+                          <div className="deltaZero" />
+                          {delta !== 0 && <div className={"deltaFill " + cls} style={{ width: Math.min(50, Math.abs(pctDelta)) + "%" }} />}
+                        </div>
+                        <div className="deltaFoot">{money(now)} → {money(then)} {unit}{flag}{vintageNote(m) ? " · " + vintageNote(m) : ""}
+                          {load != null && <span className={"load" + (load >= 1.35 ? " loadHi" : "")}> · all-property average is {load.toFixed(2)}× the residential bill</span>}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <p className="ratesNote">
+                {isBill ? (
+                  <>Each council's own published average residential rates bill (2024/25), blended across the group
+                  weighted by household count. Closest thing to a real bill here, but "average" hides a wide spread
+                  within any district, the weighting denominator is an approximation, and a merger would set new
+                  differentials and phase them in over years. Western Bay of Plenty, Westland and Waitaki didn't
+                  supply a figure and Chatham Islands isn't in the report, so those show as no data.</>
+                ) : basis === "unit" ? (
+                  <>{yearLabel} rates revenue divided by <strong>rating units</strong>: every separately rateable
+                  property (homes, farms, commercial sites, baches). A rough per-property normalisation: real bills
+                  use land or capital value, targeted rates, uniform charges and differentials, so this isn't an
+                  actual bill. Some counts are older, projected, draft or a proxy (flagged on the rows). Direction of
+                  travel only.</>
+                ) : (
+                  <>{yearLabel} rates revenue spread evenly across residents. Rates aren't levied per head (they're
+                  on property value) and mergers phase differentials in over years, so this is a normalisation, not
+                  a bill. All figures use 2024 population, including the 2025/26 forecast, so for fast-growing
+                  districts the forecast per-person figure runs high: about 8% for Selwyn, 6% for Hamilton, against
+                  almost nothing for Wellington City or Nelson. That gap flatters slow-growing districts in any
+                  comparison.</>
+                )}{" "}
+                <span className="muted">Territorial-council figures only: the separate regional-council rates layer isn't included, and the four existing unitary councils (Gisborne, Nelson, Tasman, Marlborough) already fold regional functions in, so they aren't strictly like-for-like.{!isBill && savings > 0 ? " The trim is a hypothetical cut to the whole rates take, not an evidenced merger-savings estimate." : ""}</span>
+              </p>
+
+              <details className="caveat">
+                <summary>Why the change shown here may never arrive as shown</summary>
+                <p>
+                  Changes in rates between the pre- and post-amalgamation periods should be interpreted with
+                  caution. Post-amalgamation rating liabilities may have been affected by transitional arrangements,
+                  including caps on annual increases or decreases, phased harmonisation of former councils' rating
+                  systems, continuation of legacy differentials, targeted rates, and the ring-fencing of legacy debt
+                  or service costs. These arrangements may defer, smooth, or otherwise alter the redistribution of
+                  rates arising from amalgamation. Consequently, the reported post-amalgamation change may not
+                  represent the full effect of the final harmonised rating system or the long-term rating position
+                  of each former council area.
+                </p>
+                <p className="caveatApply">
+                  Applied to this tool: the figures above are an <em>immediate, fully harmonised</em> redistribution:
+                  every property in the merged entity treated identically from day one. No real amalgamation has
+                  worked that way. Expect the direction to hold and the timing and size to differ, often for years.
+                </p>
+              </details>
+            </div>
+          <div className="pageNav">
+            <button className="backBtn" onClick={() => setStep(1)}>← Back to the map</button>
+            <button className="nextBtn" onClick={() => setStep(3)}>Next: name it →</button>
+          </div>
+        </section>
+      )}
+
+      {step === 3 && active && activeMembers.length >= 2 && (
+        <section className="page">
+          <div className="pageHead">
+            <h2>Name it</h2>
+            <p className="pageSub">Pick one of the two. "Other names" deals a fresh pair, so keep going until one fits.</p>
+          </div>
+
+          <div className="currentName" style={{ borderColor: active.color }}>
+            <span className="currentLabel">Currently called</span>
+            <span className="currentValue">{active.name}</span>
+          </div>
+
+          {duelPair && (
+            <div className="duel">
+              <span className="duelAsk">Christen it</span>
+              <div className="duelPair">
+                {duelPair.map((n, i) => (
+                  <button key={n + i} className="duelBtn" onClick={() => pickName(n)}>{n}</button>
+                ))}
+              </div>
+              <button className="suggest" onClick={shuffleDuel}>Other names</button>
+              <p className="nameNote">Names come from a fixed list of local nicknames and landmarks. There's no free-text box, so nothing unpleasant can end up on a shared card.</p>
+            </div>
+          )}
+          <div className="pageNav">
+            <button className="backBtn" onClick={() => setStep(2)}>← Back to what it means</button>
+            <button className="nextBtn" onClick={() => setStep(4)}>Next: share it →</button>
+          </div>
+        </section>
+      )}
+
+      {step === 4 && active && activeMembers.length >= 2 && (
+        <section className="page">
+          <div className="pageHead">
+            <h2>Share <span style={{ color: active.color }}>{active.name}</span></h2>
+            <p className="pageSub">Your card, made from this one council. Check it looks right, then send it.</p>
+          </div>
+          {cardImg ? (
+            <img className="cardPreview" src={cardImg.url} alt={`Share card for ${cardImg.name}`} />
+          ) : (
+            <div className="cardEmpty">Building your card…</div>
+          )}
+          {cardImg && (
+            <div className="cardActions">
+              <button className="cardGo" onClick={shareCard}>Share</button>
+              <button className="cardAlt" onClick={downloadCard}>Download</button>
+              <button className="cardAlt" onClick={copyCard}>Copy image</button>
+            </div>
+          )}
+          {cardMsg && <p className="cardMsg">{cardMsg}</p>}
+          <div className="shareLinkBlock">
+            <div className="shareHead">Or share the live map</div>
+            <button className="cardAlt" onClick={makeShareLink}>Copy a link to this map</button>
+    {(shareUrl || copyMsg) && (
+      <div className="sharePanel">
+        <p className="shareMsg">{copyMsg}</p>
+        {shareUrl && (
+          <input
+            className="shareInput"
+            readOnly
+            value={shareUrl}
+            onFocus={(e) => e.target.select()}
+            aria-label="Shareable link to this map"
+          />
+        )}
+      </div>
+    )}
+          </div>
+          <div className="pageNav">
+            <button className="backBtn" onClick={() => setStep(3)}>← Back to naming</button>
+            <button className="nextBtn" onClick={() => setStep(1)}>Build another →</button>
+          </div>
+        </section>
+      )}
+
+
 
       <footer className="siteFooter">
         <div className="sfGrid">
@@ -1484,7 +1947,7 @@ export default function App() {
         <div className="sfBase">© 2026 Mischewski Consulting · Built for Aotearoa New Zealand</div>
       </footer>
 
-      {active && (
+      {step === 1 && active && (
         <div className="dock">
           <span className="dockDot" style={{ background: active.color }} />
           <span className="dockName">{active.name}</span>
@@ -1582,6 +2045,61 @@ h1 { font-size: clamp(38px, 9vw, 64px); font-weight: 800; margin: 0 0 10px; line
 .scopeLine { font-size: 12px; line-height: 1.45; margin: 0; padding: 7px 9px; background: rgba(26,46,51,0.05); border-radius: 4px; }
 .diverge { font-size: 12.5px; line-height: 1.5; padding: 9px 11px; background: rgba(241,143,1,0.15); border-left: 3px solid #B23A18; border-radius: 3px; }
 .diverge strong { color: #B23A18; }
+.landing { max-width:860px; }
+.regionGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:10px; }
+.regionCard, .regionAll { font:inherit; text-align:left; background:#fff; border:2px solid var(--ink); border-radius:8px; padding:14px; cursor:pointer; display:grid; gap:4px; color:var(--ink); }
+.regionAll { border-color:var(--accent-ink); background:rgba(178,58,24,0.06); margin-top:4px; }
+.regionCard:hover, .regionAll:hover { background:var(--ink); color:#fff; }
+.regionAll:hover { background:var(--accent-ink); border-color:var(--accent-ink); }
+.regionName { font-size:16px; font-weight:800; line-height:1.2; }
+.regionMeta { font-size:12px; opacity:0.78; }
+.scopeBar { max-width:1140px; margin:0 auto; padding:12px 18px 0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+.scopeName { font-size:20px; font-weight:800; }
+.scopeChange { font:inherit; font-size:12px; font-weight:700; background:transparent; border:1.5px solid var(--ink); border-radius:999px; padding:5px 11px; cursor:pointer; color:var(--ink); }
+.neighbourWrap { margin-top:14px; padding-top:12px; border-top:1.5px dashed rgba(26,46,51,0.3); }
+.neighbourToggle { font:inherit; font-size:13px; font-weight:700; background:transparent; border:1.5px solid var(--ink); border-radius:999px; padding:8px 14px; cursor:pointer; color:var(--ink); margin-bottom:10px; }
+.neighbourHint { font-weight:400; opacity:0.75; }
+.mapLead { max-width:1140px; margin:0 auto; padding:14px 18px 0; font-size:13.5px; line-height:1.5; }
+.stepper { max-width:1140px; margin:0 auto; padding:14px 18px 0; display:flex; gap:8px; flex-wrap:wrap; }
+.stepBtn { font:inherit; font-size:13px; font-weight:700; background:#fff; color:var(--ink); border:1.5px solid rgba(26,46,51,0.35); border-radius:999px; padding:9px 15px; cursor:pointer; }
+.stepOn { background:var(--ink); color:#fff; border-color:var(--ink); }
+.stepOff { opacity:0.5; cursor:default; }
+.switch { max-width:1140px; margin:0 auto; padding:10px 18px 0; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.switchLabel { font-size:12px; font-weight:700; opacity:0.72; }
+.page { max-width:760px; margin:0 auto; padding:18px; display:grid; gap:12px; }
+.pageHead h2 { font-size:24px; margin:0 0 4px; }
+.pageSub { font-size:13.5px; margin:0; opacity:0.8; }
+.pageNav { display:flex; justify-content:space-between; gap:10px; margin-top:10px; flex-wrap:wrap; }
+.nextBtn { font:inherit; font-size:14px; font-weight:800; background:var(--accent-ink); color:#fff; border:none; border-radius:999px; padding:12px 22px; cursor:pointer; }
+.backBtn { font:inherit; font-size:14px; font-weight:700; background:transparent; color:var(--ink); border:1.5px solid var(--ink); border-radius:999px; padding:12px 18px; cursor:pointer; }
+.shareLinkBlock { display:grid; gap:8px; margin-top:8px; padding-top:14px; border-top:1.5px solid rgba(26,46,51,0.2); }
+.cardOverlay { position:fixed; inset:0; background:rgba(26,46,51,0.6); display:flex; align-items:center; justify-content:center; padding:16px; z-index:60; }
+.cardModal { background:var(--paper); border-radius:10px; max-width:640px; width:100%; max-height:90vh; overflow:auto; padding:18px; box-shadow:0 18px 50px rgba(0,0,0,0.3); }
+.cardTop { display:flex; align-items:center; justify-content:space-between; }
+.cardTop h2 { font-size:18px; margin:0; }
+.cardX { font:inherit; font-size:24px; line-height:1; background:transparent; border:none; cursor:pointer; color:var(--ink); padding:0 4px; }
+.cardStep { font-size:13px; margin:14px 0 7px; }
+.cardPick { display:flex; flex-wrap:wrap; gap:7px; }
+.cardPickBtn { font:inherit; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px; background:#fff; color:var(--ink); border:1.5px solid rgba(26,46,51,0.35); border-radius:999px; padding:7px 12px; cursor:pointer; }
+.cardPickOn { border-color:var(--ink); border-width:2.5px; }
+.cardDot { width:11px; height:11px; border-radius:50%; background:var(--c); display:inline-block; }
+.cardCount { font-size:11px; opacity:0.72; }
+.cardPreview { width:100%; border:1.5px solid rgba(26,46,51,0.3); border-radius:6px; display:block; }
+.cardEmpty { border:1.5px dashed rgba(26,46,51,0.35); border-radius:6px; padding:34px; text-align:center; font-size:13px; opacity:0.72; }
+.cardActions { display:flex; gap:8px; flex-wrap:wrap; }
+.cardGo { font:inherit; font-size:14px; font-weight:800; background:var(--accent-ink); color:#fff; border:none; border-radius:999px; padding:10px 20px; cursor:pointer; }
+.cardAlt { font:inherit; font-size:14px; font-weight:700; background:transparent; color:var(--ink); border:1.5px solid var(--ink); border-radius:999px; padding:10px 18px; cursor:pointer; }
+.cardMsg { font-size:12.5px; font-weight:600; margin:10px 0 0; }
+.currentName { background:#fff; border:2px solid var(--ink); border-radius:8px; padding:12px 14px; display:grid; gap:3px; }
+.currentLabel { font-size:11px; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; opacity:0.72; }
+.currentValue { font-size:24px; font-weight:800; line-height:1.15; }
+.nameNote { font-size:11.5px; line-height:1.5; opacity:0.75; margin:4px 0 0; }
+.duel { display:grid; gap:6px; margin-top:8px; }
+.duelAsk { font-size:11px; text-transform:uppercase; letter-spacing:0.1em; font-weight:700; opacity:0.72; }
+.duelPair { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.duelBtn { font:inherit; font-size:15px; font-weight:800; background:#fff; color:var(--ink); border:2px solid var(--ink); border-radius:7px; padding:12px 10px; cursor:pointer; line-height:1.2; }
+.duelBtn:hover { background:var(--ink); color:#fff; }
+@media (max-width:520px){ .duelPair { grid-template-columns:1fr; } }
 .siteFooter { background: var(--ink); color: #F6F1E4; margin-top: 34px; padding: 30px 18px 22px; }
 .sfGrid { max-width: 1140px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 26px; }
 @media (max-width: 720px) { .sfGrid { grid-template-columns: 1fr; } }
