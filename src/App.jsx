@@ -2420,6 +2420,7 @@ export default function App() {
   const [customName, setCustomName] = useState("");
   const [shareMessage, setShareMessage] = useState("");
   const [shareUrl, setShareUrl] = useState("");
+  const [linkedInDraft, setLinkedInDraft] = useState("");
   const [talksActive, setTalksActive] = useState(false);
 
   useEffect(() => {
@@ -2609,12 +2610,14 @@ export default function App() {
     setSelectedIds(ids);
     setCustomName(combination.name);
     setShareMessage("");
+    setLinkedInDraft("");
     setScreen("result");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleCouncil = (id) => {
     setShareMessage("");
+    setLinkedInDraft("");
     setSelectedIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
     );
@@ -2624,12 +2627,14 @@ export default function App() {
     if (selectedIds.length < 2) return;
     setCustomName("");
     setShareMessage("");
+    setLinkedInDraft("");
     setScreen("result");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const editSelection = () => {
     setShareMessage("");
+    setLinkedInDraft("");
     setScreen("build");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -2650,6 +2655,7 @@ export default function App() {
     setCustomName("");
     setShareMessage("");
     setShareUrl("");
+    setLinkedInDraft("");
     setTalksActive(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -2719,6 +2725,28 @@ export default function App() {
     ].join("\n");
   };
 
+  const buildEmailText = (url) => {
+    const names = members.map((member) => member.name);
+    const councilsPhrase =
+      names.length === 2
+        ? `${names[0]} and ${names[1]}`
+        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    const ratesLine =
+      rates.blended == null
+        ? "There is not enough published residential-rates data to model this combination."
+        : `The modelled blended average residential rate is ${money(rates.blended)} a year.`;
+    return [
+      `What if ${councilsPhrase} councils combined?`,
+      "",
+      "Open this result in the Local government amalgamator:",
+      url,
+      "",
+      `The model calls the combined authority “${councilName}”, serving ${totalPopulation.toLocaleString("en-NZ")} residents across ${Math.round(totalArea).toLocaleString("en-NZ")} km². ${ratesLine}`,
+      "",
+      "This is independent modelling, not an official proposal or a prediction of any household’s rates.",
+    ].join("\r\n");
+  };
+
   const buildLinkedInText = (url) => {
     const baseText = buildShareText(url);
     const [opening, , introduction, , heading, ...rest] = baseText.split("\n");
@@ -2743,6 +2771,29 @@ export default function App() {
     ].join("\n");
   };
 
+  const copyTextForExternalShare = (text) => {
+    let copied = false;
+    const temporaryField = document.createElement("textarea");
+    temporaryField.value = text;
+    temporaryField.setAttribute("readonly", "");
+    temporaryField.style.position = "fixed";
+    temporaryField.style.opacity = "0";
+    document.body.appendChild(temporaryField);
+    temporaryField.focus();
+    temporaryField.select();
+    try {
+      copied = document.execCommand("copy");
+    } catch (error) {
+      copied = false;
+    }
+    temporaryField.remove();
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+      return true;
+    }
+    return copied;
+  };
+
   const openShareChannel = (channel) => {
     const url = makeUrl();
     const names = members.map((member) => member.name);
@@ -2752,9 +2803,10 @@ export default function App() {
         : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
     const title = `What if ${councilsPhrase} councils combined?`;
     const shareText = buildShareText(url);
+    const emailText = buildEmailText(url);
     const linkedInText = buildLinkedInText(url);
     const destinations = {
-      email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(shareText)}`,
+      email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(emailText)}`,
       whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
@@ -2768,19 +2820,21 @@ export default function App() {
     const destination = destinations[channel];
     if (!destination) return;
     setShareUrl(url);
+    if (channel !== "linkedin") setLinkedInDraft("");
     setShareMessage(`Opening ${labels[channel]}…`);
     if (channel === "email") {
       window.location.href = destination;
       return;
     }
     if (channel === "linkedin") {
-      const copyPromise = navigator.clipboard?.writeText(linkedInText);
+      setLinkedInDraft(linkedInText);
+      const copied = copyTextForExternalShare(linkedInText);
       window.open(destination, "_blank", "noopener,noreferrer");
-      if (copyPromise) {
-        copyPromise
-          .then(() => setShareMessage("LinkedIn post text copied — paste it into the post box."))
-          .catch(() => setShareMessage("LinkedIn opened. Copy your result text before posting."));
-      }
+      setShareMessage(
+        copied
+          ? "LinkedIn does not fill post text automatically. Your suggested post is copied — paste it into the post box."
+          : "LinkedIn does not fill post text automatically. Copy the suggested post below, then paste it into LinkedIn.",
+      );
       return;
     }
     window.open(destination, "_blank", "noopener,noreferrer");
@@ -3313,6 +3367,27 @@ export default function App() {
                 )}
               </div>
               {shareMessage && <p className="simpleShareMessage" role="status">{shareMessage}</p>}
+              {linkedInDraft && (
+                <div className="simpleLinkedInDraft">
+                  <label htmlFor="simpleLinkedInDraft">Suggested LinkedIn post</label>
+                  <textarea
+                    id="simpleLinkedInDraft"
+                    readOnly
+                    value={linkedInDraft}
+                    onFocus={(event) => event.target.select()}
+                  />
+                  <button
+                    className="simpleSecondary"
+                    type="button"
+                    onClick={() => {
+                      const copied = copyTextForExternalShare(linkedInDraft);
+                      setShareMessage(copied ? "LinkedIn post text copied — paste it into the post box." : "Select and copy the post text above.");
+                    }}
+                  >
+                    Copy post text again
+                  </button>
+                </div>
+              )}
               {shareUrl && shareMessage === "Copy the link below." && (
                 <input
                   className="simpleShareInput"
@@ -4208,6 +4283,22 @@ const SIMPLE_CSS = `
   margin: 14px 0 0;
   font-size: 13px;
   font-weight: 700;
+}
+.simpleLinkedInDraft {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.simpleLinkedInDraft label {
+  font-size: 13px;
+  font-weight: 800;
+}
+.simpleLinkedInDraft textarea {
+  min-height: 190px;
+  resize: vertical;
+}
+.simpleLinkedInDraft .simpleSecondary {
+  justify-self: start;
 }
 .simpleShareInput { margin-top: 10px; }
 
