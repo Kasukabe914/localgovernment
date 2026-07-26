@@ -2673,12 +2673,12 @@ export default function App() {
         const baseUrl = isLocalPreview
           ? PUBLIC_APP_URL
           : `${window.location.origin}${window.location.pathname}`;
-        return `${baseUrl}?m=${code}`;
+        return `${baseUrl}?m=${code}&share=2`;
       }
     } catch (error) {
       // Fall back to the public site in local or embedded environments.
     }
-    return `${PUBLIC_APP_URL}?m=${code}`;
+    return `${PUBLIC_APP_URL}?m=${code}&share=2`;
   };
 
   const copyLink = async () => {
