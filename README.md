@@ -9,7 +9,40 @@ The application guides users through one proposed council at a time:
 - distinguish nearby options from distant councils organised by region;
 - compare indicative residential-rates redistribution;
 - choose from curated council names; and
-- share the selected combination through one clear LinkedIn action with a purpose-built link preview.
+- share the finding as a generated card image or as a link.
+
+## Sharing
+
+The result screen generates a 1200×630 share card in the browser — the council
+name, the rates redistribution as a diverging bar chart, the blended bill, and a
+note naming any council with no published bill. No server and no new
+dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
+
+Two routes are offered:
+
+- **Post the card.** Copies the suggested write-up, downloads the image, and
+  opens the LinkedIn composer. The user pastes and attaches. This is the
+  higher-reach route, because LinkedIn's ranker deprioritises posts that carry
+  an outbound link.
+- **Share as a link.** One click to `share-offsite`. LinkedIn accepts only a
+  `url` parameter — `shareArticle`'s `title`/`summary`/`source` were deprecated
+  in 2018 — so everything in the feed card comes from the Open Graph tags on
+  the share shim. The app passes the finding through the shim's `name`
+  parameter so the card description carries real figures instead of generic
+  instructional copy.
+
+Both routes put the suggested write-up on the clipboard first, since there is no
+supported way to prefill the LinkedIn composer.
+
+### Card colours
+
+The interface uses green for "pays less" and red for "pays more". The card does
+not: that pair fails deuteranopia separation at every step tested (best ΔE 6.2
+against a floor of 8). The card keeps the brand red and uses a deep blue for the
+other pole — ΔE 18.0 simulated, 26.4 normal vision, and passing chroma,
+lightness and contrast against the paper surface. Direction is additionally
+carried by side-of-zero position and a signed dollar label on every bar, so hue
+is never the only channel.
 
 ## Requirements
 
@@ -54,6 +87,8 @@ The repository includes `.github/workflows/deploy-pages.yml`.
 - `public/og-image.jpg` — social preview image
 - `vite.config.js` — local and GitHub Pages build configuration
 - `.github/workflows/deploy-pages.yml` — automatic Pages deployment
+- `share/` — source for the LinkedIn share shim (deployed separately, not part
+  of the built site)
 
 ## Suggested Git commands
 
