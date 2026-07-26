@@ -2334,7 +2334,355 @@ function simpleRates(members) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Share card palette. The app's UI uses green/red for "pays less"/"pays more",
+// but that pair fails deuteranopia separation at every step we tested (best
+// ΔE 6.2 against a floor of 8), and a share card is seen once, at speed, with
+// no tooltip to fall back on. The card therefore keeps the brand red for "pays
+// more" and swaps the green pole for a deep blue: red↔blue measures ΔE 18.0
+// (CVD) and 26.4 (normal vision) on the paper surface, passing every check.
+// Direction is additionally carried by side-of-zero position and a signed
+// dollar label on every bar, so hue is never the only channel.
+// ---------------------------------------------------------------------------
+const CARD_W = 1200;
+const CARD_H = 630;
+const CARD_PAPER = "#fbf8ef";
+const CARD_INK = "#193036";
+const CARD_INK_SOFT = "#4d6267";
+const CARD_MORE = "#ad3936";
+const CARD_LESS = "#0069a8";
+const CARD_RULE = "#d9d3c4";
+const CARD_FONT = `'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif`;
+
+// The one sentence that has to survive being read in a feed at speed.
+function shareFinding({ councilName, members, rates, totalPopulation }) {
+  const scored = rates.rows.filter((row) => row.change != null);
+  const rising = scored.filter((row) => row.change > 0);
+  const falling = scored.filter((row) => row.change < 0);
+  // rates.rows is sorted descending by change, nulls last.
+  const biggestRise = rising.length ? rising[0] : null;
+  const biggestFall = falling.length ? falling[falling.length - 1] : null;
+  const headline = biggestFall
+    ? `${biggestFall.council.name} pays ${money(Math.abs(biggestFall.change))} less a year`
+    : biggestRise
+      ? `${biggestRise.council.name} pays ${money(biggestRise.change)} more a year`
+      : "No comparable rates data for this combination";
+
+  const noData = rates.rows
+    .filter((row) => row.change == null)
+    .map((row) => row.council.name);
+
+  return {
+    councilName,
+    councilCount: members.length,
+    population: totalPopulation,
+    rising,
+    falling,
+    noData,
+    biggestRise,
+    biggestFall,
+    blended: rates.blended,
+    headline,
+    // Short enough to survive LinkedIn's description truncation (~200 chars).
+    summary: rates.blended
+      ? `${rising.length} of ${scored.length} councils would pay more, ${falling.length} would pay less. ${headline}.`
+      : "Population, land area and rates data for this combination.",
+  };
+}
+
+function shareSentence(finding) {
+  return `${finding.councilName}: ${finding.summary}`;
+}
+
+// Suggested post copy. LinkedIn deprecated prefill (shareArticle's title/
+// summary/source went in 2018 and share-offsite only accepts `url`), so the
+// only way to get text into the composer is the clipboard.
+function sharePostText(finding, url) {
+  const lines = [];
+  lines.push(
+    `Meet ${finding.councilName} — ${finding.councilCount} New Zealand councils merged into one, ${fmtPop(finding.population)} people.`
+  );
+  lines.push("");
+  if (finding.blended) {
+    lines.push("If rates were harmonised tomorrow:");
+    if (finding.biggestRise) {
+      lines.push(
+        `↑ ${finding.biggestRise.council.name} pays ${money(finding.biggestRise.change)} more a year`
+      );
+    }
+    if (finding.biggestFall) {
+      lines.push(
+        `↓ ${finding.biggestFall.council.name} pays ${money(Math.abs(finding.biggestFall.change))} less a year`
+      );
+    }
+    lines.push("");
+    lines.push(
+      `${finding.rising.length} councils would pay more, ${finding.falling.length} would pay less. Blended average residential bill: ${money(finding.blended)} a year.`
+    );
+    if (finding.noData.length) {
+      lines.push(
+        `(${finding.noData.join(", ")} ${finding.noData.length > 1 ? "publish" : "publishes"} no average residential bill, so ${finding.noData.length > 1 ? "they are" : "it is"} left out of the blend.)`
+      );
+    }
+    lines.push("");
+  }
+  lines.push(
+    "Built with The Amalgamator — an independent model of council amalgamation, not a proposal and not a prediction of anyone's rates. Sources, formulas and caveats are all published."
+  );
+  lines.push("");
+  lines.push(`See this combination: ${url}`);
+  lines.push("");
+  lines.push("What would yours look like?");
+  return lines.join("\n");
+}
+
+function fitText(ctx, text, maxWidth, startSize, weight) {
+  let size = startSize;
+  ctx.font = `${weight} ${size}px ${CARD_FONT}`;
+  while (ctx.measureText(text).width > maxWidth && size > 18) {
+    size -= 2;
+    ctx.font = `${weight} ${size}px ${CARD_FONT}`;
+  }
+  return size;
+}
+
+function roundedBar(ctx, x, y, w, h, r, flatLeft) {
+  // 4px rounded data-end, square at the baseline (the zero line).
+  const radius = Math.min(r, Math.abs(w));
+  ctx.beginPath();
+  if (flatLeft) {
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x, y + h);
+  } else {
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - w + radius, y);
+    ctx.quadraticCurveTo(x - w, y, x - w, y + radius);
+    ctx.lineTo(x - w, y + h - radius);
+    ctx.quadraticCurveTo(x - w, y + h, x - w + radius, y + h);
+    ctx.lineTo(x, y + h);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+// Renders the 1200x630 card. Pure canvas, no dependencies, no server.
+function drawShareCard(canvas, finding, rates, totalArea) {
+  const ctx = canvas.getContext("2d");
+  canvas.width = CARD_W;
+  canvas.height = CARD_H;
+
+  ctx.fillStyle = CARD_PAPER;
+  ctx.fillRect(0, 0, CARD_W, CARD_H);
+
+  // Masthead
+  const headH = 84;
+  ctx.fillStyle = CARD_INK;
+  ctx.fillRect(0, 0, CARD_W, headH);
+  ctx.fillStyle = CARD_PAPER;
+  ctx.font = `800 26px ${CARD_FONT}`;
+  ctx.textBaseline = "middle";
+  ctx.fillText("The Amalgamator", 56, headH / 2);
+  ctx.font = `600 19px ${CARD_FONT}`;
+  ctx.globalAlpha = 0.72;
+  ctx.textAlign = "right";
+  ctx.fillText("Independent modelling · New Zealand local government", CARD_W - 56, headH / 2);
+  ctx.globalAlpha = 1;
+  ctx.textAlign = "left";
+
+  // Hero: the council the user built
+  let y = headH + 62;
+  const heroSize = fitText(ctx, finding.councilName, CARD_W - 112, 68, 800);
+  ctx.fillStyle = CARD_INK;
+  ctx.font = `800 ${heroSize}px ${CARD_FONT}`;
+  ctx.fillText(finding.councilName, 56, y);
+
+  y += 40;
+  ctx.fillStyle = CARD_INK_SOFT;
+  ctx.font = `600 23px ${CARD_FONT}`;
+  ctx.fillText(
+    `${finding.councilCount} councils · ${fmtPop(finding.population)} people · ${Math.round(totalArea).toLocaleString("en-NZ")} km²`,
+    56,
+    y
+  );
+
+  y += 34;
+  ctx.strokeStyle = CARD_RULE;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(56, y + 0.5);
+  ctx.lineTo(CARD_W - 56, y + 0.5);
+  ctx.stroke();
+
+  const footH = 74;
+  const rows = rates.rows.filter((row) => row.change != null);
+
+  if (!rows.length || !rates.blended) {
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.font = `600 26px ${CARD_FONT}`;
+    ctx.fillText(
+      "Not enough published rates data to compare this combination.",
+      56,
+      y + 60
+    );
+  } else {
+    y += 38;
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.font = `700 20px ${CARD_FONT}`;
+    ctx.fillText("CHANGE TO THE AVERAGE RESIDENTIAL RATES BILL", 56, y);
+
+    // Biggest movers, both directions, largest absolute change first.
+    const shown = [...rows]
+      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+      .slice(0, 5)
+      .sort((a, b) => b.change - a.change);
+
+    const maxAbs = Math.max(...shown.map((r) => Math.abs(r.change)), 1);
+    // Names sit in their own left column: a diverging bar grows both ways, so
+    // a label hung off the zero line gets painted over by its own bar.
+    const nameX = 56;
+    const nameMax = 280;
+    const zeroX = 646;
+    const maxBar = 240;
+    // Councils excluded from the blend get named. A card that says "4
+    // councils" and draws three bars invites exactly the objection this tool
+    // shouldn't attract.
+    const noData = rates.rows
+      .filter((row) => row.change == null)
+      .map((row) => row.council.name);
+
+    const legendY = CARD_H - footH - 28;
+    const noteY = legendY - 28;
+    const chartBottom = (noData.length ? noteY : legendY) - 18;
+    const chartTop = y + 24;
+    const span = chartBottom - chartTop;
+    // Fill the space rather than top-anchoring: a two-council card was
+    // leaving half the panel empty.
+    const rowH = Math.min(56, span / shown.length);
+    // Cap the mark at 24px however much room there is — a fat bar reads as
+    // decoration, and the leftover band is meant to be air.
+    const barH = Math.max(18, Math.min(24, rowH - 24));
+    const top = chartTop + Math.max(0, (span - rowH * shown.length) / 2);
+
+    // Zero line — the neutral midpoint of the diverging scale.
+    ctx.strokeStyle = CARD_RULE;
+    ctx.lineWidth = 2;
+    const pad = (rowH - barH) / 2;
+    ctx.beginPath();
+    ctx.moveTo(zeroX, top + pad - 6);
+    ctx.lineTo(zeroX, top + (shown.length - 1) * rowH + pad + barH + 6);
+    ctx.stroke();
+
+    shown.forEach((row, i) => {
+      const rowY = top + i * rowH;
+      const barY = rowY + (rowH - barH) / 2;
+      // Keep a hairline of bar visible even for a near-zero change.
+      const w = Math.max(3, (Math.abs(row.change) / maxAbs) * maxBar);
+      const up = row.change > 0;
+
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = CARD_INK;
+      ctx.textAlign = "left";
+      const nameSize = fitText(ctx, row.council.name, nameMax, 22, 600);
+      ctx.font = `600 ${nameSize}px ${CARD_FONT}`;
+      ctx.fillText(row.council.name, nameX, barY + barH / 2);
+
+      ctx.fillStyle = up ? CARD_MORE : CARD_LESS;
+      roundedBar(ctx, zeroX + (up ? 1 : -1), barY, w, barH, 4, up);
+
+      // Direct label at the outer tip of every bar: the secondary encoding
+      // that lets the pair stay legible without relying on hue.
+      ctx.fillStyle = CARD_INK;
+      ctx.font = `700 22px ${CARD_FONT}`;
+      ctx.textAlign = up ? "left" : "right";
+      ctx.fillText(
+        signed(row.change),
+        up ? zeroX + w + 14 : zeroX - w - 14,
+        barY + barH / 2
+      );
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+    });
+
+    if (noData.length) {
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = CARD_INK_SOFT;
+      ctx.font = `600 18px ${CARD_FONT}`;
+      const label =
+        noData.length === 1
+          ? `${noData[0]} publishes no average residential bill and is not in the blend.`
+          : `${noData.slice(0, 3).join(", ")}${noData.length > 3 ? " and others" : ""} publish no average residential bill and are not in the blend.`;
+      ctx.fillText(label, 56, noteY);
+      ctx.textBaseline = "alphabetic";
+    }
+
+    // Legend — identity never rests on colour alone.
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = CARD_MORE;
+    ctx.fillRect(56, legendY - 6, 13, 13);
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.font = `600 19px ${CARD_FONT}`;
+    ctx.fillText(`Pays more (${finding.rising.length})`, 78, legendY);
+    const shift = 78 + ctx.measureText(`Pays more (${finding.rising.length})`).width + 30;
+    ctx.fillStyle = CARD_LESS;
+    ctx.fillRect(shift, legendY - 6, 13, 13);
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.fillText(`Pays less (${finding.falling.length})`, shift + 22, legendY);
+    ctx.textBaseline = "alphabetic";
+  }
+
+  // Footer
+  ctx.fillStyle = CARD_INK;
+  ctx.fillRect(0, CARD_H - footH, CARD_W, footH);
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = CARD_PAPER;
+  ctx.font = `700 22px ${CARD_FONT}`;
+  ctx.fillText(
+    rates.blended
+      ? `Blended average bill ${money(rates.blended)} a year`
+      : "Indicative modelling",
+    56,
+    CARD_H - footH / 2
+  );
+  ctx.font = `600 20px ${CARD_FONT}`;
+  ctx.globalAlpha = 0.75;
+  ctx.textAlign = "right";
+  ctx.fillText("Not a proposal · methodology published", CARD_W - 56, CARD_H - footH / 2);
+  ctx.globalAlpha = 1;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+
+  return canvas;
+}
+
 function ShareIcon({ type }) {
+  if (type === "download") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3v12" />
+        <path d="m7 11 5 5 5-5" />
+        <path d="M4 20h16" />
+      </svg>
+    );
+  }
+  if (type === "copy") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="9" y="9" width="11" height="11" rx="2" />
+        <path d="M15 5.5A1.5 1.5 0 0 0 13.5 4h-8A1.5 1.5 0 0 0 4 5.5v8A1.5 1.5 0 0 0 5.5 15" />
+      </svg>
+    );
+  }
+  if (type === "check") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="m5 12.5 4.5 4.5L19 7.5" />
+      </svg>
+    );
+  }
   if (type === "link") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -2420,6 +2768,9 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [customName, setCustomName] = useState("");
   const [talksActive, setTalksActive] = useState(false);
+  const [copied, setCopied] = useState("");
+  const [cardBusy, setCardBusy] = useState(false);
+  const [cardPreview, setCardPreview] = useState("");
 
   useEffect(() => {
     try {
@@ -2660,22 +3011,145 @@ export default function App() {
         const baseUrl = isLocalPreview
           ? PUBLIC_APP_URL
           : `${window.location.origin}${window.location.pathname}`;
-        return `${baseUrl}?m=${code}&share=2`;
+        return `${baseUrl}?m=${code}`;
       }
     } catch (error) {
       // Fall back to the public site in local or embedded environments.
     }
-    return `${PUBLIC_APP_URL}?m=${code}&share=2`;
+    return `${PUBLIC_APP_URL}?m=${code}`;
   };
 
-  const shareOnLinkedIn = () => {
+  const finding = useMemo(
+    () => shareFinding({ councilName, members, rates, totalPopulation }),
+    [councilName, members, rates, totalPopulation]
+  );
+
+  const flash = (key) => {
+    setCopied(key);
+    window.clearTimeout(flash.timer);
+    flash.timer = window.setTimeout(() => setCopied(""), 2400);
+  };
+
+  const copyText = async (text, key) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      flash(key);
+      return true;
+    } catch (error) {
+      // Clipboard is blocked in some embedded and insecure contexts.
+      const field = document.createElement("textarea");
+      field.value = text;
+      field.setAttribute("readonly", "");
+      field.style.position = "fixed";
+      field.style.opacity = "0";
+      document.body.appendChild(field);
+      field.select();
+      let ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch (fallbackError) {
+        ok = false;
+      }
+      document.body.removeChild(field);
+      if (ok) flash(key);
+      return ok;
+    }
+  };
+
+  const renderCard = async () => {
+    // Wait for the webfont so the card doesn't render in the fallback face.
+    try {
+      if (document.fonts && document.fonts.load) {
+        await document.fonts.load(`800 68px 'Bricolage Grotesque'`);
+        await document.fonts.ready;
+      }
+    } catch (error) {
+      // A missing webfont only affects the card's typeface, not its content.
+    }
+    const canvas = document.createElement("canvas");
+    drawShareCard(canvas, finding, rates, totalArea);
+    return canvas;
+  };
+
+  const downloadCard = async () => {
+    setCardBusy(true);
+    try {
+      const canvas = await renderCard();
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/png")
+      );
+      if (!blob) return;
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = href;
+      link.download = `${councilName.replace(/[^\wÀ-ɏḀ-ỿ-]+/g, "-").toLowerCase()}-amalgamator.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(href), 4000);
+      flash("card");
+    } finally {
+      setCardBusy(false);
+    }
+  };
+
+  const copyPost = () => copyText(sharePostText(finding, makeUrl()), "post");
+
+  const copyLink = () => copyText(makeUrl(), "link");
+
+  // Native image post: the highest-reach route, because LinkedIn's ranker
+  // deprioritises posts carrying an outbound link. Copy the text first so the
+  // composer only needs a paste and an image attach.
+  const shareNative = async () => {
+    await copyPost();
+    await downloadCard();
+    window.open(
+      "https://www.linkedin.com/feed/?shareActive=true",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  // One-click route. share-offsite accepts only `url`, so everything the feed
+  // shows comes from the Open Graph tags on the share shim.
+  //
+  // `title` and `desc` are what the shim in share/ reads. `name` is the legacy
+  // field the deployed shim reads today, and it gets the whole finding sentence
+  // so real figures reach the feed even before the shim is updated. The new
+  // shim prefers title/desc and ignores name, so both versions work.
+  const shareOnLinkedIn = async () => {
+    await copyPost();
     const shareUrl = new URL(LINKEDIN_SHARE_URL);
-    shareUrl.searchParams.set("name", councilName);
+    shareUrl.searchParams.set("title", councilName);
+    shareUrl.searchParams.set("desc", finding.summary);
+    shareUrl.searchParams.set("name", shareSentence(finding));
     shareUrl.searchParams.set("result", makeUrl());
     const linkedInUrl =
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.toString())}`;
     window.open(linkedInUrl, "_blank", "noopener,noreferrer");
   };
+
+  // Show people the card before they post it — the preview is what makes the
+  // share feel like publishing a finding rather than pasting a link.
+  useEffect(() => {
+    let cancelled = false;
+    if (screen !== "result" || members.length < 2) {
+      setCardPreview("");
+      return undefined;
+    }
+    (async () => {
+      try {
+        const canvas = await renderCard();
+        if (!cancelled) setCardPreview(canvas.toDataURL("image/png"));
+      } catch (error) {
+        if (!cancelled) setCardPreview("");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, finding, rates, totalArea, members.length]);
 
   const renderCouncilChoice = (council) => {
     const checked = selectedIds.includes(council.id);
@@ -3157,21 +3631,70 @@ export default function App() {
             </article>
 
             <article className="simpleSharePanel">
-              <div>
+              <div className="simpleShareHead">
                 <p className="simpleEyebrow">Keep the conversation going</p>
                 <h2>Share {councilName}</h2>
+                <p className="simpleShareLead">{finding.summary}</p>
               </div>
-              <div className="simpleShareActions">
-                <button
-                  className="simpleLinkedInButton"
-                  type="button"
-                  onClick={shareOnLinkedIn}
-                  aria-label={`Share ${councilName} on LinkedIn`}
-                  title="Share on LinkedIn"
-                >
-                  <ShareIcon type="linkedin" />
+
+              {cardPreview && (
+                <figure className="simpleCardPreview">
+                  <img src={cardPreview} alt={`Share card for ${councilName}. ${finding.summary}`} />
+                  <figcaption>This is the image that gets posted.</figcaption>
+                </figure>
+              )}
+
+              <div className="simpleShareRoutes">
+                <div className="simpleShareRoute simpleShareRoutePrimary">
+                  <h3>Post the card</h3>
+                  <p>
+                    Copies the write-up and downloads the image, then opens LinkedIn.
+                    Paste, attach the image, post. Image posts reach further than links.
+                  </p>
+                  <button
+                    className="simplePrimary"
+                    type="button"
+                    onClick={shareNative}
+                    disabled={cardBusy}
+                  >
+                    <ShareIcon type="linkedin" />
+                    {cardBusy ? "Preparing…" : "Post to LinkedIn"}
+                  </button>
+                </div>
+
+                <div className="simpleShareRoute">
+                  <h3>Or share the link</h3>
+                  <p>One click. LinkedIn shows a preview card with the result.</p>
+                  <button className="simpleSecondary" type="button" onClick={shareOnLinkedIn}>
+                    <ShareIcon type="linkedin" />
+                    Share as a link
+                  </button>
+                </div>
+              </div>
+
+              <div className="simpleShareSecondary">
+                <button type="button" onClick={downloadCard} disabled={cardBusy}>
+                  <ShareIcon type={copied === "card" ? "check" : "download"} />
+                  {copied === "card" ? "Image saved" : "Download image"}
+                </button>
+                <button type="button" onClick={copyPost}>
+                  <ShareIcon type={copied === "post" ? "check" : "copy"} />
+                  {copied === "post" ? "Write-up copied" : "Copy write-up"}
+                </button>
+                <button type="button" onClick={copyLink}>
+                  <ShareIcon type={copied === "link" ? "check" : "link"} />
+                  {copied === "link" ? "Link copied" : "Copy link"}
                 </button>
               </div>
+              <p className="simpleShareStatus" role="status" aria-live="polite">
+                {copied === "card"
+                  ? "Image saved to your downloads."
+                  : copied === "post"
+                    ? "Write-up copied. Paste it into the LinkedIn composer."
+                    : copied === "link"
+                      ? "Link copied."
+                      : ""}
+              </p>
             </article>
 
             <div className="simpleEndActions">
@@ -3986,42 +4509,138 @@ const SIMPLE_CSS = `
   border-color: var(--ink);
 }
 .simpleSharePanel .simpleEyebrow { color: rgba(255, 255, 255, 0.72); }
-.simpleShareActions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+.simpleSharePanel h2 { color: var(--white); }
+.simpleShareHead { display: grid; gap: 4px; }
+.simpleShareLead {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.82);
+  max-width: 62ch;
 }
-.simpleLinkedInButton {
+
+.simpleCardPreview {
+  margin: 18px 0 0;
   display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  color: var(--white);
-  background: #0a66c2;
-  border: 2px solid #0a66c2;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 120ms ease, filter 120ms ease, background 120ms ease;
+  gap: 8px;
+  justify-items: start;
 }
-.simpleLinkedInButton svg {
-  width: 20px;
-  height: 20px;
+.simpleCardPreview img {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+.simpleCardPreview figcaption {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.simpleShareRoutes {
+  margin-top: 20px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+}
+.simpleShareRoute {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.simpleShareRoutePrimary {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+.simpleShareRoute h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--white);
+}
+.simpleShareRoute p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.78);
+}
+.simpleShareRoute button {
+  justify-self: start;
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.simpleShareRoute .simpleSecondary {
+  background: transparent;
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+.simpleShareRoute .simpleSecondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.simpleShareSecondary {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.simpleShareSecondary button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.simpleShareSecondary button:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+.simpleShareSecondary button:disabled { opacity: 0.55; cursor: default; }
+.simpleShareStatus {
+  margin: 10px 0 0;
+  min-height: 18px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.simpleSharePanel svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.9;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.simpleLinkedInButton .simpleShareSolid {
+.simpleSharePanel .simpleShareSolid {
   fill: currentColor;
   stroke: none;
 }
-.simpleLinkedInButton:hover {
-  filter: brightness(1.08);
-  transform: translateY(-2px);
+.simpleSharePanel .simplePrimary {
+  background: #0a66c2;
+  border-color: #0a66c2;
+  color: #ffffff;
 }
-.simpleLinkedInButton:active { transform: translateY(0); }
+.simpleSharePanel .simplePrimary:hover:not(:disabled) {
+  background: #08529b;
+  border-color: #08529b;
+}
+.simpleSharePanel .simplePrimary:disabled { opacity: 0.6; cursor: default; }
 
 .simpleFooter {
   max-width: 1120px;

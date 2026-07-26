@@ -1,0 +1,68 @@
+<!doctype html>
+<!--
+  The Amalgamator — share shim, output specification
+  ---------------------------------------------------------------------------
+  This is exactly what the shim must return to a crawler. It is here so the
+  required output is version-controlled and can be reproduced on any host; the
+  working implementation is worker.js in this folder.
+
+  Substitute:
+    {{TITLE}}    the council name, e.g. "Megatron"           (HTML-escaped, <= 70 chars)
+    {{DESC}}     the finding, e.g. "3 of 5 councils would
+                 pay more, 2 would pay less. Waikato
+                 District pays $507 less a year."            (HTML-escaped, <= 200 chars)
+    {{CANONICAL}} this page's own full URL, params and all   (HTML-escaped)
+    {{RESULT}}   the validated app URL to redirect to        (HTML-escaped)
+
+  Three things matter and were all missing before:
+    1. og:image, absolute, 1200x630 - without it LinkedIn renders a small
+       text-only strip instead of a large card.
+    2. twitter:card = summary_large_image, not summary.
+    3. og:title and og:description carrying the finding, not tool boilerplate.
+
+  Serve this to crawlers only. Redirect real browsers straight to {{RESULT}}
+  with a 302 so the link route costs no extra click.
+-->
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}} | The Amalgamator</title>
+<meta name="description" content="{{DESC}}">
+
+<meta property="og:site_name" content="The Amalgamator">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:url" content="{{CANONICAL}}">
+<meta property="og:image" content="https://kasukabe914.github.io/localgovernment/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Amalgamator — modelling New Zealand council amalgamations">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{TITLE}}">
+<meta name="twitter:description" content="{{DESC}}">
+<meta name="twitter:image" content="https://kasukabe914.github.io/localgovernment/og-image.jpg">
+
+<link rel="canonical" href="{{CANONICAL}}">
+<meta http-equiv="refresh" content="0; url={{RESULT}}">
+<style>
+  body { margin:0; background:#dfeff0; color:#193036;
+         font:16px/1.6 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif; }
+  main { max-width:640px; margin:0 auto; padding:80px 24px; }
+  h1 { font-size:34px; line-height:1.15; margin:0 0 10px; }
+  p { margin:0 0 22px; color:#4d6267; }
+  a { display:inline-block; padding:12px 22px; background:#d94720; color:#fff;
+      border-radius:999px; font-weight:800; text-decoration:none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>{{TITLE}}</h1>
+  <p>{{DESC}}</p>
+  <p><a href="{{RESULT}}">Open this result</a></p>
+</main>
+</body>
+</html>
