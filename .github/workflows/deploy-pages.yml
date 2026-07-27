@@ -35,7 +35,7 @@ jobs:
         run: npm run build
         env:
           VITE_FACEBOOK_APP_ID: ${{ vars.FACEBOOK_APP_ID }}
-          CLOUDFLARE_WEB_ANALYTICS_TOKEN: ${{ vars.CLOUDFLARE_WEB_ANALYTICS_TOKEN }}
+          UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

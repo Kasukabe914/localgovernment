@@ -1,9 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 
-const BEACON_SRC = "https://static.cloudflareinsights.com/beacon.min.js";
-const TOKEN_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
+const TRACKER_SRC = "https://cloud.umami.is/script.js";
+const WEBSITE_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const TRACKED_DOMAINS = "www.amalgamator.nz,amalgamator.nz";
 
 async function htmlFiles(directory) {
   const entries = await fs.readdir(directory, { withFileTypes: true });
@@ -17,23 +19,67 @@ async function htmlFiles(directory) {
   return files.flat();
 }
 
+const privacyFilter = `  <script>
+    window.amalgamatorAnalyticsBeforeSend = function (type, payload) {
+      if (!payload || typeof payload !== "object") return payload;
+      var envelope = payload.payload && typeof payload.payload === "object"
+        ? payload.payload
+        : payload;
+      if (typeof envelope.url === "string") {
+        try {
+          var parsed = new URL(envelope.url, window.location.origin);
+          var retained = new URLSearchParams();
+          var source = parsed.searchParams.get("utm_source");
+          var medium = parsed.searchParams.get("utm_medium");
+          var campaign = parsed.searchParams.get("utm_campaign");
+          var content = parsed.searchParams.get("utm_content");
+          if (["facebook", "linkedin", "x", "reddit"].indexOf(source) !== -1) {
+            retained.set("utm_source", source);
+          }
+          if (medium === "social") retained.set("utm_medium", medium);
+          if (campaign === "result_share") retained.set("utm_campaign", campaign);
+          if (content === "share_icon") retained.set("utm_content", content);
+          parsed.search = retained.toString();
+          parsed.hash = "";
+          envelope.url = parsed.pathname + parsed.search;
+        } catch (error) {
+          envelope.url = envelope.url.split("?")[0].split("#")[0];
+        }
+      }
+      if (typeof envelope.referrer === "string" && envelope.referrer) {
+        try {
+          var referrer = new URL(envelope.referrer, window.location.origin);
+          referrer.search = "";
+          referrer.hash = "";
+          envelope.referrer = referrer.origin + referrer.pathname;
+        } catch (error) {
+          envelope.referrer = envelope.referrer.split("?")[0].split("#")[0];
+        }
+      }
+      return payload;
+    };
+  </script>
+`;
+
 export async function injectAnalytics({
   distDir = path.resolve("dist"),
-  token = process.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN?.trim() || "",
+  websiteId = process.env.UMAMI_WEBSITE_ID?.trim() || "",
 } = {}) {
-  if (!token) {
+  if (!websiteId) {
     return { enabled: false, injected: [], skipped: [] };
   }
-  if (!TOKEN_PATTERN.test(token)) {
-    throw new Error(
-      "CLOUDFLARE_WEB_ANALYTICS_TOKEN must be 16–128 URL-safe characters."
-    );
+  if (!WEBSITE_ID_PATTERN.test(websiteId)) {
+    throw new Error("UMAMI_WEBSITE_ID must be a valid UUID.");
   }
 
-  const beaconConfig = JSON.stringify({ token }).replace(/'/g, "&#39;");
-  const snippet =
-    `  <script type="module" src="${BEACON_SRC}" ` +
-    `data-cf-beacon='${beaconConfig}'></script>\n`;
+  const tracker =
+    `  <script defer src="${TRACKER_SRC}" ` +
+    `data-website-id="${websiteId}" ` +
+    `data-domains="${TRACKED_DOMAINS}" ` +
+    `data-do-not-track="true" ` +
+    `data-exclude-hash="true" ` +
+    `data-before-send="amalgamatorAnalyticsBeforeSend"></script>\n`;
+  const snippet = privacyFilter + tracker;
   const injected = [];
   const skipped = [];
 
@@ -44,7 +90,7 @@ export async function injectAnalytics({
       /<meta[^>]+http-equiv=["']refresh["']/i.test(html) ||
       /<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html);
 
-    if (isRedirect || html.includes("data-cf-beacon=")) {
+    if (isRedirect || html.includes("data-website-id=")) {
       skipped.push(relative);
       continue;
     }
@@ -66,13 +112,11 @@ const isMain =
 if (isMain) {
   const result = await injectAnalytics();
   if (!result.enabled) {
-    console.log(
-      "Cloudflare Web Analytics disabled: CLOUDFLARE_WEB_ANALYTICS_TOKEN is not set."
-    );
+    console.log("Umami Analytics disabled: UMAMI_WEBSITE_ID is not set.");
   } else {
     console.log(
-      `Cloudflare Web Analytics injected into ${result.injected.length} HTML page(s); ` +
-        `${result.skipped.length} redirect or existing-beacon page(s) skipped.`
+      `Umami Analytics injected into ${result.injected.length} HTML page(s); ` +
+        `${result.skipped.length} redirect or existing-tracker page(s) skipped.`
     );
   }
 }
