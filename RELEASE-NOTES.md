@@ -81,6 +81,8 @@ so the currently deployed shim keeps working until it is replaced.
 
 - Replaces the two LinkedIn routes with one **Share** heading and direct
   LinkedIn and Facebook icon actions.
+- Uses the native system share sheet for Facebook on phones and tablets,
+  avoiding the mobile app's unreliable interception of the legacy web sharer.
 - Removes the native card-posting route, automatic clipboard write, download
   side effect, opening-status message and fallback link.
 - Keeps image download, write-up copy and result-link copy as explicit

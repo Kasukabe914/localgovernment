@@ -3134,8 +3134,8 @@ export default function App() {
     return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(buildCompactShareUrl())}`;
   };
 
-  const buildFacebookLink = () => {
-    return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(buildCompactShareUrl())}`;
+  const buildFacebookLink = (shareUrl = buildCompactShareUrl()) => {
+    return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   };
 
   // One-click route. share-offsite accepts only `url`, so everything the feed
@@ -3149,8 +3149,34 @@ export default function App() {
     window.open(linkedInUrl, "_blank", "noopener,noreferrer");
   };
 
-  const shareOnFacebook = () => {
-    const facebookUrl = buildFacebookLink();
+  const shareOnFacebook = async () => {
+    const shareUrl = buildCompactShareUrl();
+    const mobileShareDevice =
+      navigator.userAgentData?.mobile === true ||
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const shareData = {
+      title: `${councilName} — The Amalgamator`,
+      url: shareUrl,
+    };
+
+    if (
+      mobileShareDevice &&
+      navigator.share &&
+      (!navigator.canShare || navigator.canShare(shareData))
+    ) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        // If the native share sheet fails, continue in Facebook's web dialog.
+        window.location.assign(buildFacebookLink(shareUrl));
+        return;
+      }
+    }
+
+    const facebookUrl = buildFacebookLink(shareUrl);
     window.open(facebookUrl, "_blank", "noopener,noreferrer");
   };
 
