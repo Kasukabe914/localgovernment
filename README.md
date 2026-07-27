@@ -79,6 +79,25 @@ npm run build
 
 The production site is written to `dist/`.
 
+## Aggregate analytics
+
+Production builds support Cloudflare Web Analytics without changing DNS or
+proxying the site through Cloudflare. The build injects the beacon into the app,
+About page, and privacy policy only when
+`CLOUDFLARE_WEB_ANALYTICS_TOKEN` is set. Redirect-only HTML files are skipped.
+
+To enable collection:
+
+1. Add `www.amalgamator.nz` as a site in Cloudflare Web Analytics.
+2. Copy its site token.
+3. In the GitHub repository, create the Actions variable
+   `CLOUDFLARE_WEB_ANALYTICS_TOKEN` with that token.
+4. Run the Pages workflow again.
+
+The site token is a public beacon identifier rather than a secret credential.
+Local builds omit the beacon unless the environment variable is deliberately
+set.
+
 ## Deploy with GitHub Pages
 
 The repository includes `.github/workflows/deploy-pages.yml`.
