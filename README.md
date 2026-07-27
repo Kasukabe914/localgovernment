@@ -18,20 +18,10 @@ name, the rates redistribution as a diverging bar chart, the blended bill, and a
 note naming any council with no published bill. No server and no new
 dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
 
-Two routes are offered:
-
-- **Post the card.** On supported phones and tablets, opens the system share
-  sheet with the PNG and write-up already attached. The user can choose
-  LinkedIn directly. On desktop—including Windows—it opens LinkedIn immediately, copies the write-up,
-  downloads the PNG, and leaves a visible “Open LinkedIn again” fallback.
-- **Share as a link.** Opens `share-offsite` immediately and leaves the same
-  visible fallback in case the browser blocks the new tab. The link carries
-  only the compact scenario token; the share service derives the group name
-  and exact result URL. LinkedIn accepts only a `url` parameter, so the
-  optional write-up is also copied to the clipboard.
-
-Both routes put the suggested write-up on the clipboard first, since there is no
-supported way to prefill the LinkedIn composer.
+The result screen offers one direct LinkedIn action under a **Share** heading.
+The icon opens `share-offsite` with a compact scenario token; the share service
+derives the group name and exact result URL. Download image, copy write-up and
+copy link remain available as separate, explicit actions.
 
 ### Card colours
 
@@ -42,6 +32,9 @@ other pole — ΔE 18.0 simulated, 26.4 normal vision, and passing chroma,
 lightness and contrast against the paper surface. Direction is additionally
 carried by side-of-zero position and a signed dollar label on every bar, so hue
 is never the only channel.
+
+The population-share bar uses discrete, high-contrast colours with matching
+legend swatches rather than progressively lighter shades of one colour.
 
 ## Requirements
 

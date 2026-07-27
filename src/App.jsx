@@ -2363,9 +2363,9 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
   const biggestRise = rising.length ? rising[0] : null;
   const biggestFall = falling.length ? falling[falling.length - 1] : null;
   const headline = biggestFall
-    ? `${biggestFall.council.name} pays ${money(Math.abs(biggestFall.change))} less a year`
+    ? `${biggestFall.council.name} ratepayers pay ${money(Math.abs(biggestFall.change))} on average less a year`
     : biggestRise
-      ? `${biggestRise.council.name} pays ${money(biggestRise.change)} more a year`
+      ? `${biggestRise.council.name} ratepayers pay ${money(biggestRise.change)} on average more a year`
       : "No comparable rates data for this combination";
 
   const noData = rates.rows
@@ -2385,7 +2385,7 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
     headline,
     // Short enough to survive LinkedIn's description truncation (~200 chars).
     summary: rates.blended
-      ? `${rising.length} of ${scored.length} councils would pay more, ${falling.length} would pay less. ${headline}.`
+      ? `Residents of ${rising.length} of ${scored.length} councils would pay more, ${falling.length} would pay less. ${headline}.`
       : "Population, land area and rates data for this combination.",
   };
 }
@@ -2403,17 +2403,17 @@ function sharePostText(finding, url) {
     lines.push("If rates were harmonised tomorrow:");
     if (finding.biggestRise) {
       lines.push(
-        `↑ ${finding.biggestRise.council.name} pays ${money(finding.biggestRise.change)} more a year`
+        `↑ ${finding.biggestRise.council.name} ratepayers pay ${money(finding.biggestRise.change)} on average more a year`
       );
     }
     if (finding.biggestFall) {
       lines.push(
-        `↓ ${finding.biggestFall.council.name} pays ${money(Math.abs(finding.biggestFall.change))} less a year`
+        `↓ ${finding.biggestFall.council.name} ratepayers pay ${money(Math.abs(finding.biggestFall.change))} on average less a year`
       );
     }
     lines.push("");
     lines.push(
-      `${finding.rising.length} councils would pay more, ${finding.falling.length} would pay less. Blended average residential bill: ${money(finding.blended)} a year.`
+      `Residents of ${finding.rising.length} of ${finding.rising.length + finding.falling.length} councils would pay more, ${finding.falling.length} would pay less. Blended average residential bill: ${money(finding.blended)} a year.`
     );
     if (finding.noData.length) {
       lines.push(
@@ -2430,18 +2430,6 @@ function sharePostText(finding, url) {
   lines.push("");
   lines.push("What would yours look like?");
   return lines.join("\n");
-}
-
-function shareCardFile(dataUrl, fileName) {
-  const [header, encoded] = dataUrl.split(",");
-  if (!header || !encoded) return null;
-  const mime = /data:([^;]+)/.exec(header)?.[1] || "image/png";
-  const binary = window.atob(encoded);
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
-  }
-  return new File([bytes], fileName, { type: mime });
 }
 
 function fitText(ctx, text, maxWidth, startSize, weight) {
@@ -2633,12 +2621,13 @@ function drawShareCard(canvas, finding, rates, totalArea) {
     ctx.fillRect(56, legendY - 6, 13, 13);
     ctx.fillStyle = CARD_INK_SOFT;
     ctx.font = `600 19px ${CARD_FONT}`;
-    ctx.fillText(`Pays more (${finding.rising.length})`, 78, legendY);
-    const shift = 78 + ctx.measureText(`Pays more (${finding.rising.length})`).width + 30;
+    ctx.fillText(`Ratepayers pay more (${finding.rising.length})`, 78, legendY);
+    const shift =
+      78 + ctx.measureText(`Ratepayers pay more (${finding.rising.length})`).width + 30;
     ctx.fillStyle = CARD_LESS;
     ctx.fillRect(shift, legendY - 6, 13, 13);
     ctx.fillStyle = CARD_INK_SOFT;
-    ctx.fillText(`Pays less (${finding.falling.length})`, shift + 22, legendY);
+    ctx.fillText(`Ratepayers pay less (${finding.falling.length})`, shift + 22, legendY);
     ctx.textBaseline = "alphabetic";
   }
 
@@ -2658,7 +2647,10 @@ function drawShareCard(canvas, finding, rates, totalArea) {
   ctx.font = `600 20px ${CARD_FONT}`;
   ctx.globalAlpha = 0.75;
   ctx.textAlign = "right";
-  ctx.fillText("Not a proposal · methodology published", CARD_W - 56, CARD_H - footH / 2);
+  const disclosure = "Indicative only. Rates changes subject to transition arrangements.";
+  const disclosureSize = fitText(ctx, disclosure, 610, 18, 600);
+  ctx.font = `600 ${disclosureSize}px ${CARD_FONT}`;
+  ctx.fillText(disclosure, CARD_W - 56, CARD_H - footH / 2);
   ctx.globalAlpha = 1;
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
@@ -2740,6 +2732,17 @@ function ShareIcon({ type }) {
   );
 }
 
+const POPULATION_SHARE_COLORS = [
+  "#c7461b",
+  "#286f9b",
+  "#7a5195",
+  "#2f7d62",
+  "#d18b21",
+  "#9d3f63",
+  "#536f22",
+  "#5c57a8",
+];
+
 function ResultShareBar({ members }) {
   const total = members.reduce((sum, m) => sum + m.pop, 0) || 1;
   const sorted = [...members].sort((a, b) => b.pop - a.pop);
@@ -2752,14 +2755,21 @@ function ResultShareBar({ members }) {
             key={m.id}
             style={{
               width: `${(m.pop / total) * 100}%`,
-              opacity: Math.max(0.38, 1 - i * 0.12),
+              backgroundColor: POPULATION_SHARE_COLORS[i % POPULATION_SHARE_COLORS.length],
             }}
           />
         ))}
       </div>
       <div className="simpleShareLegend">
-        {sorted.map((m) => (
+        {sorted.map((m, i) => (
           <span key={m.id}>
+            <i
+              className="simpleShareLegendSwatch"
+              style={{
+                backgroundColor: POPULATION_SHARE_COLORS[i % POPULATION_SHARE_COLORS.length],
+              }}
+              aria-hidden="true"
+            />
             {m.name} <strong>{Math.round((m.pop / total) * 100)}%</strong>
           </span>
         ))}
@@ -2779,8 +2789,6 @@ export default function App() {
   const [copied, setCopied] = useState("");
   const [cardBusy, setCardBusy] = useState(false);
   const [cardPreview, setCardPreview] = useState("");
-  const [shareStatus, setShareStatus] = useState("");
-  const [linkedInFallbackUrl, setLinkedInFallbackUrl] = useState("");
 
   useEffect(() => {
     try {
@@ -3112,8 +3120,6 @@ export default function App() {
 
   const copyLink = () => copyText(makeUrl(), "link");
 
-  const linkedInComposerUrl = "https://www.linkedin.com/feed/?shareActive=true";
-
   const buildCompactShareUrl = () => {
     const resultUrl = makeUrl();
     const encodedState = resultUrl.match(/[?&]m=([^&]+)/)?.[1] || "";
@@ -3128,54 +3134,6 @@ export default function App() {
     return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(buildCompactShareUrl())}`;
   };
 
-  // On devices that support file sharing, the system share sheet receives the
-  // completed PNG and write-up together. On desktop, LinkedIn must be opened
-  // before any awaited work or the browser may block it as an unsolicited
-  // popup. The visible fallback link keeps the path recoverable either way.
-  const shareNative = async () => {
-    setShareStatus("");
-    setLinkedInFallbackUrl("");
-
-    const mobileShareDevice =
-      navigator.userAgentData?.mobile === true ||
-      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
-    if (mobileShareDevice && cardPreview && navigator.share && navigator.canShare) {
-      const file = shareCardFile(cardPreview, cardFileName);
-      const shareData = file
-        ? {
-            title: `${councilName} — The Amalgamator`,
-            text: sharePostText(finding, makeUrl()),
-            files: [file],
-          }
-        : null;
-      if (shareData && navigator.canShare({ files: shareData.files })) {
-        try {
-          setShareStatus("Choose LinkedIn from the share sheet. The card and write-up are attached.");
-          await navigator.share(shareData);
-          setShareStatus("Shared from your device.");
-          return;
-        } catch (error) {
-          if (error?.name === "AbortError") {
-            setShareStatus("");
-            return;
-          }
-          // Fall through to the browser-based LinkedIn route.
-        }
-      }
-    }
-
-    setLinkedInFallbackUrl(linkedInComposerUrl);
-    window.open(linkedInComposerUrl, "_blank", "noopener,noreferrer");
-    const copyPromise = copyPost();
-    const downloadPromise = downloadCard();
-    setShareStatus(
-      "LinkedIn is opening. The write-up is copied and the card is downloading — paste the text, then attach the PNG."
-    );
-    await Promise.allSettled([copyPromise, downloadPromise]);
-  };
-
   // One-click route. share-offsite accepts only `url`, so everything the feed
   // shows comes from the Open Graph tags on the share shim.
   //
@@ -3184,19 +3142,11 @@ export default function App() {
   // enough for LinkedIn's mobile composer to handle as a normal link.
   const shareOnLinkedIn = () => {
     const linkedInUrl = buildLinkedInLink();
-    setLinkedInFallbackUrl(linkedInUrl);
-    setShareStatus("LinkedIn is opening with this result link. The optional write-up is copied.");
     window.open(linkedInUrl, "_blank", "noopener,noreferrer");
-    copyPost();
   };
 
-  useEffect(() => {
-    setShareStatus("");
-    setLinkedInFallbackUrl("");
-  }, [finding]);
-
-  // Show people the card before they post it — the preview is what makes the
-  // share feel like publishing a finding rather than pasting a link.
+  // Keep a preview available for people who want to download and reuse the
+  // share image separately.
   useEffect(() => {
     let cancelled = false;
     if (screen !== "result" || members.length < 2) {
@@ -3583,7 +3533,7 @@ export default function App() {
               <div className="simplePanelHead">
                 <div>
                   <p className="simpleEyebrow">Residential rates</p>
-                  <h2>Who could pay more or less?</h2>
+                  <h2>Which residents could pay more or less?</h2>
                 </div>
                 {rates.blended != null && (
                   <div className="simpleBlend">
@@ -3601,13 +3551,9 @@ export default function App() {
               ) : (
                 <>
                   <p className="simpleAnswer">
-                    {falling.length > 0 && rising.length > 0
-                      ? `${falling.length} council area${falling.length === 1 ? "" : "s"} could pay less and ${rising.length} could pay more.`
-                      : falling.length > 0
-                        ? `Every council area with data could pay less.`
-                        : rising.length > 0
-                          ? `Every council area with data could pay more.`
-                          : "Published averages are already very similar."}
+                    {rising.length > 0 || falling.length > 0
+                      ? `Residents of ${rising.length} of ${rising.length + falling.length} councils would pay more, ${falling.length} would pay less.`
+                      : "Published averages are already very similar."}
                   </p>
                   <div className="simpleRateChart">
                     <div className="simpleRateAxis" aria-hidden="true">
@@ -3706,37 +3652,21 @@ export default function App() {
               {cardPreview && (
                 <figure className="simpleCardPreview">
                   <img src={cardPreview} alt={`Share card for ${councilName}. ${finding.summary}`} />
-                  <figcaption>This is the image that gets posted.</figcaption>
+                  <figcaption>Preview of the downloadable share image.</figcaption>
                 </figure>
               )}
 
-              <div className="simpleShareRoutes">
-                <div className="simpleShareRoute simpleShareRoutePrimary">
-                  <h3>Post the card</h3>
-                  <p>
-                    On supported phones, the card and write-up go straight to your share
-                    sheet. On desktop, LinkedIn opens while the image downloads and the
-                    write-up copies.
-                  </p>
-                  <button
-                    className="simplePrimary"
-                    type="button"
-                    onClick={shareNative}
-                    disabled={cardBusy}
-                  >
-                    <ShareIcon type="linkedin" />
-                    {cardBusy ? "Preparing…" : "Share card on LinkedIn"}
-                  </button>
-                </div>
-
-                <div className="simpleShareRoute">
-                  <h3>Or share the link</h3>
-                  <p>Opens LinkedIn immediately with a result-specific preview link.</p>
-                  <button className="simpleSecondary" type="button" onClick={shareOnLinkedIn}>
-                    <ShareIcon type="linkedin" />
-                    Share link on LinkedIn
-                  </button>
-                </div>
+              <div className="simpleLinkedInShare">
+                <h3>Share</h3>
+                <button
+                  className="simpleLinkedInIconButton"
+                  type="button"
+                  onClick={shareOnLinkedIn}
+                  aria-label={`Share ${councilName} on LinkedIn`}
+                  title="Share on LinkedIn"
+                >
+                  <ShareIcon type="linkedin" />
+                </button>
               </div>
 
               <div className="simpleShareSecondary">
@@ -3754,25 +3684,14 @@ export default function App() {
                 </button>
               </div>
               <p className="simpleShareStatus" role="status" aria-live="polite">
-                {shareStatus ||
-                  (copied === "card"
-                    ? "Image saved to your downloads."
-                    : copied === "post"
-                      ? "Write-up copied. Paste it into the LinkedIn composer."
-                      : copied === "link"
-                        ? "Link copied."
-                        : "")}
+                {copied === "card"
+                  ? "Image saved to your downloads."
+                  : copied === "post"
+                    ? "Write-up copied. Paste it into the LinkedIn composer."
+                    : copied === "link"
+                      ? "Link copied."
+                      : ""}
               </p>
-              {linkedInFallbackUrl && (
-                <a
-                  className="simpleLinkedInFallback"
-                  href={linkedInFallbackUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open LinkedIn again
-                </a>
-              )}
             </article>
 
             <div className="simpleEndActions">
@@ -4565,7 +4484,8 @@ const SIMPLE_CSS = `
   border: 2px solid var(--ink);
   border-radius: 999px;
 }
-.simpleShareBar span { display: block; background: var(--accent); }
+.simpleShareBar span { display: block; }
+.simpleShareBar span + span { border-left: 2px solid var(--paper); }
 .simpleShareLegend {
   margin-top: 10px;
   display: flex;
@@ -4573,6 +4493,18 @@ const SIMPLE_CSS = `
   flex-wrap: wrap;
   color: var(--ink-soft);
   font-size: 12px;
+}
+.simpleShareLegend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.simpleShareLegendSwatch {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border: 1px solid rgba(25, 48, 54, 0.28);
+  border-radius: 2px;
 }
 .simpleShareLegend strong { color: var(--ink); }
 .simpleFinePrint {
@@ -4616,51 +4548,40 @@ const SIMPLE_CSS = `
   color: rgba(255, 255, 255, 0.66);
 }
 
-.simpleShareRoutes {
+.simpleLinkedInShare {
   margin-top: 20px;
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
-}
-.simpleShareRoute {
-  display: grid;
-  align-content: start;
+  display: flex;
+  align-items: center;
   gap: 8px;
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.16);
 }
-.simpleShareRoutePrimary {
-  background: rgba(255, 255, 255, 0.13);
-  border-color: rgba(255, 255, 255, 0.34);
-}
-.simpleShareRoute h3 {
+.simpleLinkedInShare h3 {
   margin: 0;
   font-size: 17px;
   font-weight: 800;
   color: var(--white);
 }
-.simpleShareRoute p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  color: rgba(255, 255, 255, 0.78);
-}
-.simpleShareRoute button {
-  justify-self: start;
-  margin-top: 4px;
+.simpleLinkedInIconButton {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-}
-.simpleShareRoute .simpleSecondary {
-  background: transparent;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
   color: var(--white);
-  border-color: rgba(255, 255, 255, 0.55);
+  background: #0a66c2;
+  border: 1px solid #0a66c2;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
 }
-.simpleShareRoute .simpleSecondary:hover {
-  background: rgba(255, 255, 255, 0.14);
+.simpleLinkedInIconButton:hover {
+  background: #08529b;
+  border-color: #08529b;
+  transform: translateY(-1px);
+}
+.simpleLinkedInIconButton:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.72);
+  outline-offset: 3px;
 }
 
 .simpleShareSecondary {
@@ -4694,23 +4615,6 @@ const SIMPLE_CSS = `
   font-size: 13px;
   color: rgba(255, 255, 255, 0.76);
 }
-.simpleLinkedInFallback {
-  margin-top: 8px;
-  display: inline-flex;
-  align-items: center;
-  min-height: 38px;
-  padding: 8px 14px;
-  color: var(--white);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 800;
-}
-.simpleLinkedInFallback:hover {
-  color: var(--ink);
-  background: var(--white);
-}
-
 .simpleSharePanel svg {
   width: 18px;
   height: 18px;
@@ -4725,17 +4629,6 @@ const SIMPLE_CSS = `
   fill: currentColor;
   stroke: none;
 }
-.simpleSharePanel .simplePrimary {
-  background: #0a66c2;
-  border-color: #0a66c2;
-  color: #ffffff;
-}
-.simpleSharePanel .simplePrimary:hover:not(:disabled) {
-  background: #08529b;
-  border-color: #08529b;
-}
-.simpleSharePanel .simplePrimary:disabled { opacity: 0.6; cursor: default; }
-
 .simpleFooter {
   max-width: 1120px;
   margin: 0 auto;
