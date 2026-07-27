@@ -2377,13 +2377,14 @@ function simpleRates(members) {
 // dollar label on every bar, so hue is never the only channel.
 // ---------------------------------------------------------------------------
 const CARD_W = 1200;
-const CARD_H = 630;
+const CARD_H = 1080;
 const CARD_PAPER = "#fbf8ef";
 const CARD_INK = "#193036";
 const CARD_INK_SOFT = "#4d6267";
 const CARD_MORE = "#ad3936";
 const CARD_LESS = "#0069a8";
 const CARD_RULE = "#d9d3c4";
+const CARD_PANEL = "#ffffff";
 const CARD_FONT = `'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif`;
 
 // The one sentence that has to survive being read in a feed at speed.
@@ -2475,31 +2476,79 @@ function fitText(ctx, text, maxWidth, startSize, weight) {
   return size;
 }
 
-function roundedBar(ctx, x, y, w, h, r, flatLeft) {
-  // 4px rounded data-end, square at the baseline (the zero line).
-  const radius = Math.min(r, Math.abs(w));
-  ctx.beginPath();
-  if (flatLeft) {
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + w - radius, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
-    ctx.lineTo(x + w, y + h - radius);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
-    ctx.lineTo(x, y + h);
-  } else {
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - w + radius, y);
-    ctx.quadraticCurveTo(x - w, y, x - w, y + radius);
-    ctx.lineTo(x - w, y + h - radius);
-    ctx.quadraticCurveTo(x - w, y + h, x - w + radius, y + h);
-    ctx.lineTo(x, y + h);
-  }
-  ctx.closePath();
-  ctx.fill();
+function wrapCardText(ctx, text, maxWidth) {
+  const words = text.split(/\s+/);
+  const lines = [];
+  let line = "";
+  words.forEach((word) => {
+    const next = line ? `${line} ${word}` : word;
+    if (line && ctx.measureText(next).width > maxWidth) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
 }
 
-// Renders the 1200x630 card. Pure canvas, no dependencies, no server.
-function drawShareCard(canvas, finding, rates, totalArea) {
+function drawCardRows(ctx, rows, {
+  x,
+  y,
+  width,
+  labelFor,
+  valueFor,
+  colorFor,
+  emptyText,
+}) {
+  const visible = rows.slice(0, 8);
+  const rowH = 35;
+  visible.forEach((row, index) => {
+    const rowY = y + index * rowH;
+    if (index > 0) {
+      ctx.strokeStyle = CARD_RULE;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, rowY - 12.5);
+      ctx.lineTo(x + width, rowY - 12.5);
+      ctx.stroke();
+    }
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    ctx.fillStyle = CARD_INK;
+    const label = labelFor(row);
+    const nameSize = fitText(ctx, label, width - 190, 17, 650);
+    ctx.font = `650 ${nameSize}px ${CARD_FONT}`;
+    ctx.fillText(label, x, rowY);
+
+    ctx.textAlign = "right";
+    ctx.fillStyle = colorFor(row);
+    ctx.font = `750 18px ${CARD_FONT}`;
+    ctx.fillText(valueFor(row), x + width, rowY);
+  });
+  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = "left";
+
+  if (!rows.length) {
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.font = `600 18px ${CARD_FONT}`;
+    ctx.fillText(emptyText, x, y);
+  } else if (rows.length > visible.length) {
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.font = `600 15px ${CARD_FONT}`;
+    ctx.fillText(
+      `Plus ${rows.length - visible.length} more council${rows.length - visible.length === 1 ? "" : "s"} in the full result`,
+      x,
+      y + visible.length * rowH
+    );
+  }
+}
+
+// Renders a complete result card. It is deliberately taller than an OG image:
+// the download is an infographic, not a teaser, so it carries the selected name,
+// both estimates, and the interpretation needed to read them responsibly.
+function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   const ctx = canvas.getContext("2d");
   canvas.width = CARD_W;
   canvas.height = CARD_H;
@@ -2522,23 +2571,23 @@ function drawShareCard(canvas, finding, rates, totalArea) {
   ctx.globalAlpha = 1;
   ctx.textAlign = "left";
 
-  // Hero: the council the user built
+  // Hero: the council name chosen by the user.
   let y = headH + 62;
-  const heroSize = fitText(ctx, finding.councilName, CARD_W - 112, 68, 800);
+  const heroSize = fitText(ctx, finding.councilName, CARD_W - 112, 62, 800);
   ctx.fillStyle = CARD_INK;
   ctx.font = `800 ${heroSize}px ${CARD_FONT}`;
   ctx.fillText(finding.councilName, 56, y);
 
-  y += 40;
+  y += 38;
   ctx.fillStyle = CARD_INK_SOFT;
-  ctx.font = `600 23px ${CARD_FONT}`;
+  ctx.font = `600 22px ${CARD_FONT}`;
   ctx.fillText(
     `${finding.councilCount} councils · ${fmtPop(finding.population)} people · ${Math.round(totalArea).toLocaleString("en-NZ")} km²`,
     56,
     y
   );
 
-  y += 34;
+  y += 40;
   ctx.strokeStyle = CARD_RULE;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -2546,144 +2595,135 @@ function drawShareCard(canvas, finding, rates, totalArea) {
   ctx.lineTo(CARD_W - 56, y + 0.5);
   ctx.stroke();
 
-  const footH = 74;
-  const rows = rates.rows.filter((row) => row.change != null);
+  const panelTop = y + 32;
+  const panelGap = 28;
+  const panelW = (CARD_W - 112 - panelGap) / 2;
+  const panelH = 505;
+  const ratesX = 56;
+  const assetsX = ratesX + panelW + panelGap;
 
-  if (!rows.length || !rates.blended) {
-    ctx.fillStyle = CARD_INK_SOFT;
-    ctx.font = `600 26px ${CARD_FONT}`;
-    ctx.fillText(
-      "Not enough published rates data to compare this combination.",
-      56,
-      y + 60
-    );
-  } else {
-    y += 38;
-    ctx.fillStyle = CARD_INK_SOFT;
-    ctx.font = `700 20px ${CARD_FONT}`;
-    ctx.fillText("CHANGE TO THE AVERAGE RESIDENTIAL RATES BILL", 56, y);
-
-    // Biggest movers, both directions, largest absolute change first.
-    const shown = [...rows]
-      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
-      .slice(0, 5)
-      .sort((a, b) => b.change - a.change);
-
-    const maxAbs = Math.max(...shown.map((r) => Math.abs(r.change)), 1);
-    // Names sit in their own left column: a diverging bar grows both ways, so
-    // a label hung off the zero line gets painted over by its own bar.
-    const nameX = 56;
-    const nameMax = 280;
-    const zeroX = 646;
-    const maxBar = 240;
-    // Councils excluded from the blend get named. A card that says "4
-    // councils" and draws three bars invites exactly the objection this tool
-    // shouldn't attract.
-    const noData = rates.rows
-      .filter((row) => row.change == null)
-      .map((row) => row.council.name);
-
-    const legendY = CARD_H - footH - 28;
-    const noteY = legendY - 28;
-    const chartBottom = (noData.length ? noteY : legendY) - 18;
-    const chartTop = y + 24;
-    const span = chartBottom - chartTop;
-    // Fill the space rather than top-anchoring: a two-council card was
-    // leaving half the panel empty.
-    const rowH = Math.min(56, span / shown.length);
-    // Cap the mark at 24px however much room there is — a fat bar reads as
-    // decoration, and the leftover band is meant to be air.
-    const barH = Math.max(18, Math.min(24, rowH - 24));
-    const top = chartTop + Math.max(0, (span - rowH * shown.length) / 2);
-
-    // Zero line — the neutral midpoint of the diverging scale.
+  [ratesX, assetsX].forEach((panelX) => {
+    ctx.fillStyle = CARD_PANEL;
+    ctx.fillRect(panelX, panelTop, panelW, panelH);
     ctx.strokeStyle = CARD_RULE;
-    ctx.lineWidth = 2;
-    const pad = (rowH - barH) / 2;
-    ctx.beginPath();
-    ctx.moveTo(zeroX, top + pad - 6);
-    ctx.lineTo(zeroX, top + (shown.length - 1) * rowH + pad + barH + 6);
-    ctx.stroke();
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(panelX + 0.75, panelTop + 0.75, panelW - 1.5, panelH - 1.5);
+  });
 
-    shown.forEach((row, i) => {
-      const rowY = top + i * rowH;
-      const barY = rowY + (rowH - barH) / 2;
-      // Keep a hairline of bar visible even for a near-zero change.
-      const w = Math.max(3, (Math.abs(row.change) / maxAbs) * maxBar);
-      const up = row.change > 0;
+  const drawPanelHeader = (x, eyebrow, title, metric, suffix) => {
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.font = `750 16px ${CARD_FONT}`;
+    ctx.fillText(eyebrow.toUpperCase(), x + 24, panelTop + 35);
+    ctx.fillStyle = CARD_INK;
+    ctx.font = `800 25px ${CARD_FONT}`;
+    ctx.fillText(title, x + 24, panelTop + 72);
+    ctx.font = `800 33px ${CARD_FONT}`;
+    ctx.fillText(metric, x + 24, panelTop + 116);
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.font = `600 17px ${CARD_FONT}`;
+    ctx.fillText(suffix, x + 24, panelTop + 143);
+  };
 
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = CARD_INK;
-      ctx.textAlign = "left";
-      const nameSize = fitText(ctx, row.council.name, nameMax, 22, 600);
-      ctx.font = `600 ${nameSize}px ${CARD_FONT}`;
-      ctx.fillText(row.council.name, nameX, barY + barH / 2);
+  drawPanelHeader(
+    ratesX,
+    "Residential rates",
+    "Who could pay more or less?",
+    rates.blended != null ? money(rates.blended) : "Not enough data",
+    rates.blended != null ? "blended average residential bill a year" : "for a blended residential bill"
+  );
+  drawPanelHeader(
+    assetsX,
+    "Net assets per resident",
+    "How would balance sheets combine?",
+    netAssets.mergedPerResident != null
+      ? money(netAssets.mergedPerResident)
+      : "Not enough data",
+    netAssets.mergedPerResident != null ? "merged average per resident" : "for a merged accounting comparison"
+  );
 
-      ctx.fillStyle = up ? CARD_MORE : CARD_LESS;
-      roundedBar(ctx, zeroX + (up ? 1 : -1), barY, w, barH, 4, up);
+  ctx.fillStyle = CARD_INK_SOFT;
+  ctx.font = `600 15px ${CARD_FONT}`;
+  ctx.fillText(
+    rates.blended != null
+      ? `Residents of ${finding.rising.length} of ${finding.rising.length + finding.falling.length} councils could pay more; ${finding.falling.length} could pay less.`
+      : "Not enough published residential-bill data to compare.",
+    ratesX + 24,
+    panelTop + 174
+  );
+  const assetHigherCount = netAssets.rows.filter((row) => row.change > 0).length;
+  const assetLowerCount = netAssets.rows.filter((row) => row.change < 0).length;
+  ctx.fillText(
+    netAssets.mergedPerResident != null
+      ? `${assetHigherCount} council areas move higher; ${assetLowerCount} move lower.`
+      : "Not enough comparable council-only financial data.",
+    assetsX + 24,
+    panelTop + 174
+  );
 
-      // Direct label at the outer tip of every bar: the secondary encoding
-      // that lets the pair stay legible without relying on hue.
-      ctx.fillStyle = CARD_INK;
-      ctx.font = `700 22px ${CARD_FONT}`;
-      ctx.textAlign = up ? "left" : "right";
-      ctx.fillText(
-        signed(row.change),
-        up ? zeroX + w + 14 : zeroX - w - 14,
-        barY + barH / 2
-      );
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
+  const rateRows = rates.rows;
+  drawCardRows(ctx, rateRows, {
+    x: ratesX + 24,
+    y: panelTop + 207,
+    width: panelW - 48,
+    labelFor: (row) =>
+      row.before == null
+        ? row.council.name
+        : `${row.council.name} · ${money(row.before)} now`,
+    valueFor: (row) =>
+      row.change == null
+        ? "No data"
+        : `${row.change > 0 ? "+" : row.change < 0 ? "−" : ""}${money(Math.abs(row.change))} / year`,
+    colorFor: (row) =>
+      row.change == null ? CARD_INK_SOFT : row.change > 0 ? CARD_MORE : CARD_LESS,
+    emptyText: "No comparable residential-bill rows.",
+  });
+
+  drawCardRows(ctx, netAssets.rows, {
+    x: assetsX + 24,
+    y: panelTop + 207,
+    width: panelW - 48,
+    labelFor: (row) => `${row.council.name} · ${money(row.before)} now`,
+    valueFor: (row) =>
+      `${row.change > 0 ? "+" : row.change < 0 ? "−" : ""}${money(Math.abs(row.change))} / resident`,
+    colorFor: (row) =>
+      row.change > 0 ? CARD_LESS : row.change < 0 ? CARD_MORE : CARD_INK_SOFT,
+    emptyText: "No comparable council-only balance sheets.",
+  });
+
+  const explanationTop = panelTop + panelH + 28;
+  ctx.fillStyle = "#f1ede2";
+  ctx.fillRect(56, explanationTop, CARD_W - 112, 151);
+  ctx.fillStyle = CARD_INK;
+  ctx.font = `800 20px ${CARD_FONT}`;
+  ctx.fillText("WHAT THESE ESTIMATES MEAN", 80, explanationTop + 31);
+
+  const rateExplanation =
+    "Rates use published 2024/25 average residential bills weighted by household count. They show redistribution, not an individual-property forecast. Property values, targeted rates, differentials, caps, transition costs and savings are not modelled.";
+  const assetExplanation =
+    "Net assets use 30 June 2024 council-only accounts divided by 2024 population. This is an accounting comparison, not cash. It does not show asset location or condition, ring-fenced liabilities, services or rates. Council-controlled organisations are excluded.";
+  ctx.fillStyle = CARD_INK_SOFT;
+  ctx.font = `600 16px ${CARD_FONT}`;
+  [
+    [80, rateExplanation],
+    [620, assetExplanation],
+  ].forEach(([textX, text]) => {
+    wrapCardText(ctx, text, 500).slice(0, 5).forEach((line, index) => {
+      ctx.fillText(line, textX, explanationTop + 62 + index * 20);
     });
-
-    if (noData.length) {
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = CARD_INK_SOFT;
-      ctx.font = `600 18px ${CARD_FONT}`;
-      const label =
-        noData.length === 1
-          ? `${noData[0]} publishes no average residential bill and is not in the blend.`
-          : `${noData.slice(0, 3).join(", ")}${noData.length > 3 ? " and others" : ""} publish no average residential bill and are not in the blend.`;
-      ctx.fillText(label, 56, noteY);
-      ctx.textBaseline = "alphabetic";
-    }
-
-    // Legend — identity never rests on colour alone.
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = CARD_MORE;
-    ctx.fillRect(56, legendY - 6, 13, 13);
-    ctx.fillStyle = CARD_INK_SOFT;
-    ctx.font = `600 19px ${CARD_FONT}`;
-    ctx.fillText(`Ratepayers pay more (${finding.rising.length})`, 78, legendY);
-    const shift =
-      78 + ctx.measureText(`Ratepayers pay more (${finding.rising.length})`).width + 30;
-    ctx.fillStyle = CARD_LESS;
-    ctx.fillRect(shift, legendY - 6, 13, 13);
-    ctx.fillStyle = CARD_INK_SOFT;
-    ctx.fillText(`Ratepayers pay less (${finding.falling.length})`, shift + 22, legendY);
-    ctx.textBaseline = "alphabetic";
-  }
+  });
 
   // Footer
+  const footH = 76;
   ctx.fillStyle = CARD_INK;
   ctx.fillRect(0, CARD_H - footH, CARD_W, footH);
   ctx.textBaseline = "middle";
   ctx.fillStyle = CARD_PAPER;
-  ctx.font = `700 22px ${CARD_FONT}`;
-  ctx.fillText(
-    rates.blended
-      ? `Blended average bill ${money(rates.blended)} a year`
-      : "Indicative modelling",
-    56,
-    CARD_H - footH / 2
-  );
-  ctx.font = `600 20px ${CARD_FONT}`;
+  ctx.font = `700 18px ${CARD_FONT}`;
+  ctx.fillText("Indicative only. Rates changes subject to transition arrangements.", 56, CARD_H - footH / 2);
   ctx.globalAlpha = 0.75;
   ctx.textAlign = "right";
-  const disclosure = "Indicative only. Rates changes subject to transition arrangements.";
-  const disclosureSize = fitText(ctx, disclosure, 610, 18, 600);
-  ctx.font = `600 ${disclosureSize}px ${CARD_FONT}`;
-  ctx.fillText(disclosure, CARD_W - 56, CARD_H - footH / 2);
+  ctx.font = `600 17px ${CARD_FONT}`;
+  ctx.fillText("kasukabe914.github.io/localgovernment/about/", CARD_W - 56, CARD_H - footH / 2);
   ctx.globalAlpha = 1;
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
@@ -3151,7 +3191,7 @@ export default function App() {
       // A missing webfont only affects the card's typeface, not its content.
     }
     const canvas = document.createElement("canvas");
-    drawShareCard(canvas, finding, rates, totalArea);
+    drawShareCard(canvas, finding, rates, netAssets, totalArea);
     return canvas;
   };
 
@@ -3248,7 +3288,7 @@ export default function App() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen, finding, rates, totalArea, members.length]);
+  }, [screen, finding, rates, netAssets, totalArea, members.length]);
 
   const renderCouncilChoice = (council) => {
     const checked = selectedIds.includes(council.id);
@@ -3815,22 +3855,6 @@ export default function App() {
               </details>
             </article>
 
-            <article className="simplePanel">
-              <p className="simpleEyebrow">Balance of the new council</p>
-              <h2>Where would most people live?</h2>
-              <p className="simpleAnswer">
-                <strong>{largest.name}</strong> would account for {largestShare}% of the population.
-                {largestShare > 50
-                  ? " It would be larger than all the other council areas combined."
-                  : " No single area would hold a majority of residents."}
-              </p>
-              <ResultShareBar members={members} />
-              <p className="simpleFinePrint">
-                Population share is not voting power. Representation, wards, and local
-                boards would be decided separately.
-              </p>
-            </article>
-
             <article className="simpleSharePanel">
               <div className="simpleShareHead">
                 <p className="simpleEyebrow">Keep the conversation going</p>
@@ -3918,6 +3942,22 @@ export default function App() {
                     : copied === "link"
                       ? "Link copied."
                       : ""}
+              </p>
+            </article>
+
+            <article className="simplePanel">
+              <p className="simpleEyebrow">Balance of the new council</p>
+              <h2>Where would most people live?</h2>
+              <p className="simpleAnswer">
+                <strong>{largest.name}</strong> would account for {largestShare}% of the population.
+                {largestShare > 50
+                  ? " It would be larger than all the other council areas combined."
+                  : " No single area would hold a majority of residents."}
+              </p>
+              <ResultShareBar members={members} />
+              <p className="simpleFinePrint">
+                Population share is not voting power. Representation, wards, and local
+                boards would be decided separately.
               </p>
             </article>
 

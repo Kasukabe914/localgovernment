@@ -162,6 +162,12 @@ test("code, outputs and source data have distinct licence statements", () => {
   assert.match(dataLicence, /Original text and visual outputs.*CC BY 4\.0/is);
   assert.match(about, /Suggested citation:/);
   assert.match(about, /<h2 id="changes-heading">Change log<\/h2>/);
+  assert.match(about, /public change log will begin when the site is shared publicly/i);
+  const changeLogSection = about.match(
+    /<section class="panel" aria-labelledby="changes-heading">([\s\S]*?)<\/section>/
+  )?.[1] || "";
+  assert.doesNotMatch(changeLogSection, /<li>/);
+  assert.doesNotMatch(changeLogSection, /Established the authorship/);
 });
 
 test("social descriptions point readers to the method page", () => {
