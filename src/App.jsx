@@ -2693,15 +2693,6 @@ function ShareIcon({ type }) {
       </svg>
     );
   }
-  if (type === "share") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M12 16V3" />
-        <path d="m7 8 5-5 5 5" />
-        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-      </svg>
-    );
-  }
   if (type === "email") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -2731,6 +2722,29 @@ function ShareIcon({ type }) {
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <circle className="simpleShareSolid" cx="6" cy="5.5" r="2" />
         <path className="simpleShareSolid" d="M4 9h4v11H4zM11 9h3.8v1.5c.8-1.2 2-2 3.8-2 3.1 0 4.4 2 4.4 5.5v6h-4v-5.3c0-1.7-.6-2.7-1.9-2.7-1.5 0-2.1 1-2.1 3.1V20h-4z" />
+      </svg>
+    );
+  }
+  if (type === "x") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          className="simpleShareSolid"
+          d="M18.6 3H22l-7.4 8.5L23 21h-6.6l-5.1-6.7L5.4 21H2l7.7-8.8L1.7 3h6.7l4.6 6.1L18.6 3Zm-1.2 16h1.9L7.4 4.9h-2L17.4 19Z"
+        />
+      </svg>
+    );
+  }
+  if (type === "reddit") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M5.2 13.2a7.4 5.7 0 0 0 13.6 0" />
+        <circle cx="8.8" cy="12.5" r="1" />
+        <circle cx="15.2" cy="12.5" r="1" />
+        <path d="M9 16c1.7 1 4.3 1 6 0M12.6 7.4l1-4 3.4.8" />
+        <circle cx="18.3" cy="5" r="1.7" />
+        <circle cx="4.2" cy="11.2" r="2" />
+        <circle cx="19.8" cy="11.2" r="2" />
       </svg>
     );
   }
@@ -3131,70 +3145,47 @@ export default function App() {
 
   const copyLink = () => copyText(makeUrl(), "link");
 
+  const shareTitle = `${councilName} — The Amalgamator`;
+
   const buildLinkedInLink = (shareUrl = makeUrl()) => {
-    return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+    const linkedInUrl = new URL("https://www.linkedin.com/shareArticle");
+    linkedInUrl.searchParams.set("mini", "true");
+    linkedInUrl.searchParams.set("url", shareUrl);
+    linkedInUrl.searchParams.set("title", shareTitle);
+    linkedInUrl.searchParams.set("summary", finding.summary);
+    linkedInUrl.searchParams.set("source", "kasukabe914.github.io");
+    return linkedInUrl.toString();
   };
 
   const buildFacebookFallbackLink = (shareUrl = makeUrl()) => {
     return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   };
 
-  const isMobileShareDevice = () =>
-    navigator.userAgentData?.mobile === true ||
-    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
-  const buildFacebookDialogLink = (shareUrl = makeUrl()) => {
-    if (!FACEBOOK_APP_ID) return "";
-    const dialogUrl = new URL("https://www.facebook.com/dialog/share");
-    dialogUrl.searchParams.set("app_id", FACEBOOK_APP_ID);
-    dialogUrl.searchParams.set("display", "page");
-    dialogUrl.searchParams.set("href", shareUrl);
-    dialogUrl.searchParams.set("redirect_uri", PUBLIC_APP_URL);
-    return dialogUrl.toString();
+  const buildFacebookLink = (shareUrl = makeUrl()) => {
+    if (!FACEBOOK_APP_ID) return buildFacebookFallbackLink(shareUrl);
+    const facebookUrl = new URL("https://www.facebook.com/dialog/feed");
+    facebookUrl.searchParams.set("app_id", FACEBOOK_APP_ID);
+    facebookUrl.searchParams.set("redirect_uri", PUBLIC_APP_URL);
+    facebookUrl.searchParams.set("link", shareUrl);
+    facebookUrl.searchParams.set("name", shareTitle);
+    facebookUrl.searchParams.set("picture", `${PUBLIC_APP_URL}og-image.jpg`);
+    facebookUrl.searchParams.set("description", finding.summary);
+    return facebookUrl.toString();
   };
 
-  const shareOnLinkedIn = () => {
-    window.open(buildLinkedInLink(), "_blank", "noopener,noreferrer");
+  const buildXLink = (shareUrl = makeUrl()) => {
+    const xUrl = new URL("https://twitter.com/intent/tweet");
+    xUrl.searchParams.set("text", shareTitle);
+    xUrl.searchParams.set("url", shareUrl);
+    return xUrl.toString();
   };
 
-  const shareOnFacebook = () => {
-    const shareUrl = makeUrl();
-    const dialogUrl = buildFacebookDialogLink(shareUrl);
-    if (dialogUrl) {
-      window.open(dialogUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    window.open(buildFacebookFallbackLink(shareUrl), "_blank", "noopener,noreferrer");
+  const buildRedditLink = (shareUrl = makeUrl()) => {
+    const redditUrl = new URL("https://www.reddit.com/submit");
+    redditUrl.searchParams.set("url", shareUrl);
+    redditUrl.searchParams.set("title", shareTitle);
+    return redditUrl.toString();
   };
-
-  const shareOnMobile = async () => {
-    const shareUrl = makeUrl();
-    const shareData = {
-      title: `${councilName} — The Amalgamator`,
-      text: finding.summary,
-      url: shareUrl,
-    };
-
-    if (
-      navigator.share &&
-      (!navigator.canShare || navigator.canShare(shareData))
-    ) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (error) {
-        if (error?.name === "AbortError") return;
-      }
-    }
-
-    // Some embedded or older mobile browsers do not expose native sharing.
-    // Keep the result useful by copying the same direct link instead.
-    await copyText(shareUrl, "link");
-  };
-
-  const mobileShareDevice = isMobileShareDevice();
 
   // Keep a preview available for people who want to download and reuse the
   // share image separately.
@@ -3710,38 +3701,55 @@ export default function App() {
               <div className="simpleSocialShare">
                 <h3>Share</h3>
                 <div className="simpleSocialShareButtons">
-                  {mobileShareDevice ? (
-                    <button
-                      className="simpleNativeShareButton"
-                      type="button"
-                      onClick={shareOnMobile}
-                      aria-label={`Share ${councilName}`}
-                    >
-                      <ShareIcon type="share" />
-                      Share
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        className="simpleSocialIconButton simpleLinkedInIconButton"
-                        type="button"
-                        onClick={shareOnLinkedIn}
-                        aria-label={`Share ${councilName} on LinkedIn`}
-                        title="Share on LinkedIn"
-                      >
-                        <ShareIcon type="linkedin" />
-                      </button>
-                      <button
-                        className="simpleSocialIconButton simpleFacebookIconButton"
-                        type="button"
-                        onClick={shareOnFacebook}
-                        aria-label={`Share ${councilName} on Facebook`}
-                        title="Share on Facebook"
-                      >
-                        <ShareIcon type="facebook" />
-                      </button>
-                    </>
-                  )}
+                  <a
+                    className="simpleSocialIconButton simpleFacebookIconButton"
+                    href={buildFacebookLink()}
+                    target="_blank"
+                    rel="noreferrer nofollow noopener"
+                    aria-label={`Share ${councilName} on Facebook`}
+                    title="Share on Facebook"
+                  >
+                    <ShareIcon type="facebook" />
+                  </a>
+                  <a
+                    className="simpleSocialIconButton simpleXIconButton"
+                    href={buildXLink()}
+                    target="_blank"
+                    rel="noreferrer nofollow noopener"
+                    aria-label={`Share ${councilName} on X`}
+                    title="Share on X"
+                  >
+                    <ShareIcon type="x" />
+                  </a>
+                  <a
+                    className="simpleSocialIconButton simpleLinkedInIconButton"
+                    href={buildLinkedInLink()}
+                    target="_blank"
+                    rel="noreferrer nofollow noopener"
+                    aria-label={`Share ${councilName} on LinkedIn`}
+                    title="Share on LinkedIn"
+                  >
+                    <ShareIcon type="linkedin" />
+                  </a>
+                  <a
+                    className="simpleSocialIconButton simpleRedditIconButton"
+                    href={buildRedditLink()}
+                    target="_blank"
+                    rel="noreferrer nofollow noopener"
+                    aria-label={`Share ${councilName} on Reddit`}
+                    title="Share on Reddit"
+                  >
+                    <ShareIcon type="reddit" />
+                  </a>
+                  <button
+                    className="simpleSocialIconButton simpleCopyLinkIconButton"
+                    type="button"
+                    onClick={copyLink}
+                    aria-label={`Copy link to ${councilName}`}
+                    title="Copy link"
+                  >
+                    <ShareIcon type={copied === "link" ? "check" : "link"} />
+                  </button>
                 </div>
               </div>
 
@@ -3753,10 +3761,6 @@ export default function App() {
                 <button type="button" onClick={copyPost}>
                   <ShareIcon type={copied === "post" ? "check" : "copy"} />
                   {copied === "post" ? "Write-up copied" : "Copy write-up"}
-                </button>
-                <button type="button" onClick={copyLink}>
-                  <ShareIcon type={copied === "link" ? "check" : "link"} />
-                  {copied === "link" ? "Link copied" : "Copy link"}
                 </button>
               </div>
               <p className="simpleShareStatus" role="status" aria-live="polite">
@@ -4628,6 +4632,7 @@ const SIMPLE_CSS = `
 .simpleSocialShare {
   margin-top: 20px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -4639,6 +4644,7 @@ const SIMPLE_CSS = `
 }
 .simpleSocialShareButtons {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -4649,7 +4655,9 @@ const SIMPLE_CSS = `
   width: 42px;
   height: 42px;
   padding: 0;
+  font: inherit;
   color: var(--white);
+  text-decoration: none;
   border: 1px solid transparent;
   border-radius: 10px;
   cursor: pointer;
@@ -4659,32 +4667,6 @@ const SIMPLE_CSS = `
   transform: translateY(-1px);
 }
 .simpleSocialIconButton:focus-visible {
-  outline: 3px solid rgba(255, 255, 255, 0.72);
-  outline-offset: 3px;
-}
-.simpleNativeShareButton {
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 9px 16px;
-  font: inherit;
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--ink);
-  background: var(--white);
-  border: 1px solid var(--white);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
-}
-.simpleNativeShareButton:hover {
-  background: var(--paper);
-  border-color: var(--paper);
-  transform: translateY(-1px);
-}
-.simpleNativeShareButton:focus-visible {
   outline: 3px solid rgba(255, 255, 255, 0.72);
   outline-offset: 3px;
 }
@@ -4703,6 +4685,30 @@ const SIMPLE_CSS = `
 .simpleFacebookIconButton:hover {
   background: #0c5fca;
   border-color: #0c5fca;
+}
+.simpleXIconButton {
+  background: #000000;
+  border-color: rgba(255, 255, 255, 0.34);
+}
+.simpleXIconButton:hover {
+  background: #252525;
+  border-color: rgba(255, 255, 255, 0.55);
+}
+.simpleRedditIconButton {
+  background: #ff4500;
+  border-color: #ff4500;
+}
+.simpleRedditIconButton:hover {
+  background: #d93b00;
+  border-color: #d93b00;
+}
+.simpleCopyLinkIconButton {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+.simpleCopyLinkIconButton:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.72);
 }
 
 .simpleShareSecondary {
