@@ -2377,7 +2377,7 @@ function simpleRates(members) {
 // dollar label on every bar, so hue is never the only channel.
 // ---------------------------------------------------------------------------
 const CARD_W = 1200;
-const CARD_H = 1080;
+const CARD_H = 1200;
 const CARD_PAPER = "#fbf8ef";
 const CARD_INK = "#193036";
 const CARD_INK_SOFT = "#4d6267";
@@ -2408,6 +2408,7 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
   return {
     councilName,
     councilCount: members.length,
+    councilNames: members.map((member) => member.name),
     population: totalPopulation,
     rising,
     falling,
@@ -2549,12 +2550,21 @@ function drawCardRows(ctx, rows, {
 // the download is an infographic, not a teaser, so it carries the selected name,
 // both estimates, and the interpretation needed to read them responsibly.
 function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
-  const ctx = canvas.getContext("2d");
   canvas.width = CARD_W;
   canvas.height = CARD_H;
+  let ctx = canvas.getContext("2d");
+  ctx.font = `650 18px ${CARD_FONT}`;
+  const councilList = finding.councilNames.join(" · ");
+  const councilLines = wrapCardText(ctx, councilList, CARD_W - 112);
+  const extraCouncilLines = Math.max(0, councilLines.length - 3);
+  const cardHeight = CARD_H + extraCouncilLines * 23;
+  if (cardHeight !== CARD_H) {
+    canvas.height = cardHeight;
+    ctx = canvas.getContext("2d");
+  }
 
   ctx.fillStyle = CARD_PAPER;
-  ctx.fillRect(0, 0, CARD_W, CARD_H);
+  ctx.fillRect(0, 0, CARD_W, cardHeight);
 
   // Masthead
   const headH = 84;
@@ -2587,7 +2597,19 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
     y
   );
 
-  y += 40;
+  y += 32;
+  ctx.fillStyle = CARD_INK_SOFT;
+  ctx.font = `750 14px ${CARD_FONT}`;
+  ctx.fillText("COUNCILS INCLUDED", 56, y);
+
+  y += 28;
+  ctx.fillStyle = CARD_INK;
+  ctx.font = `650 18px ${CARD_FONT}`;
+  councilLines.forEach((line, index) => {
+    ctx.fillText(line, 56, y + index * 23);
+  });
+
+  y = headH + 246 + extraCouncilLines * 23;
   ctx.strokeStyle = CARD_RULE;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -2715,15 +2737,15 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   // Footer
   const footH = 76;
   ctx.fillStyle = CARD_INK;
-  ctx.fillRect(0, CARD_H - footH, CARD_W, footH);
+  ctx.fillRect(0, cardHeight - footH, CARD_W, footH);
   ctx.textBaseline = "middle";
   ctx.fillStyle = CARD_PAPER;
   ctx.font = `700 18px ${CARD_FONT}`;
-  ctx.fillText("Indicative only. Rates changes subject to transition arrangements.", 56, CARD_H - footH / 2);
+  ctx.fillText("Indicative only. Rates changes subject to transition arrangements.", 56, cardHeight - footH / 2);
   ctx.globalAlpha = 0.75;
   ctx.textAlign = "right";
   ctx.font = `600 17px ${CARD_FONT}`;
-  ctx.fillText("www.amalgamator.nz/about/", CARD_W - 56, CARD_H - footH / 2);
+  ctx.fillText("www.amalgamator.nz/about/", CARD_W - 56, cardHeight - footH / 2);
   ctx.globalAlpha = 1;
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
@@ -3845,9 +3867,9 @@ export default function App() {
                 <summary>How to read this estimate</summary>
                 <p>
                   Net assets are total assets minus total liabilities. The merged
-                  figure pools the selected councilsâ€™ 30 June 2024 council-only
+                  figure pools the selected councils’ 30 June 2024 council-only
                   balance sheets and divides the result by their combined 2024
-                  population. Each row compares that figure with the TLAâ€™s current
+                  population. Each row compares that figure with the TLA’s current
                   net assets per resident.
                 </p>
                 <p>

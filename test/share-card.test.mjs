@@ -7,6 +7,10 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const app = fs.readFileSync(path.join(repoRoot, "src", "App.jsx"), "utf8");
 
+test("visible app copy contains no common UTF-8 mojibake markers", () => {
+  assert.doesNotMatch(app, /â|Ã|Â|�/);
+});
+
 test("the downloadable card includes the selected name and both result explanations", () => {
   assert.match(app, /ctx\.fillText\(finding\.councilName, 56, y\)/);
   assert.match(app, /drawShareCard\(canvas, finding, rates, netAssets, totalArea\)/);
@@ -16,6 +20,14 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /published 2024\/25 average residential bills weighted by household count/);
   assert.match(app, /30 June 2024 council-only accounts divided by 2024 population/);
   assert.match(app, /labelFor: \(row\) =>[\s\S]*money\(row\.before\).*now/);
+});
+
+test("the downloadable card lists the selected councils", () => {
+  assert.match(app, /councilNames: members\.map\(\(member\) => member\.name\)/);
+  assert.match(app, /ctx\.fillText\("COUNCILS INCLUDED", 56, y\)/);
+  assert.match(app, /const councilList = finding\.councilNames\.join\(" · "\)/);
+  assert.match(app, /const cardHeight = CARD_H \+ extraCouncilLines \* 23/);
+  assert.match(app, /councilLines\.forEach\(\(line, index\) =>/);
 });
 
 test("the population-balance panel follows the combined-summary strip", () => {
