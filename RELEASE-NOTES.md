@@ -86,6 +86,8 @@ so the currently deployed shim keeps working until it is replaced.
   retained only as unconfigured-development fallbacks.
 - Uses Meta's supported full-page display mode for URL-redirection shares so
   the Facebook dialog also opens correctly on mobile devices.
+- Adds a public privacy policy and data-deletion statement for Meta app
+  configuration, linked from the application footer.
 - Removes the native card-posting route, automatic clipboard write, download
   side effect, opening-status message and fallback link.
 - Keeps image download, write-up copy and result-link copy as explicit
