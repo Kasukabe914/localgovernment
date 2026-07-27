@@ -79,7 +79,8 @@ so the currently deployed shim keeps working until it is replaced.
 
 ## Follow-up: simpler LinkedIn sharing
 
-- Replaces the two LinkedIn routes with one **Share** heading and icon action.
+- Replaces the two LinkedIn routes with one **Share** heading and direct
+  LinkedIn and Facebook icon actions.
 - Removes the native card-posting route, automatic clipboard write, download
   side effect, opening-status message and fallback link.
 - Keeps image download, write-up copy and result-link copy as explicit

@@ -14,7 +14,7 @@
  *   # replace src/index.js with this file, then:
  *   npx wrangler deploy
  *   # add a custom domain in the Cloudflare dashboard, then point
- *   # LINKEDIN_SHARE_URL in src/App.jsx at it.
+ *   # SOCIAL_SHARE_URL in src/App.jsx at it.
  *
  * Runtime-agnostic apart from the export at the bottom: the same handler works
  * on Vercel Edge, Netlify Edge and Deno Deploy with a different wrapper.

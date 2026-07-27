@@ -2306,7 +2306,7 @@ const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
   (region) => COUNCILS.filter((c) => c.region === region && !c.locked).length >= 2
 );
 const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
-const LINKEDIN_SHARE_URL = "https://local-government-amalgamator-share.brendenm.chatgpt.site/";
+const SOCIAL_SHARE_URL = "https://local-government-amalgamator-share.brendenm.chatgpt.site/";
 
 function simpleRates(members) {
   const usable = members.filter((m) => m.avgRes != null && m.hh);
@@ -3123,7 +3123,7 @@ export default function App() {
   const buildCompactShareUrl = () => {
     const resultUrl = makeUrl();
     const encodedState = resultUrl.match(/[?&]m=([^&]+)/)?.[1] || "";
-    const shareUrl = new URL(LINKEDIN_SHARE_URL);
+    const shareUrl = new URL(SOCIAL_SHARE_URL);
     if (encodedState) {
       shareUrl.searchParams.set("m", encodedState);
     }
@@ -3132,6 +3132,10 @@ export default function App() {
 
   const buildLinkedInLink = () => {
     return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(buildCompactShareUrl())}`;
+  };
+
+  const buildFacebookLink = () => {
+    return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(buildCompactShareUrl())}`;
   };
 
   // One-click route. share-offsite accepts only `url`, so everything the feed
@@ -3143,6 +3147,11 @@ export default function App() {
   const shareOnLinkedIn = () => {
     const linkedInUrl = buildLinkedInLink();
     window.open(linkedInUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const shareOnFacebook = () => {
+    const facebookUrl = buildFacebookLink();
+    window.open(facebookUrl, "_blank", "noopener,noreferrer");
   };
 
   // Keep a preview available for people who want to download and reuse the
@@ -3656,17 +3665,28 @@ export default function App() {
                 </figure>
               )}
 
-              <div className="simpleLinkedInShare">
+              <div className="simpleSocialShare">
                 <h3>Share</h3>
-                <button
-                  className="simpleLinkedInIconButton"
-                  type="button"
-                  onClick={shareOnLinkedIn}
-                  aria-label={`Share ${councilName} on LinkedIn`}
-                  title="Share on LinkedIn"
-                >
-                  <ShareIcon type="linkedin" />
-                </button>
+                <div className="simpleSocialShareButtons">
+                  <button
+                    className="simpleSocialIconButton simpleLinkedInIconButton"
+                    type="button"
+                    onClick={shareOnLinkedIn}
+                    aria-label={`Share ${councilName} on LinkedIn`}
+                    title="Share on LinkedIn"
+                  >
+                    <ShareIcon type="linkedin" />
+                  </button>
+                  <button
+                    className="simpleSocialIconButton simpleFacebookIconButton"
+                    type="button"
+                    onClick={shareOnFacebook}
+                    aria-label={`Share ${councilName} on Facebook`}
+                    title="Share on Facebook"
+                  >
+                    <ShareIcon type="facebook" />
+                  </button>
+                </div>
               </div>
 
               <div className="simpleShareSecondary">
@@ -4548,19 +4568,24 @@ const SIMPLE_CSS = `
   color: rgba(255, 255, 255, 0.66);
 }
 
-.simpleLinkedInShare {
+.simpleSocialShare {
   margin-top: 20px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.simpleLinkedInShare h3 {
+.simpleSocialShare h3 {
   margin: 0;
   font-size: 17px;
   font-weight: 800;
   color: var(--white);
 }
-.simpleLinkedInIconButton {
+.simpleSocialShareButtons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.simpleSocialIconButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4568,20 +4593,33 @@ const SIMPLE_CSS = `
   height: 42px;
   padding: 0;
   color: var(--white);
-  background: #0a66c2;
-  border: 1px solid #0a66c2;
+  border: 1px solid transparent;
   border-radius: 10px;
   cursor: pointer;
   transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
 }
+.simpleSocialIconButton:hover {
+  transform: translateY(-1px);
+}
+.simpleSocialIconButton:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.72);
+  outline-offset: 3px;
+}
+.simpleLinkedInIconButton {
+  background: #0a66c2;
+  border-color: #0a66c2;
+}
 .simpleLinkedInIconButton:hover {
   background: #08529b;
   border-color: #08529b;
-  transform: translateY(-1px);
 }
-.simpleLinkedInIconButton:focus-visible {
-  outline: 3px solid rgba(255, 255, 255, 0.72);
-  outline-offset: 3px;
+.simpleFacebookIconButton {
+  background: #1877f2;
+  border-color: #1877f2;
+}
+.simpleFacebookIconButton:hover {
+  background: #0c5fca;
+  border-color: #0c5fca;
 }
 
 .simpleShareSecondary {
