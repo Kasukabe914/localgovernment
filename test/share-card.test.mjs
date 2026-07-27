@@ -18,22 +18,35 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /labelFor: \(row\) =>[\s\S]*money\(row\.before\).*now/);
 });
 
-test("the population-balance panel follows the dark sharing panel", () => {
-  const sharePanel = app.indexOf('<article className="simpleSharePanel">');
+test("the population-balance panel follows the combined-summary strip", () => {
+  const summaryStrip = app.indexOf(
+    '<div className="simpleStats" aria-label="Combined council summary">'
+  );
   const balancePanel = app.indexOf(
     '<p className="simpleEyebrow">Balance of the new council</p>'
   );
-
-  assert.notEqual(sharePanel, -1);
-  assert.notEqual(balancePanel, -1);
-  assert.ok(
-    sharePanel < balancePanel,
-    "Balance of the new council should appear immediately after the share panel"
+  const balanceArticle = app.lastIndexOf(
+    '<article className="simplePanel">',
+    balancePanel
+  );
+  const ratesPanel = app.indexOf(
+    '<p className="simpleEyebrow">Residential rates</p>'
   );
 
-  const shareThroughBalance = app.slice(sharePanel, balancePanel + 100);
-  assert.match(
-    shareThroughBalance,
-    /<\/article>\s*<article className="simplePanel">\s*<p className="simpleEyebrow">Balance of the new council<\/p>/
+  assert.notEqual(summaryStrip, -1);
+  assert.notEqual(balancePanel, -1);
+  assert.notEqual(balanceArticle, -1);
+  assert.notEqual(ratesPanel, -1);
+  assert.ok(
+    summaryStrip < balancePanel,
+    "Balance of the new council should follow the combined-summary strip"
+  );
+  assert.ok(balancePanel < ratesPanel, "The population balance should appear before rates");
+
+  const summaryThroughBalance = app.slice(summaryStrip, balanceArticle);
+  assert.doesNotMatch(
+    summaryThroughBalance,
+    /<article className=/,
+    "No other result panel should sit between the summary strip and population balance"
   );
 });

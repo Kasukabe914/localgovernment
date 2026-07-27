@@ -3653,6 +3653,22 @@ export default function App() {
             </div>
 
             <article className="simplePanel">
+              <p className="simpleEyebrow">Balance of the new council</p>
+              <h2>Where would most people live?</h2>
+              <p className="simpleAnswer">
+                <strong>{largest.name}</strong> would account for {largestShare}% of the population.
+                {largestShare > 50
+                  ? " It would be larger than all the other council areas combined."
+                  : " No single area would hold a majority of residents."}
+              </p>
+              <ResultShareBar members={members} />
+              <p className="simpleFinePrint">
+                Population share is not voting power. Representation, wards, and local
+                boards would be decided separately.
+              </p>
+            </article>
+
+            <article className="simplePanel">
               <div className="simplePanelHead">
                 <div>
                   <p className="simpleEyebrow">Residential rates</p>
@@ -3942,22 +3958,6 @@ export default function App() {
                     : copied === "link"
                       ? "Link copied."
                       : ""}
-              </p>
-            </article>
-
-            <article className="simplePanel">
-              <p className="simpleEyebrow">Balance of the new council</p>
-              <h2>Where would most people live?</h2>
-              <p className="simpleAnswer">
-                <strong>{largest.name}</strong> would account for {largestShare}% of the population.
-                {largestShare > 50
-                  ? " It would be larger than all the other council areas combined."
-                  : " No single area would hold a majority of residents."}
-              </p>
-              <ResultShareBar members={members} />
-              <p className="simpleFinePrint">
-                Population share is not voting power. Representation, wards, and local
-                boards would be decided separately.
               </p>
             </article>
 
