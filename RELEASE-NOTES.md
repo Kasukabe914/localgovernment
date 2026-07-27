@@ -1,5 +1,20 @@
 # Sharing release
 
+## Draft: attribution, method and independence
+
+- Adds a JavaScript-independent `/about/` page naming Brenden Mischewski as
+  author and publishing the independence, no-position and future-conflict
+  commitments.
+- Consolidates sources, plain-language calculation steps, unhedged
+  limitations, corrections, licensing, citation and a dated change log.
+- Adds a detailed source register and states the historical rating-unit
+  provenance gap rather than inventing per-document retrieval dates.
+- Replaces the old methodology page with a canonical compatibility redirect.
+- Adds persistent **About & method** links to both app footers and
+  **What these numbers mean** links to both rates-result experiences.
+- Splits licensing into MIT for code, CC BY 4.0 for original outputs, and
+  source-specific third-party data terms.
+
 ## Draft: net assets per resident
 
 - Adds a TLA-by-TLA net-assets comparison directly below the residential-rates

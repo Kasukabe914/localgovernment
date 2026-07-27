@@ -1,8 +1,10 @@
 # Data sources and licence
 
-> **The application itself** is licensed CC BY 4.0 — see [`LICENSE`](./LICENSE).
-> **The data below** carries its own separate terms and attributions, which you
-> must carry through if you reuse this project.
+> **The source code** is licensed under the MIT License — see
+> [`LICENSE`](./LICENSE). **Original text and visual outputs** are licensed
+> CC BY 4.0 — see [`OUTPUT-LICENCE.md`](./OUTPUT-LICENCE.md). **The data
+> below** carries its own separate terms and attributions, which you must carry
+> through if you reuse this project.
 
 The figures built into this app are **Crown copyright**, released under the
 [Creative Commons Attribution 4.0 International licence](https://creativecommons.org/licenses/by/4.0/)

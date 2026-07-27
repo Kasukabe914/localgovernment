@@ -1326,7 +1326,7 @@ function LegacyApp() {
             levied on value with differentials, and averages hide a wide spread); water reform, debt, service levels
             and post-2024 growth.</p>
             <p className="howLinks">
-              Full methodology, formulas and known data caveats: <a href="methodology.html">methodology page</a> ·
+              Authorship, method and known data caveats: <a href="about/">About &amp; method</a> ·
               <a href="the-amalgamator-data.csv" download> download the dataset (CSV)</a>
             </p>
           </section>
@@ -1667,7 +1667,7 @@ function LegacyApp() {
               </a>{" "}
               (updated October 2025). Figures cover the 67 territorial authorities; the 11 regional councils are
               excluded. DIA publishes this as raw data; the councils, blends, comparisons and scenarios in this tool
-              are Mischewski Consulting's own work, not a DIA output, and DIA has no connection to this project.
+              are this project's own work, not a DIA output, and DIA has no connection to this project.
             </dd>
             <dt>Not affiliated with</dt>
             <dd>
@@ -1697,9 +1697,10 @@ function LegacyApp() {
           </p>
           <p className="sourceNote">
             <strong>Scope:</strong> territorial-council figures only. The 11 regional councils and their separate rates
-            layer are excluded, so no figure here is a household's complete rates bill. The four existing unitary
-            councils (Gisborne, Nelson, Tasman, Marlborough) already include regional functions, so aren't strictly
-            comparable with the rest. Rates revenue is the total take and includes metered water for most councils.
+            layer are excluded, so no figure here is a household's complete rates bill. Auckland, Gisborne, Nelson,
+            Tasman and Marlborough formally include regional functions, while Chatham Islands performs some regional
+            functions, so they aren't strictly comparable with the rest. Rates revenue is the total take and includes
+            metered water for most councils.
             Buller's 2023/24 actual was unavailable, so its 2021/22 figure stands in (flagged where it affects a result).
             Auckland is locked: it amalgamated in 2010 and sits outside this round.
           </p>
@@ -1713,12 +1714,13 @@ function LegacyApp() {
             official proposals.
           </p>
           <p className="licence">
-            This tool is licensed{" "}
-            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC&nbsp;BY&nbsp;4.0</a>:
-            reuse or adapt it freely, including commercially, with credit and a link to the licence, and say if you
-            changed it. Crown data (DIA, Stats NZ) is separately CC&nbsp;BY&nbsp;4.0; residential property counts and
-            average bills are © NZ Taxpayers' Union and carry their own terms. Independent project, not affiliated with
-            any of them.{" "}
+            The source code is licensed under the MIT License. Original text,
+            charts and figures are licensed{" "}
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC&nbsp;BY&nbsp;4.0</a>.
+            Crown data (DIA, Stats NZ) is separately CC&nbsp;BY&nbsp;4.0;
+            residential property counts and average bills are © NZ
+            Taxpayers' Union and carry their own terms. Independent project,
+            not affiliated with any of them.{" "}
             <a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">Source on GitHub</a>.
           </p>
         </section>
@@ -1898,7 +1900,7 @@ function LegacyApp() {
                   almost nothing for Wellington City or Nelson. That gap flatters slow-growing districts in any
                   comparison.</>
                 )}{" "}
-                <span className="muted">Territorial-council figures only: the separate regional-council rates layer isn't included, and the four existing unitary councils (Gisborne, Nelson, Tasman, Marlborough) already fold regional functions in, so they aren't strictly like-for-like.{!isBill && savings > 0 ? " The trim is a hypothetical cut to the whole rates take, not an evidenced merger-savings estimate." : ""}</span>
+                <span className="muted">Territorial-council figures only: the separate regional-council rates layer isn't included. Auckland, Gisborne, Nelson, Tasman and Marlborough formally include regional functions, while Chatham Islands performs some regional functions, so they aren't strictly like-for-like.{!isBill && savings > 0 ? " The trim is a hypothetical cut to the whole rates take, not an evidenced merger-savings estimate." : ""}</span>
               </p>
 
               <details className="caveat">
@@ -1919,6 +1921,9 @@ function LegacyApp() {
                   worked that way. Expect the direction to hold and the timing and size to differ, often for years.
                 </p>
               </details>
+              <p className="ratesMethodLink">
+                <a href="about/#limitations">What these numbers mean</a>
+              </p>
             </div>
           <div className="pageNav">
             <button className="backBtn" onClick={() => setStep(1)}>← Back to the map</button>
@@ -2014,7 +2019,7 @@ function LegacyApp() {
           <div className="sfCol">
             <div className="sfHead">Site</div>
             <ul className="sfLinks">
-              <li><a href="methodology.html">Methodology</a></li>
+              <li><a href="about/">About &amp; method</a></li>
               <li><a href="privacy-policy/">Privacy policy</a></li>
               <li><a href="the-amalgamator-data.csv" download>Dataset (CSV)</a></li>
               <li><a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">Source on GitHub</a></li>
@@ -2023,8 +2028,7 @@ function LegacyApp() {
           <div className="sfCol">
             <div className="sfHead">Attribution</div>
             <p>Crown data (DIA, Stats NZ) under CC BY 4.0. Residential property counts and average residential bills © NZ Taxpayers' Union.</p>
-            <p>Operated by Mischewski Consulting.</p>
-            <p className="sfAi">Generated with Anthropic's Claude (Fable and Opus models), directed and reviewed by Mischewski Consulting. Figures were cross-checked against the cited sources; the methodology page shows how to reproduce them.</p>
+            <p className="sfAi">Generated with Anthropic's Claude (Fable and Opus models), directed and reviewed by the author. Figures were cross-checked against the cited sources; the About &amp; method page shows how to reproduce them.</p>
           </div>
         </div>
         <div className="sfBase">© 2026 Mischewski Consulting · Built for Aotearoa New Zealand</div>
@@ -2235,6 +2239,7 @@ button, .piece { touch-action: manipulation; }
 .caveat p { font-size: 11.5px; line-height: 1.55; margin: 0; padding: 9px 11px 0; opacity: 0.82; }
 .caveat p:last-child { padding-bottom: 10px; }
 .caveatApply { border-top: 1px dashed rgba(26,46,51,0.2); margin-top: 8px !important; padding-top: 9px !important; opacity: 1 !important; font-weight: 500; }
+.ratesMethodLink { margin: 10px 0 0; font-size: 12px; font-weight: 800; }
 .mandate { border: 1.5px solid rgba(26,46,51,0.3); border-radius: 5px; padding: 9px 11px; display: grid; gap: 5px; background: #fff; }
 .mandateYes { border-color: var(--ink); border-width: 2px; background: rgba(46,125,82,0.08); }
 .mandateTop { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
@@ -2331,6 +2336,7 @@ const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
   (region) => COUNCILS.filter((c) => c.region === region && !c.locked).length >= 2
 );
 const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
+const ABOUT_URL = `${PUBLIC_APP_URL}about/`;
 const facebookAppIdValue = String(import.meta.env.VITE_FACEBOOK_APP_ID || "").trim();
 const FACEBOOK_APP_ID = /^\d+$/.test(facebookAppIdValue) ? facebookAppIdValue : "";
 
@@ -2449,8 +2455,9 @@ function sharePostText(finding, url) {
     lines.push("");
   }
   lines.push(
-    "Built with The Amalgamator — an independent model of council amalgamation, not a proposal and not a prediction of anyone's rates. Sources, formulas and caveats are all published."
+    "Built with The Amalgamator — an independent model of council amalgamation, not a proposal and not a prediction of anyone's rates."
   );
+  lines.push(`About, method and limitations: ${ABOUT_URL}`);
   lines.push("");
   lines.push(`See this combination: ${url}`);
   lines.push("");
@@ -3700,6 +3707,9 @@ export default function App() {
                   are not included.
                 </p>
               </details>
+              <p className="simpleMethodLink">
+                <a href="about/#limitations">What these numbers mean</a>
+              </p>
             </article>
 
             <article className="simplePanel">
@@ -3929,7 +3939,7 @@ export default function App() {
           <span>Independent modelling for local government reform.</span>
         </div>
         <nav aria-label="More information">
-          <a href="methodology.html">Methodology</a>
+          <a href="about/">About &amp; method</a>
           <a href="privacy-policy/">Privacy</a>
           <a href="the-amalgamator-data.csv" download>Download the data</a>
           <a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">
@@ -4702,6 +4712,11 @@ const SIMPLE_CSS = `
   margin: 12px 0 0;
   color: var(--ink-soft);
   font-size: 13px;
+}
+.simpleMethodLink {
+  margin: 14px 0 0;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .simpleShareBar {
