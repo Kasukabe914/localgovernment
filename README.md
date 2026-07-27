@@ -24,9 +24,12 @@ token; the share service derives the group name and exact result URL. Download
 image, copy write-up and copy link remain available as separate, explicit
 actions.
 
-On phones and tablets, the Facebook icon uses the system share sheet so the
-installed Facebook app receives the result URL directly. On desktop it opens
-Facebook's web sharing dialog.
+Facebook uses Meta's official Share Dialog when `VITE_FACEBOOK_APP_ID` is
+configured. GitHub Pages maps the repository variable `FACEBOOK_APP_ID` into
+that build setting. The Meta app should list `kasukabe914.github.io` as an app
+domain and `https://kasukabe914.github.io/localgovernment/` as its website URL.
+Without an App ID, local development falls back to the system share sheet on
+mobile and Facebook's legacy web sharer on desktop.
 
 ### Card colours
 

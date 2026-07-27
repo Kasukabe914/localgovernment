@@ -2307,6 +2307,8 @@ const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
 );
 const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
 const SOCIAL_SHARE_URL = "https://local-government-amalgamator-share.brendenm.chatgpt.site/";
+const facebookAppIdValue = String(import.meta.env.VITE_FACEBOOK_APP_ID || "").trim();
+const FACEBOOK_APP_ID = /^\d+$/.test(facebookAppIdValue) ? facebookAppIdValue : "";
 
 function simpleRates(members) {
   const usable = members.filter((m) => m.avgRes != null && m.hh);
@@ -3134,8 +3136,18 @@ export default function App() {
     return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(buildCompactShareUrl())}`;
   };
 
-  const buildFacebookLink = (shareUrl = buildCompactShareUrl()) => {
+  const buildFacebookFallbackLink = (shareUrl = buildCompactShareUrl()) => {
     return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  };
+
+  const buildFacebookDialogLink = (shareUrl = buildCompactShareUrl()) => {
+    if (!FACEBOOK_APP_ID) return "";
+    const dialogUrl = new URL("https://www.facebook.com/dialog/share");
+    dialogUrl.searchParams.set("app_id", FACEBOOK_APP_ID);
+    dialogUrl.searchParams.set("display", "popup");
+    dialogUrl.searchParams.set("href", shareUrl);
+    dialogUrl.searchParams.set("redirect_uri", PUBLIC_APP_URL);
+    return dialogUrl.toString();
   };
 
   // One-click route. share-offsite accepts only `url`, so everything the feed
@@ -3151,6 +3163,14 @@ export default function App() {
 
   const shareOnFacebook = async () => {
     const shareUrl = buildCompactShareUrl();
+    const dialogUrl = buildFacebookDialogLink(shareUrl);
+    if (dialogUrl) {
+      window.open(dialogUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // Preserve a useful local-development fallback until a Meta App ID is
+    // configured. Production uses the official Facebook Share Dialog above.
     const mobileShareDevice =
       navigator.userAgentData?.mobile === true ||
       /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
@@ -3171,12 +3191,12 @@ export default function App() {
       } catch (error) {
         if (error?.name === "AbortError") return;
         // If the native share sheet fails, continue in Facebook's web dialog.
-        window.location.assign(buildFacebookLink(shareUrl));
+        window.location.assign(buildFacebookFallbackLink(shareUrl));
         return;
       }
     }
 
-    const facebookUrl = buildFacebookLink(shareUrl);
+    const facebookUrl = buildFacebookFallbackLink(shareUrl);
     window.open(facebookUrl, "_blank", "noopener,noreferrer");
   };
 
