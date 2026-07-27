@@ -84,6 +84,8 @@ so the currently deployed shim keeps working until it is replaced.
 - Uses Meta's official Share Dialog when a `FACEBOOK_APP_ID` repository
   variable is configured, with the native share sheet and legacy web sharer
   retained only as unconfigured-development fallbacks.
+- Uses Meta's supported full-page display mode for URL-redirection shares so
+  the Facebook dialog also opens correctly on mobile devices.
 - Removes the native card-posting route, automatic clipboard write, download
   side effect, opening-status message and fallback link.
 - Keeps image download, write-up copy and result-link copy as explicit
