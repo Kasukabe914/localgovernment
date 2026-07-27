@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import {
+  NET_ASSETS_2024,
+  calculateNetAssetsPerCapita,
+} from "./netAssets.js";
 
 // ---------------------------------------------------------------------------
 // Source: DIA, "Data release for council profiles – July 2025" (updated Oct 2025).
@@ -242,6 +246,11 @@ COUNCILS.forEach((c) => {
   if (h) { c.hh = h.hh; c.avgRes = h.avgRes; c.hhEst = !!h.est; }
   const u = RU[c.id];
   if (u) { c.ru = u.ru; c.ruStatus = u.ruStatus || null; }
+  const financialPosition = NET_ASSETS_2024[c.id];
+  if (financialPosition) {
+    c.assets24 = financialPosition.assets;
+    c.liabilities24 = financialPosition.liabilities;
+  }
 });
 
 const BY_ID = Object.fromEntries(COUNCILS.map((c) => [c.id, c]));
@@ -1617,6 +1626,20 @@ function LegacyApp() {
             </dd>
             <dt>Land area, 2025</dt>
             <dd>Stats NZ (Datafinder).</dd>
+            <dt>Total assets &amp; total liabilities, 30 June 2024</dt>
+            <dd>
+              Stats NZ,{" "}
+              <a
+                href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Local Authority Financial Statistics
+              </a>
+              , financial position. Council-only figures, excluding
+              council-controlled organisations. Net assets are total assets
+              minus total liabilities.
+            </dd>
             <dt>Residential property count &amp; average residential rates bill (2024/25)</dt>
             <dd>
               NZ Taxpayers' Union,{" "}
@@ -1681,10 +1704,11 @@ function LegacyApp() {
             Auckland is locked: it amalgamated in 2010 and sits outside this round.
           </p>
           <p className="sourceNote">
-            <strong>What's modelled here, not sourced:</strong> the blended rate, population share, per-household and
-            per-rating-unit figures and the rates-trim slider are this tool's own arithmetic. Population share is not
-            voting power; the per-property figures are normalisations, not bills, and count properties rather than
-            households; and the trim is a hypothetical cut to
+            <strong>What's modelled here, not sourced:</strong> the blended rate, pooled net assets per resident,
+            population share, per-household and per-rating-unit figures and the rates-trim slider are this tool's own
+            arithmetic. Population share is not voting power; the net-assets comparison is not a cash gain or loss;
+            the per-property figures are normalisations, not bills, and count properties rather than households; and
+            the trim is a hypothetical cut to
             the whole rates take, not an evidenced merger-savings estimate. Presets are illustrative scenarios, not
             official proposals.
           </p>
@@ -2950,6 +2974,10 @@ export default function App() {
     [candidates, customName]
   );
   const rates = useMemo(() => simpleRates(members), [members]);
+  const netAssets = useMemo(
+    () => calculateNetAssetsPerCapita(members),
+    [members]
+  );
 
   const totalPopulation = members.reduce((sum, m) => sum + m.pop, 0);
   const totalArea = members.reduce((sum, m) => sum + m.area, 0);
@@ -2960,6 +2988,12 @@ export default function App() {
   const maxRateChange = Math.max(
     1,
     ...rates.rows.map((row) => Math.abs(row.change || 0))
+  );
+  const assetHigher = netAssets.rows.filter((row) => row.change > 0);
+  const assetLower = netAssets.rows.filter((row) => row.change < 0);
+  const maxNetAssetChange = Math.max(
+    1,
+    ...netAssets.rows.map((row) => Math.abs(row.change || 0))
   );
 
   const startRegion = () => {
@@ -3664,6 +3698,109 @@ export default function App() {
                   Real mergers use property values, targeted rates, differentials, caps,
                   and multi-year transition arrangements. Establishment costs and savings
                   are not included.
+                </p>
+              </details>
+            </article>
+
+            <article className="simplePanel">
+              <div className="simplePanelHead">
+                <div>
+                  <p className="simpleEyebrow">Net assets per resident</p>
+                  <h2>How would the balance sheets combine?</h2>
+                </div>
+                {netAssets.mergedPerResident != null && (
+                  <div className="simpleBlend">
+                    <span>Merged average</span>
+                    <strong>{money(netAssets.mergedPerResident)}</strong>
+                    <span>per resident</span>
+                  </div>
+                )}
+              </div>
+
+              {netAssets.mergedPerResident == null ? (
+                <p className="simpleEmpty">
+                  There is not enough comparable financial-position data for this combination.
+                </p>
+              ) : (
+                <>
+                  <p className="simpleAnswer">
+                    {assetHigher.length} council {assetHigher.length === 1 ? "area would" : "areas would"} move
+                    to higher net assets per resident, while {assetLower.length} would move lower.
+                  </p>
+                  <div
+                    className="simpleRateChart"
+                    aria-label="Change in net assets per resident after pooling council balance sheets"
+                  >
+                    <div className="simpleRateAxis" aria-hidden="true">
+                      <span>Lower after pooling</span>
+                      <span>Higher after pooling</span>
+                    </div>
+                    <div className="simpleRateRows">
+                      {netAssets.rows.map((row) => (
+                        <div className="simpleRateRow simpleAssetRow" key={row.council.id}>
+                          <div className="simpleRateCopy">
+                            <strong>{row.council.name}</strong>
+                            <span>{money(row.before)} per resident now</span>
+                          </div>
+                          <strong
+                            className={
+                              row.change > 0
+                                ? "simpleDown"
+                                : row.change < 0
+                                  ? "simpleUp"
+                                  : "simpleFlat"
+                            }
+                          >
+                            {row.change > 0 ? "+" : row.change < 0 ? "−" : ""}
+                            {money(Math.abs(row.change))} per resident
+                          </strong>
+                          <div className="simpleRateBar" aria-hidden="true">
+                            <span className="simpleRateZero" />
+                            {row.change !== 0 && (
+                              <span
+                                className={`simpleRateFill ${row.change > 0 ? "simpleAssetHigher" : "simpleAssetLower"}`}
+                                style={{
+                                  width: `${Math.max(
+                                    2,
+                                    (Math.abs(row.change) / maxNetAssetChange) * 50
+                                  )}%`,
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <details className="simpleDisclosure">
+                <summary>How to read this estimate</summary>
+                <p>
+                  Net assets are total assets minus total liabilities. The merged
+                  figure pools the selected councilsâ€™ 30 June 2024 council-only
+                  balance sheets and divides the result by their combined 2024
+                  population. Each row compares that figure with the TLAâ€™s current
+                  net assets per resident.
+                </p>
+                <p>
+                  This is an accounting comparison, not a cash gain or loss. It
+                  does not show where assets are located, their condition, whether
+                  liabilities would be ring-fenced, or how services and rates
+                  would change. Council-controlled organisations are excluded;
+                  unitary authorities also perform regional functions.
+                </p>
+                <p>
+                  Source:{" "}
+                  <a
+                    href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Stats NZ Local Authority Financial Statistics
+                  </a>
+                  .
                 </p>
               </details>
             </article>
@@ -4541,6 +4678,16 @@ const SIMPLE_CSS = `
   background: var(--bad);
   border-radius: 0 999px 999px 0;
 }
+.simpleAssetLower {
+  right: 50%;
+  background: var(--bad);
+  border-radius: 999px 0 0 999px;
+}
+.simpleAssetHigher {
+  left: 50%;
+  background: var(--good);
+  border-radius: 0 999px 999px 0;
+}
 .simpleUp { color: var(--bad); }
 .simpleDown { color: var(--good); }
 .simpleFlat,
@@ -4839,6 +4986,11 @@ const SIMPLE_CSS = `
   }
   .simpleRateRow { align-items: flex-start; }
   .simpleRateRow > strong { max-width: 145px; }
+  .simpleAssetRow { grid-template-columns: 1fr; }
+  .simpleAssetRow > strong {
+    max-width: none;
+    text-align: left;
+  }
   .simpleFooter { flex-direction: column; }
 }
 
