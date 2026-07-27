@@ -33,7 +33,12 @@ mobile and Facebook's legacy web sharer on desktop.
 
 LinkedIn receives the public GitHub Pages result URL directly so the shared
 link displays the application domain. This intentionally uses the site's
-general Open Graph preview rather than the per-result preview service.
+general Open Graph preview rather than the per-result preview service. The
+general preview includes explicit image dimensions and media type for stricter
+mobile composers.
+
+The Facebook Share Dialog uses Meta's `touch` display mode on mobile web
+(including iOS) and full-page display on desktop.
 
 ### Card colours
 

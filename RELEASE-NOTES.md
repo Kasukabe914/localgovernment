@@ -101,6 +101,10 @@ so the currently deployed shim keeps working until it is replaced.
   share service derives the group name and exact result URL server-side.
 - Sends LinkedIn the public GitHub Pages result URL directly, removing the
   separate preview-service domain from the link shown in LinkedIn posts.
+- Uses Meta's mobile-web `touch` dialog on iOS and Android while retaining the
+  desktop full-page Facebook dialog.
+- Adds explicit Open Graph image type, dimensions, secure URL and locale so
+  mobile LinkedIn composers can render the site's general preview reliably.
 
 ## Files to commit
 
