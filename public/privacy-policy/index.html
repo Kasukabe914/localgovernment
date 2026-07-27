@@ -61,13 +61,20 @@
     council scenario; it does not contain your name, Facebook profile, email address, or an access token.</p>
 
   <h2>Aggregate web analytics</h2>
-  <p>The site may use Cloudflare Web Analytics to measure aggregate visits, page views, referring sites, device and
-    browser categories, countries, and page performance. Cloudflare states that this service does not collect or use
-    visitors' personal data, does not use cookies or local storage, and does not log URL query strings.</p>
-  <p>The analytics are used to understand whether the tool is being reached and whether its pages perform reliably.
-    They are not used for advertising, profiling, or identifying individual visitors. See
-    <a href="https://developers.cloudflare.com/web-analytics/about/">Cloudflare Web Analytics</a> and
-    <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>.</p>
+  <p>The site may use Umami Cloud to measure aggregate visits, page views, referring sites, broad device and browser
+    categories, countries, and fixed sharing actions. Those actions record that somebody clicked a Facebook,
+    LinkedIn, X, Reddit, or Copy link control, downloaded a share image, or copied the suggested write-up. They do not
+    record a council name, council selection, social-media account, or whether a social-media post was completed.</p>
+  <p>Umami does not use cookies, collect personal information, or track people across websites. This site also asks
+    Umami to respect the browser's Do Not Track setting. Before any analytics payload is sent, the site removes the
+    encoded council scenario, URL fragments, arbitrary query parameters, and query information in referrer URLs.
+    Only fixed campaign labels added by the four social-sharing buttons are retained so resulting visits can be
+    attributed to a platform.</p>
+  <p>The analytics are used to understand whether the tool is being reached, whether sharing controls are useful, and
+    whether its pages perform reliably. They are not used for advertising, profiling, or identifying individual
+    visitors. Session replay and heatmaps are not enabled. See
+    <a href="https://docs.umami.is/docs">Umami's documentation</a> and
+    <a href="https://umami.is/privacy">Umami's privacy policy</a>.</p>
 
   <h2>Facebook and other sharing services</h2>
   <p>The Facebook button opens Meta's Share Dialog with the result URL. The application does not log you into

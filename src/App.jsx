@@ -3,6 +3,7 @@ import {
   NET_ASSETS_2024,
   calculateNetAssetsPerCapita,
 } from "./netAssets.js";
+import { addShareAttribution, trackAnalytics } from "./analytics.js";
 
 // ---------------------------------------------------------------------------
 // Source: DIA, "Data release for council profiles – July 2025" (updated Oct 2025).
@@ -3228,6 +3229,10 @@ export default function App() {
     link.click();
     document.body.removeChild(link);
     flash("card");
+    trackAnalytics("share-image-download", {
+      format: "png",
+      surface: "result",
+    });
   };
 
   const downloadCard = async () => {
@@ -3244,13 +3249,34 @@ export default function App() {
     }
   };
 
-  const copyPost = () => copyText(sharePostText(finding, makeUrl()), "post");
+  const copyPost = async () => {
+    const copiedOk = await copyText(sharePostText(finding, makeUrl()), "post");
+    if (copiedOk) {
+      trackAnalytics("share-writeup-copy", { surface: "result" });
+    }
+  };
 
-  const copyLink = () => copyText(makeUrl(), "link");
+  const copyLink = async () => {
+    const copiedOk = await copyText(makeUrl(), "link");
+    if (copiedOk) {
+      trackAnalytics("share-click", {
+        platform: "copy-link",
+        surface: "result",
+      });
+    }
+  };
+
+  const trackShareClick = (platform) => {
+    trackAnalytics("share-click", {
+      platform,
+      surface: "result",
+    });
+  };
 
   const shareTitle = `${councilName} — The Amalgamator`;
 
-  const buildLinkedInLink = (shareUrl = makeUrl()) => {
+  const buildLinkedInLink = () => {
+    const shareUrl = addShareAttribution(makeUrl(), "linkedin");
     const linkedInUrl = new URL("https://www.linkedin.com/shareArticle");
     linkedInUrl.searchParams.set("mini", "true");
     linkedInUrl.searchParams.set("url", shareUrl);
@@ -3260,11 +3286,12 @@ export default function App() {
     return linkedInUrl.toString();
   };
 
-  const buildFacebookFallbackLink = (shareUrl = makeUrl()) => {
+  const buildFacebookFallbackLink = (shareUrl) => {
     return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   };
 
-  const buildFacebookLink = (shareUrl = makeUrl()) => {
+  const buildFacebookLink = () => {
+    const shareUrl = addShareAttribution(makeUrl(), "facebook");
     if (!FACEBOOK_APP_ID) return buildFacebookFallbackLink(shareUrl);
     const facebookUrl = new URL("https://www.facebook.com/dialog/feed");
     facebookUrl.searchParams.set("app_id", FACEBOOK_APP_ID);
@@ -3276,14 +3303,16 @@ export default function App() {
     return facebookUrl.toString();
   };
 
-  const buildXLink = (shareUrl = makeUrl()) => {
+  const buildXLink = () => {
+    const shareUrl = addShareAttribution(makeUrl(), "x");
     const xUrl = new URL("https://twitter.com/intent/tweet");
     xUrl.searchParams.set("text", shareTitle);
     xUrl.searchParams.set("url", shareUrl);
     return xUrl.toString();
   };
 
-  const buildRedditLink = (shareUrl = makeUrl()) => {
+  const buildRedditLink = () => {
+    const shareUrl = addShareAttribution(makeUrl(), "reddit");
     const redditUrl = new URL("https://www.reddit.com/submit");
     redditUrl.searchParams.set("url", shareUrl);
     redditUrl.searchParams.set("title", shareTitle);
@@ -3917,6 +3946,7 @@ export default function App() {
                     rel="noreferrer nofollow noopener"
                     aria-label={`Share ${councilName} on Facebook`}
                     title="Share on Facebook"
+                    onClick={() => trackShareClick("facebook")}
                   >
                     <ShareIcon type="facebook" />
                   </a>
@@ -3927,6 +3957,7 @@ export default function App() {
                     rel="noreferrer nofollow noopener"
                     aria-label={`Share ${councilName} on X`}
                     title="Share on X"
+                    onClick={() => trackShareClick("x")}
                   >
                     <ShareIcon type="x" />
                   </a>
@@ -3937,6 +3968,7 @@ export default function App() {
                     rel="noreferrer nofollow noopener"
                     aria-label={`Share ${councilName} on LinkedIn`}
                     title="Share on LinkedIn"
+                    onClick={() => trackShareClick("linkedin")}
                   >
                     <ShareIcon type="linkedin" />
                   </a>
@@ -3947,6 +3979,7 @@ export default function App() {
                     rel="noreferrer nofollow noopener"
                     aria-label={`Share ${councilName} on Reddit`}
                     title="Share on Reddit"
+                    onClick={() => trackShareClick("reddit")}
                   >
                     <ShareIcon type="reddit" />
                   </a>

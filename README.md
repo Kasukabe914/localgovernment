@@ -81,22 +81,30 @@ The production site is written to `dist/`.
 
 ## Aggregate analytics
 
-Production builds support Cloudflare Web Analytics without changing DNS or
-proxying the site through Cloudflare. The build injects the beacon into the app,
-About page, and privacy policy only when
-`CLOUDFLARE_WEB_ANALYTICS_TOKEN` is set. Redirect-only HTML files are skipped.
+Production builds support Umami Cloud analytics. The build injects the tracker
+into the app, About page, and privacy policy only when `UMAMI_WEBSITE_ID` is
+set. Redirect-only HTML files are skipped.
 
 To enable collection:
 
-1. Add `www.amalgamator.nz` as a site in Cloudflare Web Analytics.
-2. Copy its site token.
+1. Add `www.amalgamator.nz` as a website in Umami Cloud.
+2. Copy its website ID from the tracking code.
 3. In the GitHub repository, create the Actions variable
-   `CLOUDFLARE_WEB_ANALYTICS_TOKEN` with that token.
+   `UMAMI_WEBSITE_ID` with that UUID.
 4. Run the Pages workflow again.
 
-The site token is a public beacon identifier rather than a secret credential.
-Local builds omit the beacon unless the environment variable is deliberately
+The website ID is a public tracker identifier rather than a secret credential.
+Local builds omit the tracker unless the environment variable is deliberately
 set.
+
+The production tracker is restricted to the public domain, respects browser Do
+Not Track, and strips the encoded `m` council scenario, fragments, arbitrary
+query parameters, and referrer queries before transmission. Fixed UTM labels on
+the Facebook, LinkedIn, X, and Reddit links are retained for platform
+attribution. The result screen also records fixed, non-identifying events for
+social-link clicks, successful Copy link and Copy write-up actions, and share
+image downloads. No council names, selections, or scenario codes are included
+in event data.
 
 ## Deploy with GitHub Pages
 
