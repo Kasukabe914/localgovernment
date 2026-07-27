@@ -96,7 +96,9 @@ The repository includes `.github/workflows/deploy-pages.yml`.
 - `src/netAssets.js` — 2024 council-only assets and liabilities plus the pooled per-capita calculation
 - `src/main.jsx` — React entry point
 - `src/index.css` — document-level styles
-- `public/methodology.html` — methodology, formulas, sources, and caveats
+- `public/about/index.html` — authoritative authorship, independence, sources, method, limitations, corrections, licensing, and change log
+- `public/methodology.html` — compatibility redirect to `/about/`
+- `public/source-register.csv` — source-level publisher, vintage, retrieval-date, scope, and link register
 - `public/the-amalgamator-data.csv` — downloadable dataset
 - `public/og-image.jpg` — social preview image
 - `vite.config.js` — local and GitHub Pages build configuration
@@ -118,8 +120,14 @@ git push origin main
 
 This is an independent modelling tool. It is not an official proposal or a prediction of any household’s rates.
 
-The methodology page documents the sources, calculations, data vintages, and known limitations. The Current Talks shortcut is a dated snapshot and should be reviewed whenever reported negotiations change.
+The About & method page documents authorship, independence, sources,
+calculations, data vintages, corrections and known limitations. The Current
+Talks shortcut is a dated snapshot and should be reviewed whenever reported
+negotiations change.
 
 ## Licence and attribution
 
-Application code is licensed under CC BY 4.0. Crown data from DIA and Stats NZ is used under CC BY 4.0. Ratepayers’ Report data remains subject to the New Zealand Taxpayers’ Union’s terms.
+Application code is licensed under the MIT License. Original text, charts,
+figures, screenshots and other visual outputs are licensed under CC BY 4.0.
+Crown data from DIA and Stats NZ is used under CC BY 4.0. Ratepayers’ Report
+data remains subject to the New Zealand Taxpayers’ Union’s terms.

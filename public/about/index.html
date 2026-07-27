@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About &amp; method — Local Government Amalgamator</title>
+  <meta name="description" content="Who built this tool, where the data comes from, and what the indicative rate figures do and do not show.">
+  <meta name="theme-color" content="#1A2E33">
+  <link rel="canonical" href="https://kasukabe914.github.io/localgovernment/about/">
+  <meta property="og:title" content="About &amp; method — Local Government Amalgamator">
+  <meta property="og:description" content="Who built this tool, where the data comes from, and what the indicative rate figures do and do not show.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_NZ">
+  <meta property="og:url" content="https://kasukabe914.github.io/localgovernment/about/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&amp;display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "About & method — Local Government Amalgamator",
+    "description": "Who built this tool, where the data comes from, and what the indicative rate figures do and do not show.",
+    "url": "https://kasukabe914.github.io/localgovernment/about/",
+    "datePublished": "2026-07-28",
+    "dateModified": "2026-07-28",
+    "author": {
+      "@type": "Person",
+      "name": "Brenden Mischewski",
+      "homeLocation": {
+        "@type": "Place",
+        "name": "Whitby, Porirua, New Zealand"
+      }
+    },
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Local Government Amalgamator",
+      "url": "https://kasukabe914.github.io/localgovernment/"
+    }
+  }
+  </script>
+  <style>
+    :root {
+      --ink: #1A2E33;
+      --ink-soft: #4B6065;
+      --paper: #F7F2E6;
+      --sky: #E2F1F2;
+      --accent: #D94816;
+      --line: #B8CCCE;
+      --white: #FFFFFF;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--sky);
+      color: var(--ink);
+      font: 17px/1.62 "Bricolage Grotesque", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+    a:hover { text-decoration-thickness: 3px; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+    .skip-link {
+      position: absolute;
+      top: -80px;
+      left: 16px;
+      z-index: 20;
+      padding: 10px 14px;
+      background: var(--white);
+      color: var(--ink);
+      font-weight: 800;
+    }
+    .skip-link:focus { top: 12px; }
+    .site-bar {
+      border-bottom: 1px solid rgba(26, 46, 51, 0.16);
+      background: rgba(226, 241, 242, 0.94);
+    }
+    .site-bar-inner {
+      width: min(100% - 32px, 980px);
+      margin: 0 auto;
+      padding: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      font-size: 14px;
+    }
+    .site-name { font-weight: 800; text-decoration: none; }
+    main {
+      width: min(100% - 32px, 980px);
+      margin: 0 auto;
+      padding: 68px 0 96px;
+    }
+    .eyebrow {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(48px, 9vw, 88px);
+      line-height: 0.96;
+      letter-spacing: -0.055em;
+    }
+    .standfirst {
+      max-width: 720px;
+      margin: 24px 0 12px;
+      font-size: clamp(20px, 3vw, 27px);
+      line-height: 1.35;
+    }
+    .updated { margin: 0; color: var(--ink-soft); font-size: 14px; }
+    .trust-grid {
+      margin: 44px 0 22px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      overflow: hidden;
+      border-radius: 16px;
+      background: var(--ink);
+      color: var(--white);
+    }
+    .trust-grid div { padding: 20px; border-right: 1px solid rgba(255, 255, 255, 0.18); }
+    .trust-grid div:last-child { border-right: 0; }
+    .trust-grid span { display: block; margin-bottom: 4px; font-size: 12px; opacity: 0.72; }
+    .trust-grid strong { font-size: 18px; }
+    .panel {
+      margin-top: 18px;
+      padding: clamp(24px, 5vw, 48px);
+      border: 1.5px solid var(--line);
+      border-radius: 18px;
+      background: var(--paper);
+    }
+    section[id] { scroll-margin-top: 20px; }
+    h2 {
+      margin: 0 0 18px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+    h3 { margin: 30px 0 8px; font-size: 21px; line-height: 1.2; }
+    p { max-width: 72ch; }
+    .declaration {
+      padding-left: 18px;
+      border-left: 5px solid var(--accent);
+      font-size: 19px;
+    }
+    .table-wrap { overflow-x: auto; margin-top: 20px; }
+    table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--ink); color: var(--white); }
+    td { background: rgba(255, 255, 255, 0.48); }
+    ol, ul { max-width: 76ch; padding-left: 24px; }
+    li + li { margin-top: 10px; }
+    .limitations {
+      padding: 22px 26px;
+      border-radius: 12px;
+      background: var(--white);
+    }
+    .closing {
+      margin-top: 24px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .contact {
+      display: inline-block;
+      margin: 6px 0;
+      font-size: clamp(20px, 4vw, 30px);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+    .citation {
+      margin: 18px 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--white);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.55;
+      user-select: all;
+    }
+    .licence-list { display: grid; gap: 12px; }
+    .licence-list p { margin: 0; }
+    .change-log { margin: 0; padding: 0; list-style: none; }
+    .change-log li {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 18px;
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+    }
+    footer {
+      width: min(100% - 32px, 980px);
+      margin: 0 auto;
+      padding: 32px 0 48px;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+    footer nav { display: flex; gap: 16px; flex-wrap: wrap; }
+    @media (max-width: 700px) {
+      main { padding-top: 44px; }
+      .trust-grid { grid-template-columns: 1fr; }
+      .trust-grid div { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.18); }
+      .trust-grid div:last-child { border-bottom: 0; }
+      .change-log li { grid-template-columns: 1fr; gap: 3px; }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="site-bar">
+    <div class="site-bar-inner">
+      <a class="site-name" href="../">The Amalgamator</a>
+      <a href="../">Back to the tool</a>
+    </div>
+  </header>
+
+  <main id="content">
+    <p class="eyebrow">Local Government Amalgamator</p>
+    <h1>About &amp; method</h1>
+    <p class="standfirst">Who built this tool, where its data comes from, and what its indicative figures do and do not show.</p>
+    <p class="updated">Last substantively updated <time datetime="2026-07-28">28 July 2026</time>.</p>
+
+    <div class="trust-grid" aria-label="At a glance">
+      <div><span>Built by</span><strong>Brenden Mischewski</strong></div>
+      <div><span>Commissioned or funded by</span><strong>Nobody</strong></div>
+      <div><span>Position on amalgamation</span><strong>None</strong></div>
+    </div>
+
+    <section class="panel" aria-labelledby="author-heading">
+      <h2 id="author-heading">Who built this</h2>
+      <p>This tool was built by Brenden Mischewski, based in Whitby, Porirua.</p>
+      <p>I work in public sector policy and advisory through Mischewski Consulting Limited, with a background in research and policy analysis in New Zealand. I built this because communities are being asked to assess merger options, and the distributional arithmetic underneath those options is not easy to see.</p>
+    </section>
+
+    <section class="panel" id="independence" aria-labelledby="independence-heading">
+      <h2 id="independence-heading">Independent work</h2>
+      <p class="declaration"><strong>This is independent work.</strong> Nobody commissioned it, nobody paid for it, and it represents no client, council, government agency, political party or campaign. It is built entirely from published public data—every source is listed below. It uses no information obtained through any professional engagement. It is not connected to any submission being made under the Head Start process.</p>
+      <p>If I am ever engaged on work related to local government reorganisation, I will say so here and date it. If that engagement is for a party to a live proposal, I will retire this tool rather than continue running it alongside the work.</p>
+    </section>
+
+    <section class="panel" id="no-position" aria-labelledby="position-heading">
+      <h2 id="position-heading">No position on amalgamation</h2>
+      <p class="declaration"><strong>This tool takes no position on amalgamation.</strong> It does not argue that any council should merge, or should not. It models the arithmetic consequences of combinations that users choose themselves, including combinations nobody has proposed and nobody wants. What follows from those numbers is a political judgement, and it is yours to make, not mine.</p>
+      <p>Anyone is welcome to use this tool, cite it or link to it, including in submissions and campaigns. Use by any group does not imply that I endorse that group’s position.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="shows-heading">
+      <h2 id="shows-heading">What this tool shows</h2>
+      <p>The tool lets a user combine territorial authorities and compare four things: the population and land area of the combined council, how today’s published average residential rates bills differ from a pooled average, each council’s net assets per resident compared with the pooled position, and where the combined population would live.</p>
+      <p>The dataset covers all 67 territorial authorities: 12 city councils, 53 district councils, Auckland Council and Chatham Islands Council. It excludes the 11 regional councils and their separate rates. Five territorial authorities formally carry regional-council functions; Chatham Islands performs some regional functions. Auckland remains in the national dataset but is locked out of Head Start combinations.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="sources-heading">
+      <h2 id="sources-heading">Data sources</h2>
+      <p>The application stores a fixed, published vintage of each input so that a shared result remains reproducible. The downloadable dataset contains the values used by the model.</p>
+      <div class="table-wrap" role="region" aria-label="Data-source table" tabindex="0">
+        <table>
+          <thead>
+            <tr>
+              <th>Publisher</th>
+              <th>Dataset and use</th>
+              <th>Vintage or release</th>
+              <th>Retrieved</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Department of Internal Affairs</td>
+              <td><a href="https://www.dia.govt.nz/local-government-performance-metrics">Data release for council profiles</a>: population, land area, actual and forecast rates revenue</td>
+              <td>July 2025 release, updated October 2025; population reference year 2024</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>Stats NZ</td>
+              <td><a href="https://infoshare.stats.govt.nz/">Subnational population estimates</a> and <a href="https://datafinder.stats.govt.nz/">territorial-authority land area</a>, republished in the DIA release</td>
+              <td>2024 population; 2025 land area</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>New Zealand Taxpayers’ Union</td>
+              <td><a href="https://ratepayersreport.nz/">Ratepayers’ Report 2026</a>: published average residential rates bills and the residential-property counts used as weights</td>
+              <td>Year ended 30 June 2025</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>Stats NZ</td>
+              <td><a href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/">Local Authority Financial Statistics</a>: council-only total assets and liabilities</td>
+              <td>Financial position at 30 June 2024</td>
+              <td>27 July 2026</td>
+            </tr>
+            <tr>
+              <td>Local Government Commission and Department of Internal Affairs</td>
+              <td><a href="https://www.lgc.govt.nz/our-work/local-government-reorganisation/about-local-government-reorganisation/">Current local-authority structure</a> and <a href="https://www.dia.govt.nz/Simplifying-Local-Government">Head Start scope</a></td>
+              <td>Current at 28 July 2026</td>
+              <td>28 July 2026</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <a href="../the-amalgamator-data.csv" download>Download the 67-authority dataset (CSV)</a> ·
+        <a href="../source-register.csv" download>Download the detailed source register (CSV)</a>
+      </p>
+      <p>The historical rating-unit compilation did not retain a URL and retrieval date for every underlying council document. The source register identifies that gap explicitly. Those counts support a secondary normalisation in the older interface; they are not used in the main residential-bill result.</p>
+    </section>
+
+    <section class="panel" id="method" aria-labelledby="method-heading">
+      <h2 id="method-heading">How the rate figures are calculated</h2>
+      <p>The main result uses each council’s published average residential rates bill and its residential-property count. It does not divide total council revenue by population and call that a household bill.</p>
+      <ol>
+        <li>Start with each selected council’s published average residential rates bill for 2024/25.</li>
+        <li>Multiply that bill by the council’s residential-property count to estimate the total represented by those published averages.</li>
+        <li>Add those estimated totals across the selected councils.</li>
+        <li>Divide by the combined residential-property count. This produces one property-weighted average for the hypothetical merged council.</li>
+        <li>Compare that pooled average with each council’s own published average. The difference is the amount shown as potentially more or less per year.</li>
+      </ol>
+      <p>If a council has no comparable published bill, it is shown as “no data” and is not included in the pooled average. The wording “could pay more” or “could pay less” refers to movement from one council-wide average to another. It does not describe any particular property.</p>
+      <h3>Net assets per resident</h3>
+      <p>For the balance-sheet comparison, the tool subtracts liabilities from assets for every selected council, pools those dollar amounts, and divides by the combined population. It then compares that pooled figure with each council’s current net assets per resident. This is an accounting comparison, not a transfer payable to residents.</p>
+    </section>
+
+    <section class="panel" id="limitations" aria-labelledby="limitations-heading">
+      <h2 id="limitations-heading">What these numbers are not</h2>
+      <p>The indicative rate figures are arithmetic redistribution across a combined residential rating base. They do <strong>not</strong> model:</p>
+      <ul class="limitations">
+        <li>transition and implementation costs;</li>
+        <li>debt harmonisation or ring-fencing across merging entities;</li>
+        <li>service-level changes, up or down;</li>
+        <li>differential rating, targeted rates, uniform charges or remission policy in a merged entity;</li>
+        <li>efficiency gains or losses;</li>
+        <li>property values or the circumstances of an individual property;</li>
+        <li>the separate regional-council rates layer;</li>
+        <li>the location, condition or remaining life of council assets; or</li>
+        <li>any decision an amalgamated council would actually make about its rating structure.</li>
+      </ul>
+      <p class="closing">These are not forecasts. They show how today’s rates burden would redistribute across a combined rating base if nothing else changed—and in a real amalgamation, a great deal else changes. Treat the outputs as a starting point for a question, not an answer to one.</p>
+      <h3>Auckland is not evidence either way</h3>
+      <p>The tool does not use the 2010 Auckland amalgamation as evidence for or against current proposals. Its post-merger rates and efficiency outcomes are contested, and this model does not attempt to resolve that literature.</p>
+    </section>
+
+    <section class="panel" id="corrections" aria-labelledby="corrections-heading">
+      <h2 id="corrections-heading">Corrections</h2>
+      <p><strong>Found a mistake?</strong> Email:</p>
+      <p><a class="contact" href="mailto:brenden@mischewski.co.nz">brenden@mischewski.co.nz</a></p>
+      <p>Include the link to the combination you were looking at. Errors in the data, the method or my interpretation are all fair game. I read everything, and I will correct anything I can confirm is wrong. Substantive corrections will be recorded in the change log rather than silently absorbed.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="licence-heading">
+      <h2 id="licence-heading">Licence and citation</h2>
+      <div class="licence-list">
+        <p><strong>Code:</strong> MIT License. Copyright © 2026 Mischewski Consulting Limited.</p>
+        <p><strong>Original outputs:</strong> charts, figures, screenshots and original text are CC BY 4.0, except where third-party rights apply.</p>
+        <p><strong>Source data:</strong> remains subject to each publisher’s terms and attribution requirements.</p>
+      </div>
+      <p>Suggested citation:</p>
+      <p class="citation">Mischewski, B. (2026). <cite>Local Government Amalgamator</cite>. https://kasukabe914.github.io/localgovernment/. Accessed [day month year].</p>
+      <p>
+        <a href="https://github.com/Kasukabe914/localgovernment/blob/main/LICENSE">Code licence</a> ·
+        <a href="https://github.com/Kasukabe914/localgovernment/blob/main/OUTPUT-LICENCE.md">Output licence</a> ·
+        <a href="https://github.com/Kasukabe914/localgovernment/blob/main/DATA-LICENCE.md">Data terms</a>
+      </p>
+    </section>
+
+    <section class="panel" aria-labelledby="changes-heading">
+      <h2 id="changes-heading">Change log</h2>
+      <ol class="change-log">
+        <li>
+          <time datetime="2026-07-28">28 July 2026</time>
+          <span>Established the authorship, independence, no-position, method, limitations, corrections and licensing statements. Split the project licence into MIT for code, CC BY 4.0 for original outputs, and source-specific data terms.</span>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      <strong>The Amalgamator</strong><br>
+      Independent modelling for local-government reform.
+    </div>
+    <nav aria-label="Related links">
+      <a href="../">Tool</a>
+      <a href="../privacy-policy/">Privacy</a>
+      <a href="https://github.com/Kasukabe914/localgovernment">Source code</a>
+    </nav>
+  </footer>
+</body>
+</html>

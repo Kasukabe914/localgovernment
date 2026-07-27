@@ -26,7 +26,7 @@ const OG_IMAGE = "https://kasukabe914.github.io/localgovernment/og-image.jpg";
 
 const DEFAULT_TITLE = "Build a bigger council.";
 const DEFAULT_DESC =
-  "Choose a region, pick the councils, and see who could pay more or less.";
+  "Choose a region, pick the councils, and see who could pay more or less. About & method: https://kasukabe914.github.io/localgovernment/about/";
 
 // Every crawler that needs server-rendered tags. Anything not on this list is
 // treated as a human and redirected.
