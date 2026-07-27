@@ -3144,7 +3144,9 @@ export default function App() {
     if (!FACEBOOK_APP_ID) return "";
     const dialogUrl = new URL("https://www.facebook.com/dialog/share");
     dialogUrl.searchParams.set("app_id", FACEBOOK_APP_ID);
-    dialogUrl.searchParams.set("display", "popup");
+    // Meta requires `page` for URL-redirection Share Dialogs. `popup` is
+    // reserved for the JavaScript SDK and returns a broken-link error on mobile.
+    dialogUrl.searchParams.set("display", "page");
     dialogUrl.searchParams.set("href", shareUrl);
     dialogUrl.searchParams.set("redirect_uri", PUBLIC_APP_URL);
     return dialogUrl.toString();
