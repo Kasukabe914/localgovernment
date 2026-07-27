@@ -85,6 +85,11 @@ so the currently deployed shim keeps working until it is replaced.
   supports file sharing.
 - Keeps the desktop fallback explicit: LinkedIn opens, the write-up copies, the
   PNG downloads, and an “Open LinkedIn again” link remains visible.
+- Restricts the native file-share route to phones and tablets. Windows reports
+  file-sharing support even when LinkedIn is absent from its share sheet, so
+  Windows now always uses the direct LinkedIn route.
+- Adds a version marker to the LinkedIn preview URL so previously shared
+  combinations are fetched again instead of reusing LinkedIn's cached card.
 
 ## Files to commit
 

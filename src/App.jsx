@@ -2307,6 +2307,7 @@ const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
 );
 const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
 const LINKEDIN_SHARE_URL = "https://local-government-amalgamator-share.brendenm.chatgpt.site/";
+const LINKEDIN_PREVIEW_VERSION = "4";
 
 function simpleRates(members) {
   const usable = members.filter((m) => m.avgRes != null && m.hh);
@@ -3120,6 +3121,7 @@ export default function App() {
 
   const buildLinkedInLink = () => {
     const shareUrl = new URL(LINKEDIN_SHARE_URL);
+    shareUrl.searchParams.set("v", LINKEDIN_PREVIEW_VERSION);
     shareUrl.searchParams.set("title", councilName);
     shareUrl.searchParams.set("desc", finding.summary);
     shareUrl.searchParams.set("name", shareSentence(finding));
@@ -3135,7 +3137,12 @@ export default function App() {
     setShareStatus("");
     setLinkedInFallbackUrl("");
 
-    if (cardPreview && navigator.share && navigator.canShare) {
+    const mobileShareDevice =
+      navigator.userAgentData?.mobile === true ||
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+    if (mobileShareDevice && cardPreview && navigator.share && navigator.canShare) {
       const file = shareCardFile(cardPreview, cardFileName);
       const shareData = file
         ? {

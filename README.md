@@ -20,9 +20,9 @@ dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
 
 Two routes are offered:
 
-- **Post the card.** On devices with file sharing, opens the system share sheet
-  with the PNG and write-up already attached. The user can choose LinkedIn
-  directly. On desktop, it opens LinkedIn immediately, copies the write-up,
+- **Post the card.** On supported phones and tablets, opens the system share
+  sheet with the PNG and write-up already attached. The user can choose
+  LinkedIn directly. On desktop—including Windows—it opens LinkedIn immediately, copies the write-up,
   downloads the PNG, and leaves a visible “Open LinkedIn again” fallback.
 - **Share as a link.** Opens `share-offsite` immediately and leaves the same
   visible fallback in case the browser blocks the new tab. LinkedIn accepts only a
