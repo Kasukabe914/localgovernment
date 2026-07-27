@@ -18,30 +18,31 @@ name, the rates redistribution as a diverging bar chart, the blended bill, and a
 note naming any council with no published bill. No server and no new
 dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
 
-The result screen offers direct LinkedIn and Facebook actions under a **Share**
-heading. Both actions share the public GitHub Pages result URL with its compact
-scenario token. Download image, copy write-up and copy link remain available as
-separate, explicit actions.
+The result screen treats mobile and desktop sharing separately. Mobile devices
+show one **Share** action that opens the operating system's native share sheet,
+allowing the person to choose any installed destination. Desktop browsers retain
+the direct LinkedIn and Facebook actions. All routes use the public GitHub Pages
+result URL with its compact scenario token. Download image, copy write-up and
+copy link remain available as separate actions.
 
 Facebook uses Meta's official Share Dialog when `VITE_FACEBOOK_APP_ID` is
 configured. GitHub Pages maps the repository variable `FACEBOOK_APP_ID` into
 that build setting. The Meta app should list `kasukabe914.github.io` as an app
 domain and `https://kasukabe914.github.io/localgovernment/` as its website URL.
 The dialog shares that same GitHub Pages domain, avoiding a cross-domain link
-that Meta can reject as invalid.
-Without an App ID, local development falls back to the system share sheet on
-mobile and Facebook's legacy web sharer on desktop.
+that Meta can reject as invalid. The Facebook dialog is used on desktop only.
+Without an App ID, desktop development falls back to Facebook's legacy web
+sharer.
 
 LinkedIn receives the public GitHub Pages result URL directly so the shared
 link displays the application domain. This intentionally uses the site's
 general Open Graph preview rather than the per-result preview service. The
 general preview includes explicit image dimensions and media type for stricter
-mobile composers. On mobile, the LinkedIn icon opens the device's native share
-sheet so iOS can hand the link to the installed LinkedIn app; on desktop it
-opens LinkedIn's web composer.
+composers. On desktop, the LinkedIn icon opens LinkedIn's web composer.
 
-The Facebook Share Dialog uses Meta's `touch` display mode on mobile web
-(including iOS) and full-page display on desktop.
+The mobile share action passes the result title, finding summary and direct URL
+to `navigator.share()`. If a mobile browser does not support native sharing, the
+same result URL is copied instead.
 
 ### Card colours
 

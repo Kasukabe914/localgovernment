@@ -2693,6 +2693,15 @@ function ShareIcon({ type }) {
       </svg>
     );
   }
+  if (type === "share") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 16V3" />
+        <path d="m7 8 5-5 5 5" />
+        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+      </svg>
+    );
+  }
   if (type === "email") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -3139,45 +3148,17 @@ export default function App() {
     if (!FACEBOOK_APP_ID) return "";
     const dialogUrl = new URL("https://www.facebook.com/dialog/share");
     dialogUrl.searchParams.set("app_id", FACEBOOK_APP_ID);
-    // Meta specifies `touch` for mobile web dialogs. Desktop URL-redirection
-    // dialogs use the full-page mode.
-    dialogUrl.searchParams.set("display", isMobileShareDevice() ? "touch" : "page");
+    dialogUrl.searchParams.set("display", "page");
     dialogUrl.searchParams.set("href", shareUrl);
     dialogUrl.searchParams.set("redirect_uri", PUBLIC_APP_URL);
     return dialogUrl.toString();
   };
 
-  // iOS decides whether a web sharing URL stays in Safari or opens the
-  // installed app. Its native share sheet reliably exposes installed share
-  // targets, including LinkedIn, while desktop keeps the focused composer.
-  const shareOnLinkedIn = async () => {
-    const shareUrl = makeUrl();
-    const shareData = {
-      title: `${councilName} — The Amalgamator`,
-      url: shareUrl,
-    };
-
-    if (
-      isMobileShareDevice() &&
-      navigator.share &&
-      (!navigator.canShare || navigator.canShare(shareData))
-    ) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (error) {
-        if (error?.name === "AbortError") return;
-        window.location.assign(buildLinkedInLink(shareUrl));
-        return;
-      }
-    }
-
-    window.open(buildLinkedInLink(shareUrl), "_blank", "noopener,noreferrer");
+  const shareOnLinkedIn = () => {
+    window.open(buildLinkedInLink(), "_blank", "noopener,noreferrer");
   };
 
-  const shareOnFacebook = async () => {
-    // Keep the shared URL on the same GitHub Pages domain configured for the
-    // Meta app. A cross-domain preview URL can be rejected by the iOS dialog.
+  const shareOnFacebook = () => {
     const shareUrl = makeUrl();
     const dialogUrl = buildFacebookDialogLink(shareUrl);
     if (dialogUrl) {
@@ -3185,16 +3166,18 @@ export default function App() {
       return;
     }
 
-    // Preserve a useful local-development fallback until a Meta App ID is
-    // configured. Production uses the official Facebook Share Dialog above.
-    const mobileShareDevice = isMobileShareDevice();
+    window.open(buildFacebookFallbackLink(shareUrl), "_blank", "noopener,noreferrer");
+  };
+
+  const shareOnMobile = async () => {
+    const shareUrl = makeUrl();
     const shareData = {
       title: `${councilName} — The Amalgamator`,
+      text: finding.summary,
       url: shareUrl,
     };
 
     if (
-      mobileShareDevice &&
       navigator.share &&
       (!navigator.canShare || navigator.canShare(shareData))
     ) {
@@ -3203,15 +3186,15 @@ export default function App() {
         return;
       } catch (error) {
         if (error?.name === "AbortError") return;
-        // If the native share sheet fails, continue in Facebook's web dialog.
-        window.location.assign(buildFacebookFallbackLink(shareUrl));
-        return;
       }
     }
 
-    const facebookUrl = buildFacebookFallbackLink(shareUrl);
-    window.open(facebookUrl, "_blank", "noopener,noreferrer");
+    // Some embedded or older mobile browsers do not expose native sharing.
+    // Keep the result useful by copying the same direct link instead.
+    await copyText(shareUrl, "link");
   };
+
+  const mobileShareDevice = isMobileShareDevice();
 
   // Keep a preview available for people who want to download and reuse the
   // share image separately.
@@ -3727,24 +3710,38 @@ export default function App() {
               <div className="simpleSocialShare">
                 <h3>Share</h3>
                 <div className="simpleSocialShareButtons">
-                  <button
-                    className="simpleSocialIconButton simpleLinkedInIconButton"
-                    type="button"
-                    onClick={shareOnLinkedIn}
-                    aria-label={`Share ${councilName} on LinkedIn`}
-                    title="Share on LinkedIn"
-                  >
-                    <ShareIcon type="linkedin" />
-                  </button>
-                  <button
-                    className="simpleSocialIconButton simpleFacebookIconButton"
-                    type="button"
-                    onClick={shareOnFacebook}
-                    aria-label={`Share ${councilName} on Facebook`}
-                    title="Share on Facebook"
-                  >
-                    <ShareIcon type="facebook" />
-                  </button>
+                  {mobileShareDevice ? (
+                    <button
+                      className="simpleNativeShareButton"
+                      type="button"
+                      onClick={shareOnMobile}
+                      aria-label={`Share ${councilName}`}
+                    >
+                      <ShareIcon type="share" />
+                      Share
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        className="simpleSocialIconButton simpleLinkedInIconButton"
+                        type="button"
+                        onClick={shareOnLinkedIn}
+                        aria-label={`Share ${councilName} on LinkedIn`}
+                        title="Share on LinkedIn"
+                      >
+                        <ShareIcon type="linkedin" />
+                      </button>
+                      <button
+                        className="simpleSocialIconButton simpleFacebookIconButton"
+                        type="button"
+                        onClick={shareOnFacebook}
+                        aria-label={`Share ${councilName} on Facebook`}
+                        title="Share on Facebook"
+                      >
+                        <ShareIcon type="facebook" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -3766,7 +3763,7 @@ export default function App() {
                 {copied === "card"
                   ? "Image saved to your downloads."
                   : copied === "post"
-                    ? "Write-up copied. Paste it into the LinkedIn composer."
+                    ? "Write-up copied."
                     : copied === "link"
                       ? "Link copied."
                       : ""}
@@ -4662,6 +4659,32 @@ const SIMPLE_CSS = `
   transform: translateY(-1px);
 }
 .simpleSocialIconButton:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.72);
+  outline-offset: 3px;
+}
+.simpleNativeShareButton {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--white);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+.simpleNativeShareButton:hover {
+  background: var(--paper);
+  border-color: var(--paper);
+  transform: translateY(-1px);
+}
+.simpleNativeShareButton:focus-visible {
   outline: 3px solid rgba(255, 255, 255, 0.72);
   outline-offset: 3px;
 }
