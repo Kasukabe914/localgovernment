@@ -18,31 +18,30 @@ name, the rates redistribution as a diverging bar chart, the blended bill, and a
 note naming any council with no published bill. No server and no new
 dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
 
-The result screen treats mobile and desktop sharing separately. Mobile devices
-show one **Share** action that opens the operating system's native share sheet,
-allowing the person to choose any installed destination. Desktop browsers retain
-the direct LinkedIn and Facebook actions. All routes use the public GitHub Pages
-result URL with its compact scenario token. Download image, copy write-up and
-copy link remain available as separate actions.
+The result screen shows the same five sharing controls on mobile and desktop:
+Facebook, X, LinkedIn, Reddit and Copy link. The four platform controls are
+ordinary HTTPS anchors to each platform's composer, allowing iOS to hand a
+user-tapped universal link to an installed app. They do not use `window.open()`
+or the Web Share API. Every route uses the public GitHub Pages result URL with
+its compact scenario token.
 
 Facebook uses Meta's official Share Dialog when `VITE_FACEBOOK_APP_ID` is
 configured. GitHub Pages maps the repository variable `FACEBOOK_APP_ID` into
 that build setting. The Meta app should list `kasukabe914.github.io` as an app
 domain and `https://kasukabe914.github.io/localgovernment/` as its website URL.
-The dialog shares that same GitHub Pages domain, avoiding a cross-domain link
-that Meta can reject as invalid. The Facebook dialog is used on desktop only.
-Without an App ID, desktop development falls back to Facebook's legacy web
-sharer.
+The Facebook Feed Dialog shares that same GitHub Pages domain, avoiding a
+cross-domain link that Meta can reject as invalid. Without an App ID, local
+development falls back to Facebook's legacy web sharer.
 
 LinkedIn receives the public GitHub Pages result URL directly so the shared
 link displays the application domain. This intentionally uses the site's
 general Open Graph preview rather than the per-result preview service. The
 general preview includes explicit image dimensions and media type for stricter
-composers. On desktop, the LinkedIn icon opens LinkedIn's web composer.
+composers.
 
-The mobile share action passes the result title, finding summary and direct URL
-to `navigator.share()`. If a mobile browser does not support native sharing, the
-same result URL is copied instead.
+Copy link uses the existing clipboard helper and reports success in the share
+panel. Download image and Copy write-up remain available as separate secondary
+actions.
 
 ### Card colours
 
