@@ -19,15 +19,16 @@ note naming any council with no published bill. No server and no new
 dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
 
 The result screen offers direct LinkedIn and Facebook actions under a **Share**
-heading. Both icons open their platform's sharing flow with a compact scenario
-token; the share service derives the group name and exact result URL. Download
-image, copy write-up and copy link remain available as separate, explicit
-actions.
+heading. Both actions share the public GitHub Pages result URL with its compact
+scenario token. Download image, copy write-up and copy link remain available as
+separate, explicit actions.
 
 Facebook uses Meta's official Share Dialog when `VITE_FACEBOOK_APP_ID` is
 configured. GitHub Pages maps the repository variable `FACEBOOK_APP_ID` into
 that build setting. The Meta app should list `kasukabe914.github.io` as an app
 domain and `https://kasukabe914.github.io/localgovernment/` as its website URL.
+The dialog shares that same GitHub Pages domain, avoiding a cross-domain link
+that Meta can reject as invalid.
 Without an App ID, local development falls back to the system share sheet on
 mobile and Facebook's legacy web sharer on desktop.
 
@@ -35,7 +36,9 @@ LinkedIn receives the public GitHub Pages result URL directly so the shared
 link displays the application domain. This intentionally uses the site's
 general Open Graph preview rather than the per-result preview service. The
 general preview includes explicit image dimensions and media type for stricter
-mobile composers.
+mobile composers. On mobile, the LinkedIn icon opens the device's native share
+sheet so iOS can hand the link to the installed LinkedIn app; on desktop it
+opens LinkedIn's web composer.
 
 The Facebook Share Dialog uses Meta's `touch` display mode on mobile web
 (including iOS) and full-page display on desktop.
