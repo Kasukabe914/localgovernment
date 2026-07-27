@@ -1991,6 +1991,7 @@ function LegacyApp() {
             <div className="sfHead">Site</div>
             <ul className="sfLinks">
               <li><a href="methodology.html">Methodology</a></li>
+              <li><a href="privacy.html">Privacy policy</a></li>
               <li><a href="the-amalgamator-data.csv" download>Dataset (CSV)</a></li>
               <li><a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">Source on GitHub</a></li>
             </ul>
@@ -3781,6 +3782,7 @@ export default function App() {
         </div>
         <nav aria-label="More information">
           <a href="methodology.html">Methodology</a>
+          <a href="privacy.html">Privacy</a>
           <a href="the-amalgamator-data.csv" download>Download the data</a>
           <a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">
             Source code
