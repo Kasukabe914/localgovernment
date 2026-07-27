@@ -90,6 +90,9 @@ so the currently deployed shim keeps working until it is replaced.
   Windows now always uses the direct LinkedIn route.
 - Adds a version marker to the LinkedIn preview URL so previously shared
   combinations are fetched again instead of reusing LinkedIn's cached card.
+- Replaces the long mobile LinkedIn URL—with duplicated title, description,
+  finding and result parameters—with a single compact scenario token. The
+  share service derives the group name and exact result URL server-side.
 
 ## Files to commit
 

@@ -25,12 +25,10 @@ Two routes are offered:
   LinkedIn directly. On desktop—including Windows—it opens LinkedIn immediately, copies the write-up,
   downloads the PNG, and leaves a visible “Open LinkedIn again” fallback.
 - **Share as a link.** Opens `share-offsite` immediately and leaves the same
-  visible fallback in case the browser blocks the new tab. LinkedIn accepts only a
-  `url` parameter — `shareArticle`'s `title`/`summary`/`source` were deprecated
-  in 2018 — so everything in the feed card comes from the Open Graph tags on
-  the share shim. The app passes the finding through the shim's `name`
-  parameter so the card description carries real figures instead of generic
-  instructional copy.
+  visible fallback in case the browser blocks the new tab. The link carries
+  only the compact scenario token; the share service derives the group name
+  and exact result URL. LinkedIn accepts only a `url` parameter, so the
+  optional write-up is also copied to the clipboard.
 
 Both routes put the suggested write-up on the clipboard first, since there is no
 supported way to prefill the LinkedIn composer.

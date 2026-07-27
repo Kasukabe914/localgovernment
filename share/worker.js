@@ -66,9 +66,51 @@ function safeResult(raw) {
   return target.toString();
 }
 
-function page({ title, description, canonical, result }) {
+function cleanScenario(value) {
+  const state = String(value ?? "").trim();
+  if (
+    !/^1[pbhu][46]~/i.test(state) ||
+    state.length > 800 ||
+    /[\s&#]/.test(state)
+  ) {
+    return "";
+  }
+  try {
+    const groups = state.split("~").slice(1);
+    const valid = groups.length > 0 && groups.every((group) => {
+      const match = group.match(/^(.+):([0-9a-z]):([0-9a-z]+)$/i);
+      return (
+        match &&
+        match[3].length >= 4 &&
+        match[3].length % 2 === 0 &&
+        clean(decodeURIComponent(match[1]), 90)
+      );
+    });
+    return valid ? state : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function scenarioName(state) {
+  if (!state) return "";
+  const encodedName = state.split("~")[1]?.split(":")[0] || "";
+  try {
+    return clean(decodeURIComponent(encodedName), 90);
+  } catch (error) {
+    return "";
+  }
+}
+
+function scenarioResult(state) {
+  return state ? `${APP_URL}?m=${state}` : APP_URL;
+}
+
+function page({ title, description, heading, bodyDescription, canonical, result }) {
   const safeTitle = escapeHtml(title);
   const safeDesc = escapeHtml(description);
+  const safeHeading = escapeHtml(heading);
+  const safeBodyDescription = escapeHtml(bodyDescription);
   const safeCanonical = escapeHtml(canonical);
   const safeResultUrl = escapeHtml(result);
 
@@ -110,8 +152,9 @@ function page({ title, description, canonical, result }) {
 </head>
 <body>
 <main>
-  <h1>${safeTitle}</h1>
-  <p>${safeDesc}</p>
+  <p>Build a bigger council.</p>
+  <h1>${safeHeading}</h1>
+  <p>${safeBodyDescription}</p>
   <p><a href="${safeResultUrl}">Open this result</a></p>
 </main>
 <script>location.replace(${JSON.stringify(result)});</script>
@@ -123,14 +166,21 @@ export function handleShare(request) {
   const url = new URL(request.url);
   const params = url.searchParams;
   const agent = request.headers.get("user-agent") || "";
-  const result = safeResult(params.get("result"));
+  const state = cleanScenario(params.get("m"));
+  const compactName = scenarioName(state);
+  const result = state
+    ? scenarioResult(state)
+    : safeResult(params.get("result"));
 
   // `title`/`desc` are the current fields. `name` is the legacy field, which
   // older links use to carry the whole finding in one string.
   const legacy = clean(params.get("name"), 200);
-  const title = clean(params.get("title"), 70) || (legacy ? legacy.split(":")[0] : "") || DEFAULT_TITLE;
-  const description =
-    clean(params.get("desc"), 200) || legacy || DEFAULT_DESC;
+  const title = state
+    ? DEFAULT_TITLE
+    : clean(params.get("title"), 70) || (legacy ? legacy.split(":")[0] : "") || DEFAULT_TITLE;
+  const description = state
+    ? `${compactName}. ${DEFAULT_DESC}`
+    : clean(params.get("desc"), 200) || legacy || DEFAULT_DESC;
 
   if (!CRAWLER.test(agent)) {
     return new Response(null, {
@@ -143,7 +193,14 @@ export function handleShare(request) {
   }
 
   return new Response(
-    page({ title, description, canonical: url.toString(), result }),
+    page({
+      title,
+      description,
+      heading: compactName || title,
+      bodyDescription: state ? DEFAULT_DESC : description,
+      canonical: url.toString(),
+      result,
+    }),
     {
       headers: {
         "content-type": "text/html; charset=utf-8",

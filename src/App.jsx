@@ -2307,7 +2307,6 @@ const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
 );
 const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
 const LINKEDIN_SHARE_URL = "https://local-government-amalgamator-share.brendenm.chatgpt.site/";
-const LINKEDIN_PREVIEW_VERSION = "4";
 
 function simpleRates(members) {
   const usable = members.filter((m) => m.avgRes != null && m.hh);
@@ -2389,10 +2388,6 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
       ? `${rising.length} of ${scored.length} councils would pay more, ${falling.length} would pay less. ${headline}.`
       : "Population, land area and rates data for this combination.",
   };
-}
-
-function shareSentence(finding) {
-  return `${finding.councilName}: ${finding.summary}`;
 }
 
 // Suggested post copy. LinkedIn deprecated prefill (shareArticle's title/
@@ -3119,14 +3114,18 @@ export default function App() {
 
   const linkedInComposerUrl = "https://www.linkedin.com/feed/?shareActive=true";
 
-  const buildLinkedInLink = () => {
+  const buildCompactShareUrl = () => {
+    const resultUrl = makeUrl();
+    const encodedState = resultUrl.match(/[?&]m=([^&]+)/)?.[1] || "";
     const shareUrl = new URL(LINKEDIN_SHARE_URL);
-    shareUrl.searchParams.set("v", LINKEDIN_PREVIEW_VERSION);
-    shareUrl.searchParams.set("title", councilName);
-    shareUrl.searchParams.set("desc", finding.summary);
-    shareUrl.searchParams.set("name", shareSentence(finding));
-    shareUrl.searchParams.set("result", makeUrl());
-    return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.toString())}`;
+    if (encodedState) {
+      shareUrl.searchParams.set("m", encodedState);
+    }
+    return shareUrl.toString();
+  };
+
+  const buildLinkedInLink = () => {
+    return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(buildCompactShareUrl())}`;
   };
 
   // On devices that support file sharing, the system share sheet receives the
@@ -3180,10 +3179,9 @@ export default function App() {
   // One-click route. share-offsite accepts only `url`, so everything the feed
   // shows comes from the Open Graph tags on the share shim.
   //
-  // `title` and `desc` are what the shim in share/ reads. `name` is the legacy
-  // field the deployed shim reads today, and it gets the whole finding sentence
-  // so real figures reach the feed even before the shim is updated. The new
-  // shim prefers title/desc and ignores name, so both versions work.
+  // The shim receives the same compact scenario token as the app. It derives
+  // the group name and exact result URL server-side, keeping the URL short
+  // enough for LinkedIn's mobile composer to handle as a normal link.
   const shareOnLinkedIn = () => {
     const linkedInUrl = buildLinkedInLink();
     setLinkedInFallbackUrl(linkedInUrl);
