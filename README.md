@@ -20,11 +20,12 @@ dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
 
 Two routes are offered:
 
-- **Post the card.** Copies the suggested write-up, downloads the image, and
-  opens the LinkedIn composer. The user pastes and attaches. This is the
-  higher-reach route, because LinkedIn's ranker deprioritises posts that carry
-  an outbound link.
-- **Share as a link.** One click to `share-offsite`. LinkedIn accepts only a
+- **Post the card.** On devices with file sharing, opens the system share sheet
+  with the PNG and write-up already attached. The user can choose LinkedIn
+  directly. On desktop, it opens LinkedIn immediately, copies the write-up,
+  downloads the PNG, and leaves a visible “Open LinkedIn again” fallback.
+- **Share as a link.** Opens `share-offsite` immediately and leaves the same
+  visible fallback in case the browser blocks the new tab. LinkedIn accepts only a
   `url` parameter — `shareArticle`'s `title`/`summary`/`source` were deprecated
   in 2018 — so everything in the feed card comes from the Open Graph tags on
   the share shim. The app passes the finding through the shim's `name`

@@ -2436,6 +2436,18 @@ function sharePostText(finding, url) {
   return lines.join("\n");
 }
 
+function shareCardFile(dataUrl, fileName) {
+  const [header, encoded] = dataUrl.split(",");
+  if (!header || !encoded) return null;
+  const mime = /data:([^;]+)/.exec(header)?.[1] || "image/png";
+  const binary = window.atob(encoded);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return new File([bytes], fileName, { type: mime });
+}
+
 function fitText(ctx, text, maxWidth, startSize, weight) {
   let size = startSize;
   ctx.font = `${weight} ${size}px ${CARD_FONT}`;
@@ -2771,6 +2783,8 @@ export default function App() {
   const [copied, setCopied] = useState("");
   const [cardBusy, setCardBusy] = useState(false);
   const [cardPreview, setCardPreview] = useState("");
+  const [shareStatus, setShareStatus] = useState("");
+  const [linkedInFallbackUrl, setLinkedInFallbackUrl] = useState("");
 
   useEffect(() => {
     try {
@@ -3071,23 +3085,28 @@ export default function App() {
     return canvas;
   };
 
+  const cardFileName =
+    `${councilName.replace(/[^\wÀ-ɏḀ-ỿ-]+/g, "-").toLowerCase()}-amalgamator.png`;
+
+  const saveCardDataUrl = (dataUrl) => {
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = cardFileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    flash("card");
+  };
+
   const downloadCard = async () => {
     setCardBusy(true);
     try {
+      if (cardPreview) {
+        saveCardDataUrl(cardPreview);
+        return;
+      }
       const canvas = await renderCard();
-      const blob = await new Promise((resolve) =>
-        canvas.toBlob(resolve, "image/png")
-      );
-      if (!blob) return;
-      const href = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = href;
-      link.download = `${councilName.replace(/[^\wÀ-ɏḀ-ỿ-]+/g, "-").toLowerCase()}-amalgamator.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(href), 4000);
-      flash("card");
+      saveCardDataUrl(canvas.toDataURL("image/png"));
     } finally {
       setCardBusy(false);
     }
@@ -3097,17 +3116,58 @@ export default function App() {
 
   const copyLink = () => copyText(makeUrl(), "link");
 
-  // Native image post: the highest-reach route, because LinkedIn's ranker
-  // deprioritises posts carrying an outbound link. Copy the text first so the
-  // composer only needs a paste and an image attach.
+  const linkedInComposerUrl = "https://www.linkedin.com/feed/?shareActive=true";
+
+  const buildLinkedInLink = () => {
+    const shareUrl = new URL(LINKEDIN_SHARE_URL);
+    shareUrl.searchParams.set("title", councilName);
+    shareUrl.searchParams.set("desc", finding.summary);
+    shareUrl.searchParams.set("name", shareSentence(finding));
+    shareUrl.searchParams.set("result", makeUrl());
+    return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.toString())}`;
+  };
+
+  // On devices that support file sharing, the system share sheet receives the
+  // completed PNG and write-up together. On desktop, LinkedIn must be opened
+  // before any awaited work or the browser may block it as an unsolicited
+  // popup. The visible fallback link keeps the path recoverable either way.
   const shareNative = async () => {
-    await copyPost();
-    await downloadCard();
-    window.open(
-      "https://www.linkedin.com/feed/?shareActive=true",
-      "_blank",
-      "noopener,noreferrer"
+    setShareStatus("");
+    setLinkedInFallbackUrl("");
+
+    if (cardPreview && navigator.share && navigator.canShare) {
+      const file = shareCardFile(cardPreview, cardFileName);
+      const shareData = file
+        ? {
+            title: `${councilName} — The Amalgamator`,
+            text: sharePostText(finding, makeUrl()),
+            files: [file],
+          }
+        : null;
+      if (shareData && navigator.canShare({ files: shareData.files })) {
+        try {
+          setShareStatus("Choose LinkedIn from the share sheet. The card and write-up are attached.");
+          await navigator.share(shareData);
+          setShareStatus("Shared from your device.");
+          return;
+        } catch (error) {
+          if (error?.name === "AbortError") {
+            setShareStatus("");
+            return;
+          }
+          // Fall through to the browser-based LinkedIn route.
+        }
+      }
+    }
+
+    setLinkedInFallbackUrl(linkedInComposerUrl);
+    window.open(linkedInComposerUrl, "_blank", "noopener,noreferrer");
+    const copyPromise = copyPost();
+    const downloadPromise = downloadCard();
+    setShareStatus(
+      "LinkedIn is opening. The write-up is copied and the card is downloading — paste the text, then attach the PNG."
     );
+    await Promise.allSettled([copyPromise, downloadPromise]);
   };
 
   // One-click route. share-offsite accepts only `url`, so everything the feed
@@ -3117,17 +3177,18 @@ export default function App() {
   // field the deployed shim reads today, and it gets the whole finding sentence
   // so real figures reach the feed even before the shim is updated. The new
   // shim prefers title/desc and ignores name, so both versions work.
-  const shareOnLinkedIn = async () => {
-    await copyPost();
-    const shareUrl = new URL(LINKEDIN_SHARE_URL);
-    shareUrl.searchParams.set("title", councilName);
-    shareUrl.searchParams.set("desc", finding.summary);
-    shareUrl.searchParams.set("name", shareSentence(finding));
-    shareUrl.searchParams.set("result", makeUrl());
-    const linkedInUrl =
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.toString())}`;
+  const shareOnLinkedIn = () => {
+    const linkedInUrl = buildLinkedInLink();
+    setLinkedInFallbackUrl(linkedInUrl);
+    setShareStatus("LinkedIn is opening with this result link. The optional write-up is copied.");
     window.open(linkedInUrl, "_blank", "noopener,noreferrer");
+    copyPost();
   };
+
+  useEffect(() => {
+    setShareStatus("");
+    setLinkedInFallbackUrl("");
+  }, [finding]);
 
   // Show people the card before they post it — the preview is what makes the
   // share feel like publishing a finding rather than pasting a link.
@@ -3648,8 +3709,9 @@ export default function App() {
                 <div className="simpleShareRoute simpleShareRoutePrimary">
                   <h3>Post the card</h3>
                   <p>
-                    Copies the write-up and downloads the image, then opens LinkedIn.
-                    Paste, attach the image, post. Image posts reach further than links.
+                    On supported phones, the card and write-up go straight to your share
+                    sheet. On desktop, LinkedIn opens while the image downloads and the
+                    write-up copies.
                   </p>
                   <button
                     className="simplePrimary"
@@ -3658,16 +3720,16 @@ export default function App() {
                     disabled={cardBusy}
                   >
                     <ShareIcon type="linkedin" />
-                    {cardBusy ? "Preparing…" : "Post to LinkedIn"}
+                    {cardBusy ? "Preparing…" : "Share card on LinkedIn"}
                   </button>
                 </div>
 
                 <div className="simpleShareRoute">
                   <h3>Or share the link</h3>
-                  <p>One click. LinkedIn shows a preview card with the result.</p>
+                  <p>Opens LinkedIn immediately with a result-specific preview link.</p>
                   <button className="simpleSecondary" type="button" onClick={shareOnLinkedIn}>
                     <ShareIcon type="linkedin" />
-                    Share as a link
+                    Share link on LinkedIn
                   </button>
                 </div>
               </div>
@@ -3687,14 +3749,25 @@ export default function App() {
                 </button>
               </div>
               <p className="simpleShareStatus" role="status" aria-live="polite">
-                {copied === "card"
-                  ? "Image saved to your downloads."
-                  : copied === "post"
-                    ? "Write-up copied. Paste it into the LinkedIn composer."
-                    : copied === "link"
-                      ? "Link copied."
-                      : ""}
+                {shareStatus ||
+                  (copied === "card"
+                    ? "Image saved to your downloads."
+                    : copied === "post"
+                      ? "Write-up copied. Paste it into the LinkedIn composer."
+                      : copied === "link"
+                        ? "Link copied."
+                        : "")}
               </p>
+              {linkedInFallbackUrl && (
+                <a
+                  className="simpleLinkedInFallback"
+                  href={linkedInFallbackUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open LinkedIn again
+                </a>
+              )}
             </article>
 
             <div className="simpleEndActions">
@@ -4615,6 +4688,22 @@ const SIMPLE_CSS = `
   min-height: 18px;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.76);
+}
+.simpleLinkedInFallback {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 14px;
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+}
+.simpleLinkedInFallback:hover {
+  color: var(--ink);
+  background: var(--white);
 }
 
 .simpleSharePanel svg {

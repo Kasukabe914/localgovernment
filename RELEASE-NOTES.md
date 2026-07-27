@@ -77,6 +77,15 @@ so the currently deployed shim keeps working until it is replaced.
 - The card uses Bricolage Grotesque when the webfont has loaded, and the system
   sans otherwise.
 
+## Follow-up: seamless LinkedIn opening
+
+- Opens LinkedIn synchronously from the click event so popup blockers do not
+  discard either sharing route while clipboard or image work finishes.
+- Uses the Web Share API with the PNG and write-up attached when the device
+  supports file sharing.
+- Keeps the desktop fallback explicit: LinkedIn opens, the write-up copies, the
+  PNG downloads, and an “Open LinkedIn again” link remains visible.
+
 ## Files to commit
 
 ```bash
