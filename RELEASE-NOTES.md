@@ -99,6 +99,8 @@ so the currently deployed shim keeps working until it is replaced.
 - Replaces the long mobile LinkedIn URL—with duplicated title, description,
   finding and result parameters—with a single compact scenario token. The
   share service derives the group name and exact result URL server-side.
+- Sends LinkedIn the public GitHub Pages result URL directly, removing the
+  separate preview-service domain from the link shown in LinkedIn posts.
 
 ## Files to commit
 
