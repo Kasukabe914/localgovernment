@@ -18,10 +18,11 @@ name, the rates redistribution as a diverging bar chart, the blended bill, and a
 note naming any council with no published bill. No server and no new
 dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
 
-The result screen offers one direct LinkedIn action under a **Share** heading.
-The icon opens `share-offsite` with a compact scenario token; the share service
-derives the group name and exact result URL. Download image, copy write-up and
-copy link remain available as separate, explicit actions.
+The result screen offers direct LinkedIn and Facebook actions under a **Share**
+heading. Both icons open their platform's sharing flow with a compact scenario
+token; the share service derives the group name and exact result URL. Download
+image, copy write-up and copy link remain available as separate, explicit
+actions.
 
 ### Card colours
 

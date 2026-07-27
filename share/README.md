@@ -40,7 +40,7 @@ npx wrangler deploy
 ```
 
 Then add a custom domain in the Cloudflare dashboard and point
-`LINKEDIN_SHARE_URL` in `src/App.jsx` at it. The free tier covers this many
+`SOCIAL_SHARE_URL` in `src/App.jsx` at it. The free tier covers this many
 times over — the worker does no work beyond string building.
 
 ## What this fixes
