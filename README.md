@@ -31,6 +31,10 @@ domain and `https://kasukabe914.github.io/localgovernment/` as its website URL.
 Without an App ID, local development falls back to the system share sheet on
 mobile and Facebook's legacy web sharer on desktop.
 
+LinkedIn receives the public GitHub Pages result URL directly so the shared
+link displays the application domain. This intentionally uses the site's
+general Open Graph preview rather than the per-result preview service.
+
 ### Card colours
 
 The interface uses green for "pays less" and red for "pays more". The card does
