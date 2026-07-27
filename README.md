@@ -8,6 +8,7 @@ The application guides users through one proposed council at a time:
 - select councils within one region, from neighbouring regions, or from further afield;
 - distinguish nearby options from distant councils organised by region;
 - compare indicative residential-rates redistribution;
+- compare the pooled net-asset position per resident for each selected TLA;
 - choose from curated council names; and
 - share the finding as a generated card image or as a link.
 
@@ -92,6 +93,7 @@ The repository includes `.github/workflows/deploy-pages.yml`.
 ## Repository structure
 
 - `src/App.jsx` — application, council data, calculations, interactions, and component styles
+- `src/netAssets.js` — 2024 council-only assets and liabilities plus the pooled per-capita calculation
 - `src/main.jsx` — React entry point
 - `src/index.css` — document-level styles
 - `public/methodology.html` — methodology, formulas, sources, and caveats

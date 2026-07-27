@@ -21,11 +21,17 @@ covered by the licence and are not used here.
 | Total rates revenue, 2025/26 forecast | Council 2025/26 annual plans / 2025–34 long-term plans | Prospective statement of comprehensive revenue and expense; includes penalties and remissions. |
 | Usually resident population, 2024 | Stats NZ, subnational population estimates (Infoshare) | |
 | Land area, 2025 | Stats NZ (Datafinder) | |
+| Total assets and total liabilities, 30 June 2024 | Stats NZ, Local Authority Financial Statistics: financial position | Council-only figures, excluding council-controlled organisations; source values published in $000. |
 
 The rates, population and area figures above are compiled in the
 [**Department of Internal Affairs — Data release for council profiles, July 2025**](https://www.dia.govt.nz/local-government-performance-metrics)
 (updated October 2025), covering the 67 territorial authorities. The 11 regional
 councils are excluded.
+
+The financial-position figures come directly from
+[**Stats NZ — Local authority financial statistics: Year ended June
+2024**](https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/).
+Net assets are calculated as total assets minus total liabilities.
 
 ## Households and average residential rates bill — a separate source
 
@@ -41,11 +47,14 @@ so its household count is an estimate.
 
 ## What the app adds
 
-Blended rates per capita, the population power-share, per-household estimates and
-the efficiency-saving slider are this tool's **own arithmetic**, derived from the
-figures above. They are illustrative, not official DIA outputs, and are not a
-prediction of anyone's actual rates bill. Rates are levied on property value, not
-per head, and real amalgamations phase in differentials over years.
+Blended rates per capita, pooled net assets per resident, the population
+power-share, per-household estimates and the efficiency-saving slider are this
+tool's **own arithmetic**, derived from the figures above. They are illustrative,
+not official DIA or Stats NZ outputs, and are not a prediction of anyone's
+actual rates bill. The net-assets comparison is not a cash gain or loss and does
+not reflect asset location, condition, ring-fencing or service levels. Rates are
+levied on property value, not per head, and real amalgamations phase in
+differentials over years.
 
 ## Attribution statement
 

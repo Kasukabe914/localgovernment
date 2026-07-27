@@ -1,5 +1,18 @@
 # Sharing release
 
+## Draft: net assets per resident
+
+- Adds a TLA-by-TLA net-assets comparison directly below the residential-rates
+  calculation.
+- Pools each selected council's 30 June 2024 council-only assets and
+  liabilities, then divides the net balance by the combined 2024 population.
+- Shows every TLA's current net assets per resident and its signed difference
+  from the merged benchmark.
+- Adds the Stats NZ Local Authority Financial Statistics source to the public
+  data download and methodology, with council-controlled organisations
+  excluded and unitary-authority comparability called out.
+- Adds calculation, reconciliation, missing-data, and downloadable-data tests.
+
 Changes `src/App.jsx` and `README.md` only. No new dependencies, no build
 changes, no server.
 

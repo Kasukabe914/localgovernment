@@ -66,12 +66,13 @@
     <tr><td>Residential properties</td><td>NZ Taxpayers' Union, Ratepayers' Report 2026 (column labelled "Households")</td><td>Year ended 30 June 2025</td></tr>
     <tr><td>Average residential rates bill</td><td>NZ Taxpayers' Union, Ratepayers' Report 2026, from annual reports and LGOIMA requests. GST-inclusive, as billed.</td><td>2024/25</td></tr>
     <tr><td>Rating units</td><td>Compiled per council from annual reports, long-term plans and regional valuation rolls; best-available count with a status flag.</td><td>Mostly 2024/25; flags mark older, projected, draft and proxy counts</td></tr>
+    <tr><td>Total assets and total liabilities</td><td>Stats NZ Local Authority Financial Statistics: financial position. Council-only figures; CCOs excluded.</td><td>30 June 2024</td></tr>
   </table>
 
   <h3>Source links</h3>
   <ul>
     <li>Department of Internal Affairs: <a href="https://www.dia.govt.nz/local-government-performance-metrics">Data release for council profiles, July 2025</a> (updated October 2025). Crown copyright, CC BY 4.0.</li>
-    <li>Stats NZ: <a href="https://infoshare.stats.govt.nz/">Infoshare</a> (population) and <a href="https://datafinder.stats.govt.nz/">Datafinder</a> (land area). Crown copyright, CC BY 4.0.</li>
+    <li>Stats NZ: <a href="https://infoshare.stats.govt.nz/">Infoshare</a> (population), <a href="https://datafinder.stats.govt.nz/">Datafinder</a> (land area), and <a href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/">Local Authority Financial Statistics</a> (assets and liabilities). Crown copyright, CC BY 4.0.</li>
     <li>NZ Taxpayers' Union: <a href="https://ratepayersreport.nz/">Ratepayers' Report 2026</a>. Independent, non-government source with its own terms.</li>
   </ul>
 
@@ -87,6 +88,9 @@
     vintages); the tool uses DIA population everywhere.
     (5) Rating-unit counts mix confirmed actuals (51 councils) with older, projected, draft and proxy figures; the
     status is flagged per row in the CSV and on the comparator rows in the tool.
+    (6) Financial-position data is council-only. Council-controlled organisations are excluded, and unitary
+    authorities also perform regional functions, so the figures are not a complete or strictly like-for-like measure
+    of all publicly controlled assets.
   </div>
 
   <h2>2. GST treatment</h2>
@@ -98,18 +102,23 @@
   <h2>3. Calculations</h2>
   <p>Let <code>R</code> be a council's rates revenue for the chosen year (× 1.15), <code>P</code> its 2024 population,
      <code>D</code> its residential property count, <code>U</code> its rating units, and <code>B</code> its published
-     average residential bill.</p>
+     average residential bill. Let <code>A</code> be total assets and <code>L</code> total liabilities at 30 June
+     2024.</p>
   <table>
     <tr><th>Measure</th><th>Per council</th><th>Merged-group blend</th><th>Nature</th></tr>
     <tr><td>Avg residential bill (default)</td><td><code>B</code></td><td><code>Σ(B·D) ÷ ΣD</code>, a property-weighted mean of published bills</td><td>An actual bill, as published</td></tr>
     <tr><td>Per rating unit</td><td><code>R ÷ U</code></td><td><code>ΣR ÷ ΣU</code></td><td>Normalisation, not a bill</td></tr>
     <tr><td>Per person</td><td><code>R ÷ P</code></td><td><code>ΣR ÷ ΣP</code></td><td>Normalisation</td></tr>
+    <tr><td>Net assets per resident</td><td><code>(A − L) ÷ P</code></td><td><code>(ΣA − ΣL) ÷ ΣP</code></td><td>Accounting normalisation, not a cash entitlement</td></tr>
   </table>
   <p>The change shown for each council is <code>blend − own value</code>: an immediate, fully harmonised
      redistribution of today's revenue. Blends require at least two members with usable data; members without data are
      excluded from the blend and shown as "no data". The optional "trim" slider multiplies the revenue-derived take by
      <code>(1 − s%)</code> and is a hypothetical illustration, not an evidenced savings model. It never applies to the
      published-bill basis.</p>
+  <p>For net assets, the change shown for each TLA is <code>merged net assets per resident − own net assets per
+     resident</code>. The calculation pools dollars and population before dividing; it does not average the councils'
+     per-capita figures. Population-weighted changes therefore reconcile to zero across the selected group.</p>
   <p><strong>Regional mandate:</strong> a group's combined 2024 population divided by the total population of the
      territorial authorities in the region(s) its members span. The greater-than-50% threshold reflects reporting that
      the reform lets a coalition holding a majority of a region's population lodge a proposal covering the whole
@@ -142,8 +151,10 @@
     <li><strong>Property-level incidence.</strong> Rates are levied on land or capital value with differentials and
         targeted rates; averages hide a wide spread within every district.</li>
     <li><strong>Population growth after 2024.</strong> Forecast-year figures use the 2024 population, which
-        overstates per-person figures by up to about 8% in the fastest-growing districts. Water services reform, debt
-        positions, service levels and asset condition also sit outside the model.</li>
+        overstates per-person figures by up to about 8% in the fastest-growing districts.</li>
+    <li><strong>Asset transfer and condition.</strong> The net-assets comparison assumes council balance sheets are
+        pooled. It does not model where assets are located, their condition or remaining life, restricted reserves,
+        CCOs, water-service transfers, liability ring-fencing, service levels or transition arrangements.</li>
   </ul>
 
   <h2>6. Reproducing the model</h2>
