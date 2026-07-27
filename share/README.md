@@ -26,7 +26,7 @@ version-controlled alongside the app that depends on it.
 | Param | Meaning |
 |---|---|
 | `title` | Council name, e.g. `Megatron`. Becomes `og:title`. |
-| `desc` | The finding, e.g. `3 of 5 councils would pay more, 2 would pay less. Waikato District pays $507 less a year.` Becomes `og:description`. |
+| `desc` | The finding, e.g. `Residents of 3 of 5 councils would pay more, 2 would pay less. Waikato District ratepayers pay $507 on average less a year.` Becomes `og:description`. |
 | `name` | Legacy field carrying the whole finding in one string. Read only when `title`/`desc` are absent, so links shared before this change keep working. |
 | `result` | The app URL to redirect a human to. Validated against the app's origin. |
 

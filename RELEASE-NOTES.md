@@ -77,19 +77,18 @@ so the currently deployed shim keeps working until it is replaced.
 - The card uses Bricolage Grotesque when the webfont has loaded, and the system
   sans otherwise.
 
-## Follow-up: seamless LinkedIn opening
+## Follow-up: simpler LinkedIn sharing
 
-- Opens LinkedIn synchronously from the click event so popup blockers do not
-  discard either sharing route while clipboard or image work finishes.
-- Uses the Web Share API with the PNG and write-up attached when the device
-  supports file sharing.
-- Keeps the desktop fallback explicit: LinkedIn opens, the write-up copies, the
-  PNG downloads, and an “Open LinkedIn again” link remains visible.
-- Restricts the native file-share route to phones and tablets. Windows reports
-  file-sharing support even when LinkedIn is absent from its share sheet, so
-  Windows now always uses the direct LinkedIn route.
+- Replaces the two LinkedIn routes with one **Share** heading and icon action.
+- Removes the native card-posting route, automatic clipboard write, download
+  side effect, opening-status message and fallback link.
+- Keeps image download, write-up copy and result-link copy as explicit
+  secondary actions.
 - Adds a version marker to the LinkedIn preview URL so previously shared
   combinations are fetched again instead of reusing LinkedIn's cached card.
+- Replaces the long mobile LinkedIn URL—with duplicated title, description,
+  finding and result parameters—with a single compact scenario token. The
+  share service derives the group name and exact result URL server-side.
 
 ## Files to commit
 
