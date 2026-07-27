@@ -28,8 +28,8 @@ its compact scenario token.
 
 Facebook uses Meta's official Share Dialog when `VITE_FACEBOOK_APP_ID` is
 configured. GitHub Pages maps the repository variable `FACEBOOK_APP_ID` into
-that build setting. The Meta app should list `kasukabe914.github.io` as an app
-domain and `https://kasukabe914.github.io/localgovernment/` as its website URL.
+that build setting. The Meta app should list `amalgamator.nz` as an app domain
+and `https://www.amalgamator.nz/` as its website URL.
 The Facebook Feed Dialog shares that same GitHub Pages domain, avoiding a
 cross-domain link that Meta can reject as invalid. Without an App ID, local
 development falls back to Facebook's legacy web sharer.

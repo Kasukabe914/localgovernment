@@ -20,13 +20,13 @@
  * on Vercel Edge, Netlify Edge and Deno Deploy with a different wrapper.
  */
 
-const APP_ORIGIN = "https://kasukabe914.github.io";
-const APP_URL = "https://kasukabe914.github.io/localgovernment/";
-const OG_IMAGE = "https://kasukabe914.github.io/localgovernment/og-image.jpg";
+const APP_ORIGIN = "https://www.amalgamator.nz";
+const APP_URL = "https://www.amalgamator.nz/";
+const OG_IMAGE = "https://www.amalgamator.nz/og-image.jpg";
 
 const DEFAULT_TITLE = "Build a bigger council.";
 const DEFAULT_DESC =
-  "Choose a region, pick the councils, and see who could pay more or less. About & method: https://kasukabe914.github.io/localgovernment/about/";
+  "Choose a region, pick the councils, and see who could pay more or less. About & method: https://www.amalgamator.nz/about/";
 
 // Every crawler that needs server-rendered tags. Anything not on this list is
 // treated as a human and redirected.

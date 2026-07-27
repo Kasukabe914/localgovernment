@@ -8,7 +8,7 @@ const q = new URLSearchParams({
   title: 'Megatron',
   desc: 'Residents of 3 of 5 councils would pay more, 2 would pay less. Waikato District ratepayers pay $507 on average less a year.',
   name: 'Megatron: Residents of 3 of 5 councils would pay more...',
-  result: 'https://kasukabe914.github.io/localgovernment/?m=1b26~Megatron:0:0a0b',
+  result: 'https://www.amalgamator.nz/?m=1b26~Megatron:0:0a0b',
 });
 const compact = new URLSearchParams({
   m: '1b6~The%20Winterless%20Council:0:0001',
@@ -36,7 +36,7 @@ console.log('full legacy title:', tag('og:title'));
 console.log('full legacy desc :', tag('og:description'));
 
 // 4. Legacy `name` only
-const legacy = new URLSearchParams({ name: 'Aoraki Council: Residents of 1 of 3 councils would pay more.', result: 'https://kasukabe914.github.io/localgovernment/?m=x' });
+const legacy = new URLSearchParams({ name: 'Aoraki Council: Residents of 1 of 3 councils would pay more.', result: 'https://www.amalgamator.nz/?m=x' });
 r = await handleShare(mk(base + '?' + legacy, BOT));
 html = await r.text();
 console.log('legacy title    :', tag('og:title'));
@@ -48,7 +48,7 @@ r = await handleShare(mk(base + '?' + evil, HUMAN));
 console.log('open redirect   :', r.status, '->', r.headers.get('location'));
 
 // 6. HTML injection blocked
-const inj = new URLSearchParams({ title: '"><script>alert(1)</script>', result: 'https://kasukabe914.github.io/localgovernment/' });
+const inj = new URLSearchParams({ title: '"><script>alert(1)</script>', result: 'https://www.amalgamator.nz/' });
 r = await handleShare(mk(base + '?' + inj, BOT));
 html = await r.text();
 console.log('injection escaped:', !html.includes('<script>alert(1)'), '| title:', tag('og:title'));

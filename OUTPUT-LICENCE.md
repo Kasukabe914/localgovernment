@@ -11,7 +11,7 @@ Copyright © 2026 Mischewski Consulting Limited.
 ## Suggested attribution
 
 > Local Government Amalgamator by Brenden Mischewski, licensed CC BY 4.0.
-> https://kasukabe914.github.io/localgovernment/
+> https://www.amalgamator.nz/
 
 If you modify an output, say that it has been adapted. Attribution must not
 suggest that Brenden Mischewski or Mischewski Consulting Limited endorses the

@@ -31,7 +31,7 @@ test("the About page has authoritative, indexable metadata and valid JSON-LD", (
   );
   assert.match(
     about,
-    /<link rel="canonical" href="https:\/\/kasukabe914\.github\.io\/localgovernment\/about\/">/
+    /<link rel="canonical" href="https:\/\/www\.amalgamator\.nz\/about\/">/
   );
   assert.doesNotMatch(about, /<meta[^>]+name="robots"[^>]+noindex/i);
 
@@ -113,7 +113,7 @@ test("About & method is persistent and the old methodology URL is a canonical co
   assert.match(redirect, /name="robots" content="noindex,follow"/);
   assert.match(
     redirect,
-    /rel="canonical" href="https:\/\/kasukabe914\.github\.io\/localgovernment\/about\/"/
+    /rel="canonical" href="https:\/\/www\.amalgamator\.nz\/about\/"/
   );
   assert.match(redirect, /http-equiv="refresh" content="0; url=\.\/about\/"/);
   assert.match(redirect, /href="\.\/about\/">Continue to About &amp; method<\/a>/);
@@ -171,7 +171,7 @@ test("code, outputs and source data have distinct licence statements", () => {
 });
 
 test("social descriptions point readers to the method page", () => {
-  const aboutUrl = "https://kasukabe914.github.io/localgovernment/about/";
+  const aboutUrl = "https://www.amalgamator.nz/about/";
   assert.match(index, /property="og:description"[\s\S]*About &amp; method:/);
   assert.match(index, /name="twitter:description"[\s\S]*About &amp; method:/);
   assert.ok(index.includes(aboutUrl));

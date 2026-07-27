@@ -1036,7 +1036,7 @@ function LegacyApp() {
     }
 
     x.font = "700 24px system-ui, sans-serif"; x.fillStyle = "#B23A18";
-    x.fillText("kasukabe914.github.io/localgovernment", 60, H - 22);
+    x.fillText("www.amalgamator.nz", 60, H - 22);
     return cv;
   };
 
@@ -2335,7 +2335,7 @@ button, .piece { touch-action: manipulation; }
 const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
   (region) => COUNCILS.filter((c) => c.region === region && !c.locked).length >= 2
 );
-const PUBLIC_APP_URL = "https://kasukabe914.github.io/localgovernment/";
+const PUBLIC_APP_URL = "https://www.amalgamator.nz/";
 const ABOUT_URL = `${PUBLIC_APP_URL}about/`;
 const facebookAppIdValue = String(import.meta.env.VITE_FACEBOOK_APP_ID || "").trim();
 const FACEBOOK_APP_ID = /^\d+$/.test(facebookAppIdValue) ? facebookAppIdValue : "";
@@ -2723,7 +2723,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   ctx.globalAlpha = 0.75;
   ctx.textAlign = "right";
   ctx.font = `600 17px ${CARD_FONT}`;
-  ctx.fillText("kasukabe914.github.io/localgovernment/about/", CARD_W - 56, CARD_H - footH / 2);
+  ctx.fillText("www.amalgamator.nz/about/", CARD_W - 56, CARD_H - footH / 2);
   ctx.globalAlpha = 1;
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
@@ -3234,7 +3234,7 @@ export default function App() {
     linkedInUrl.searchParams.set("url", shareUrl);
     linkedInUrl.searchParams.set("title", shareTitle);
     linkedInUrl.searchParams.set("summary", finding.summary);
-    linkedInUrl.searchParams.set("source", "kasukabe914.github.io");
+    linkedInUrl.searchParams.set("source", "www.amalgamator.nz");
     return linkedInUrl.toString();
   };
 
