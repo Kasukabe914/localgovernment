@@ -3141,13 +3141,18 @@ export default function App() {
     return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   };
 
+  const isMobileShareDevice = () =>
+    navigator.userAgentData?.mobile === true ||
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
   const buildFacebookDialogLink = (shareUrl = buildCompactShareUrl()) => {
     if (!FACEBOOK_APP_ID) return "";
     const dialogUrl = new URL("https://www.facebook.com/dialog/share");
     dialogUrl.searchParams.set("app_id", FACEBOOK_APP_ID);
-    // Meta requires `page` for URL-redirection Share Dialogs. `popup` is
-    // reserved for the JavaScript SDK and returns a broken-link error on mobile.
-    dialogUrl.searchParams.set("display", "page");
+    // Meta specifies `touch` for mobile web dialogs. Desktop URL-redirection
+    // dialogs use the full-page mode.
+    dialogUrl.searchParams.set("display", isMobileShareDevice() ? "touch" : "page");
     dialogUrl.searchParams.set("href", shareUrl);
     dialogUrl.searchParams.set("redirect_uri", PUBLIC_APP_URL);
     return dialogUrl.toString();
@@ -3172,10 +3177,7 @@ export default function App() {
 
     // Preserve a useful local-development fallback until a Meta App ID is
     // configured. Production uses the official Facebook Share Dialog above.
-    const mobileShareDevice =
-      navigator.userAgentData?.mobile === true ||
-      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const mobileShareDevice = isMobileShareDevice();
     const shareData = {
       title: `${councilName} — The Amalgamator`,
       url: shareUrl,
