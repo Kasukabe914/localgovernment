@@ -24,6 +24,10 @@ token; the share service derives the group name and exact result URL. Download
 image, copy write-up and copy link remain available as separate, explicit
 actions.
 
+On phones and tablets, the Facebook icon uses the system share sheet so the
+installed Facebook app receives the result URL directly. On desktop it opens
+Facebook's web sharing dialog.
+
 ### Card colours
 
 The interface uses green for "pays less" and red for "pays more". The card does
