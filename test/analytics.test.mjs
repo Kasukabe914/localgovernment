@@ -155,6 +155,8 @@ test("Umami configuration, event schema, and privacy disclosure are wired into p
   assert.match(privacy, /Umami Cloud/);
   assert.match(privacy, /respect the browser's Do Not Track setting/);
   assert.match(privacy, /removes the\s+encoded council scenario/);
+  assert.match(privacy, /app-generated council name selected for that share/);
+  assert.match(privacy, /not\s+a free-text field/);
   assert.match(privacy, /Session replay and heatmaps are not enabled/);
 
   for (const platform of ["facebook", "x", "linkedin", "reddit"]) {
@@ -166,6 +168,7 @@ test("Umami configuration, event schema, and privacy disclosure are wired into p
   assert.match(app, /trackAnalytics\("share-image-download"/);
   assert.match(app, /trackAnalytics\("share-writeup-copy"/);
   assert.match(app, /platform: "copy-link"/);
+  assert.equal((app.match(/chosen_name: councilName/g) || []).length, 4);
 });
 
 test("invalid Umami website IDs fail the production build clearly", async () => {

@@ -3232,6 +3232,7 @@ export default function App() {
     trackAnalytics("share-image-download", {
       format: "png",
       surface: "result",
+      chosen_name: councilName,
     });
   };
 
@@ -3252,7 +3253,10 @@ export default function App() {
   const copyPost = async () => {
     const copiedOk = await copyText(sharePostText(finding, makeUrl()), "post");
     if (copiedOk) {
-      trackAnalytics("share-writeup-copy", { surface: "result" });
+      trackAnalytics("share-writeup-copy", {
+        surface: "result",
+        chosen_name: councilName,
+      });
     }
   };
 
@@ -3262,6 +3266,7 @@ export default function App() {
       trackAnalytics("share-click", {
         platform: "copy-link",
         surface: "result",
+        chosen_name: councilName,
       });
     }
   };
@@ -3270,6 +3275,7 @@ export default function App() {
     trackAnalytics("share-click", {
       platform,
       surface: "result",
+      chosen_name: councilName,
     });
   };
 

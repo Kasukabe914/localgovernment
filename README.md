@@ -103,8 +103,8 @@ query parameters, and referrer queries before transmission. Fixed UTM labels on
 the Facebook, LinkedIn, X, and Reddit links are retained for platform
 attribution. The result screen also records fixed, non-identifying events for
 social-link clicks, successful Copy link and Copy write-up actions, and share
-image downloads. No council names, selections, or scenario codes are included
-in event data.
+image downloads. Event data includes the app-generated council name selected
+for the share, but no underlying council selection or scenario code.
 
 ## Deploy with GitHub Pages
 
