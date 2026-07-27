@@ -38,6 +38,7 @@ test("analytics events are silent without Umami and contain only supplied fixed 
       trackAnalytics("share-click", {
         platform: "copy-link",
         surface: "result",
+        chosen_name: "The Winterless Council",
       }),
       true
     );
@@ -47,6 +48,7 @@ test("analytics events are silent without Umami and contain only supplied fixed 
         {
           platform: "copy-link",
           surface: "result",
+          chosen_name: "The Winterless Council",
         },
       ],
     ]);
