@@ -2647,12 +2647,26 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   canvas.width = CARD_W;
   canvas.height = CARD_H;
   let ctx = canvas.getContext("2d");
+  const headH = 84;
+  const councilListY = headH + 160;
   ctx.font = `650 18px ${CARD_FONT}`;
   const councilList = finding.councilNames.join(" · ");
   const councilLines = wrapCardText(ctx, councilList, CARD_W - 112);
-  const extraCouncilLines = Math.max(0, councilLines.length - 3);
-  const outsideHeadStartHeight = finding.outsideHeadStart ? 32 : 0;
-  const cardHeight = CARD_H + extraCouncilLines * 23 + outsideHeadStartHeight;
+  const councilTextBottom = councilListY + (councilLines.length - 1) * 23;
+  const headStartWarningY = councilListY + councilLines.length * 23 + 14;
+  const contentBottom = finding.outsideHeadStart ? headStartWarningY : councilTextBottom;
+  ctx.font = `600 17px ${CARD_FONT}`;
+  const comparisonLines = wrapCardText(
+    ctx,
+    finding.comparisonSummary,
+    CARD_W - 112
+  );
+  const comparisonY = contentBottom + 36;
+  const dividerY = comparisonY + (comparisonLines.length - 1) * 22 + 30;
+  const panelTop = dividerY + 32;
+  const explanationHeight = 230;
+  const layoutExtraHeight = Math.max(0, panelTop - 362);
+  const cardHeight = CARD_H + layoutExtraHeight + (explanationHeight - 200);
   if (cardHeight !== CARD_H) {
     canvas.height = cardHeight;
     ctx = canvas.getContext("2d");
@@ -2662,7 +2676,6 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   ctx.fillRect(0, 0, CARD_W, cardHeight);
 
   // Masthead
-  const headH = 84;
   ctx.fillStyle = CARD_INK;
   ctx.fillRect(0, 0, CARD_W, headH);
   ctx.fillStyle = CARD_PAPER;
@@ -2713,15 +2726,19 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
     );
   }
 
-  y = headH + 246 + extraCouncilLines * 23 + outsideHeadStartHeight;
+  ctx.fillStyle = CARD_INK_SOFT;
+  ctx.font = `600 17px ${CARD_FONT}`;
+  comparisonLines.forEach((line, index) => {
+    ctx.fillText(line, 56, comparisonY + index * 22);
+  });
+
   ctx.strokeStyle = CARD_RULE;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(56, y + 0.5);
-  ctx.lineTo(CARD_W - 56, y + 0.5);
+  ctx.moveTo(56, dividerY + 0.5);
+  ctx.lineTo(CARD_W - 56, dividerY + 0.5);
   ctx.stroke();
 
-  const panelTop = y + 32;
   const panelGap = 28;
   const panelW = (CARD_W - 112 - panelGap) / 2;
   const panelH = 505;
@@ -2823,7 +2840,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
 
   const explanationTop = panelTop + panelH + 28;
   ctx.fillStyle = "#f1ede2";
-  ctx.fillRect(56, explanationTop, CARD_W - 112, 200);
+  ctx.fillRect(56, explanationTop, CARD_W - 112, explanationHeight);
   ctx.fillStyle = CARD_INK;
   ctx.font = `800 20px ${CARD_FONT}`;
   ctx.fillText("WHAT THESE ESTIMATES MEAN", 80, explanationTop + 31);
@@ -2850,16 +2867,16 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   ctx.strokeStyle = CARD_RULE;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(80, explanationTop + 148.5);
-  ctx.lineTo(CARD_W - 80, explanationTop + 148.5);
+  ctx.moveTo(80, explanationTop + 150.5);
+  ctx.lineTo(CARD_W - 80, explanationTop + 150.5);
   ctx.stroke();
   ctx.fillStyle = CARD_INK;
   ctx.font = `800 14px ${CARD_FONT}`;
-  ctx.fillText("WATER", 80, explanationTop + 170);
+  ctx.fillText("WATER", 80, explanationTop + 176);
   ctx.fillStyle = CARD_INK_SOFT;
   ctx.font = `600 14px ${CARD_FONT}`;
-  wrapCardText(ctx, waterExplanation, CARD_W - 230).slice(0, 2).forEach((line, index) => {
-    ctx.fillText(line, 150, explanationTop + 170 + index * 17);
+  wrapCardText(ctx, waterExplanation, CARD_W - 160).slice(0, 2).forEach((line, index) => {
+    ctx.fillText(line, 80, explanationTop + 199 + index * 17);
   });
 
   // Footer

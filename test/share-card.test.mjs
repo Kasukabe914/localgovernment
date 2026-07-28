@@ -25,9 +25,11 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /Water is included exactly as it appeared in each source at that date/);
   assert.match(app, /Later transfers of water services, assets, debt and billing to separate water organisations are not included/);
   assert.doesNotMatch(app, /accounting comparison—not money residents/);
-  assert.match(app, /ctx\.fillRect\(56, explanationTop, CARD_W - 112, 200\)/);
-  assert.match(app, /ctx\.moveTo\(80, explanationTop \+ 148\.5\)/);
-  assert.match(app, /ctx\.fillText\("WATER", 80, explanationTop \+ 170\)/);
+  assert.match(app, /const explanationHeight = 230/);
+  assert.match(app, /ctx\.fillRect\(56, explanationTop, CARD_W - 112, explanationHeight\)/);
+  assert.match(app, /ctx\.moveTo\(80, explanationTop \+ 150\.5\)/);
+  assert.match(app, /ctx\.fillText\("WATER", 80, explanationTop \+ 176\)/);
+  assert.match(app, /ctx\.fillText\(line, 80, explanationTop \+ 199 \+ index \* 17\)/);
   assert.match(app, /explanationTop \+ 82 \+ index \* 17/);
   assert.match(app, /"Historic net assets per resident · 30 June 2024"/);
   assert.match(app, /labelFor: \(row\) => `\$\{row\.council\.name\} · \$\{money\(row\.before\)\}`/);
@@ -71,9 +73,12 @@ test("the downloadable card lists the selected councils", () => {
   assert.match(app, /const councilList = finding\.councilNames\.join\(" · "\)/);
   assert.match(
     app,
-    /const cardHeight = CARD_H \+ extraCouncilLines \* 23 \+ outsideHeadStartHeight/
+    /const cardHeight = CARD_H \+ layoutExtraHeight \+ \(explanationHeight - 200\)/
   );
   assert.match(app, /councilLines\.forEach\(\(line, index\) =>/);
+  assert.match(app, /const comparisonLines = wrapCardText\([\s\S]*finding\.comparisonSummary/);
+  assert.match(app, /ctx\.fillText\(line, 56, comparisonY \+ index \* 22\)/);
+  assert.match(app, /const panelTop = dividerY \+ 32/);
 });
 
 test("Auckland scenarios carry the Head Start warning into shared outputs", () => {
