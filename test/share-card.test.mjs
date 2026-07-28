@@ -25,6 +25,10 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /Water is included exactly as it appeared in each source at that date/);
   assert.match(app, /Later transfers of water services, assets, debt and billing to separate water organisations are not included/);
   assert.doesNotMatch(app, /accounting comparison—not money residents/);
+  assert.match(app, /ctx\.fillRect\(56, explanationTop, CARD_W - 112, 200\)/);
+  assert.match(app, /ctx\.moveTo\(80, explanationTop \+ 148\.5\)/);
+  assert.match(app, /ctx\.fillText\("WATER", 80, explanationTop \+ 170\)/);
+  assert.match(app, /explanationTop \+ 82 \+ index \* 17/);
   assert.match(app, /"Historic net assets per resident · 30 June 2024"/);
   assert.match(app, /labelFor: \(row\) => `\$\{row\.council\.name\} · \$\{money\(row\.before\)\}`/);
   assert.doesNotMatch(app, /money\(row\.before\)\} at 30 Jun 2024/);

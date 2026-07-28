@@ -2823,7 +2823,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
 
   const explanationTop = panelTop + panelH + 28;
   ctx.fillStyle = "#f1ede2";
-  ctx.fillRect(56, explanationTop, CARD_W - 112, 190);
+  ctx.fillRect(56, explanationTop, CARD_W - 112, 200);
   ctx.fillStyle = CARD_INK;
   ctx.font = `800 20px ${CARD_FONT}`;
   ctx.fillText("WHAT THESE ESTIMATES MEAN", 80, explanationTop + 31);
@@ -2842,18 +2842,24 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
     ctx.font = `800 14px ${CARD_FONT}`;
     ctx.fillText(label, textX, explanationTop + 59);
     ctx.fillStyle = CARD_INK_SOFT;
-    ctx.font = `600 15px ${CARD_FONT}`;
+    ctx.font = `600 14px ${CARD_FONT}`;
     wrapCardText(ctx, text, 500).slice(0, 4).forEach((line, index) => {
-      ctx.fillText(line, textX, explanationTop + 82 + index * 19);
+      ctx.fillText(line, textX, explanationTop + 82 + index * 17);
     });
   });
+  ctx.strokeStyle = CARD_RULE;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(80, explanationTop + 148.5);
+  ctx.lineTo(CARD_W - 80, explanationTop + 148.5);
+  ctx.stroke();
   ctx.fillStyle = CARD_INK;
   ctx.font = `800 14px ${CARD_FONT}`;
-  ctx.fillText("WATER", 80, explanationTop + 160);
+  ctx.fillText("WATER", 80, explanationTop + 170);
   ctx.fillStyle = CARD_INK_SOFT;
-  ctx.font = `600 15px ${CARD_FONT}`;
+  ctx.font = `600 14px ${CARD_FONT}`;
   wrapCardText(ctx, waterExplanation, CARD_W - 230).slice(0, 2).forEach((line, index) => {
-    ctx.fillText(line, 150, explanationTop + 160 + index * 19);
+    ctx.fillText(line, 150, explanationTop + 170 + index * 17);
   });
 
   // Footer
