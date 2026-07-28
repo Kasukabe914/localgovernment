@@ -118,9 +118,31 @@ test("the public method accurately distinguishes households from residential rat
   assert.match(about, /does not reconstruct the residential rates pool/);
   assert.match(
     app,
-    /separate Stats NZ household count, not councils' residential rating-unit count/
+    /separately\s+published household count\. That count is not necessarily the residential\s+rating-unit count/
   );
   assert.doesNotMatch(about, /combined residential rating base/);
+});
+
+test("rates and assets use an explicit historical water-continuity basis", () => {
+  for (const phrase of [
+    "Historical water-continuity basis",
+    "Later transfers of water services, assets, liabilities, debt and customer billing",
+    "Where water was already separately owned, billed or excluded",
+    "post-reform legal balance sheet",
+  ]) {
+    assert.ok(about.includes(phrase), phrase);
+  }
+
+  assert.match(app, /Water follows a historical continuity basis/);
+  assert.match(app, /Historic net assets per resident · 30 June 2024/);
+  assert.match(
+    app,
+    /later transfers to separate water organisations\s+are ignored/
+  );
+  assert.match(
+    about,
+    /Wellington\/Wairarapa financial analysis[\s\S]*different, post-transfer financial perimeter/
+  );
 });
 
 test("About & method is persistent and the old methodology URL is a canonical compatibility redirect", () => {

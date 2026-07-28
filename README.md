@@ -156,6 +156,14 @@ residential rates pool, the app does not reconstruct either one. The result
 shows a possible direction for comparison, not a final rate or property-level
 forecast.
 
+The financial comparisons use a historical water-continuity basis. Water
+services retain the treatment in each published source at its stated date.
+Later transfers of water services, assets, liabilities, debt and customer
+billing to separate water organisations are not modelled or substituted.
+Where water was already separately owned, billed or excluded, that source-date
+treatment remains. The net-assets result is therefore a 30 June 2024 historical
+accounting comparison, not a post-reform legal balance sheet.
+
 The About & method page documents authorship, independence, sources,
 calculations, data vintages, corrections and known limitations. The Current
 Talks shortcut is a dated snapshot and should be reviewed whenever reported

@@ -276,7 +276,7 @@
 
     <section class="panel" aria-labelledby="shows-heading">
       <h2 id="shows-heading">What this tool shows</h2>
-      <p>The tool lets a user combine territorial authorities and compare four things: the population and land area of the combined council, how today’s published average residential rates bills differ from a pooled average, each council’s net assets per resident compared with the pooled position, and where the combined population would live.</p>
+      <p>The tool lets a user combine territorial authorities and compare four things: the population and land area of the combined council, how published 2024/25 average residential rates bills differ from a pooled average, each council’s historic net assets per resident at 30 June 2024 compared with the pooled position, and where the combined population would live.</p>
       <p>The dataset covers all 67 territorial authorities: 12 city councils, 53 district councils, Auckland Council and Chatham Islands Council. It excludes the 11 regional councils and their separate rates. Five territorial authorities formally carry regional-council functions; Chatham Islands performs some regional functions. Auckland remains in the national dataset but is locked out of Head Start combinations.</p>
     </section>
 
@@ -308,13 +308,13 @@
             </tr>
             <tr>
               <td>New Zealand Taxpayers’ Union</td>
-              <td><a href="https://ratepayersreport.nz/">Ratepayers’ Report 2026</a>: published average residential rates bills and household counts. The report says its household data comes from Stats NZ; these counts are used here as approximate weights and are not council-defined residential rating units.</td>
+              <td><a href="https://ratepayersreport.nz/">Ratepayers’ Report 2026</a>: published average residential rates bills and household counts. The report says its household data comes from Stats NZ; these counts are used here as approximate weights and are not council-defined residential rating units. Water retains the treatment in the source-year published figure.</td>
               <td>Year ended 30 June 2025</td>
               <td>28 July 2026</td>
             </tr>
             <tr>
               <td>Stats NZ</td>
-              <td><a href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/">Local Authority Financial Statistics</a>: council-only total assets and liabilities</td>
+              <td><a href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/">Local Authority Financial Statistics</a>: council-only total assets and liabilities. Water assets and liabilities held directly by a council at the reference date remain included; assets already held in council-controlled organisations are excluded.</td>
               <td>Financial position at 30 June 2024</td>
               <td>27 July 2026</td>
             </tr>
@@ -328,6 +328,12 @@
               <td>MartinJenkins</td>
               <td><a href="https://nz.linkedin.com/in/nick-carlaw-66526427b">Carlaw, N. (2026). <cite>Head Start map update</cite>. MartinJenkins. LinkedIn. 28 July 2026.</a> Council preference and participation notes shown under “Councils still exploring options”.</td>
               <td>28 July 2026</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>Hutt City Council / MartinJenkins</td>
+              <td><a href="https://huttcity.infocouncil.biz/Open/2026/08/HCC_05082026_AGN_6478_AT.PDF"><cite>Wellington/Wairarapa Financial Analysis Report</cite></a>: contextual transition-cost, efficiency, debt and resilience analysis. It is not a numerical input to this tool.</td>
+              <td>27 July 2026 council agenda</td>
               <td>28 July 2026</td>
             </tr>
             <tr>
@@ -358,8 +364,13 @@
       </ol>
       <p><strong>This does not reproduce the Taxpayers’ Union’s residential-rates calculation.</strong> Its methodology defines an average bill as residential rates and applicable charges divided by council-defined residential rating units. The underlying rates, charges and residential rating-unit count—its X, Y and Z—are not exposed in the public report data. The separate household count used by this tool is therefore not necessarily the denominator used to calculate the published bill.</p>
       <p>If a council has no comparable published bill, it is shown as “no data” and is not included in the weighted comparison. The output compares published council-wide averages. It does not reconstruct the residential rates pool, forecast an individual property, or determine the rating policy a merged council would adopt.</p>
-      <h3>Net assets per resident</h3>
-      <p>For the balance-sheet comparison, the tool subtracts liabilities from assets for every selected council, pools those dollar amounts, and divides by the combined population. It then compares that pooled figure with each council’s current net assets per resident. This is an accounting comparison, not a transfer payable to residents.</p>
+      <h3>Historical water-continuity basis</h3>
+      <p>The rates and balance-sheet comparisons retain water services exactly as they appeared in each published source at its stated date. Later transfers of water services, assets, liabilities, debt and customer billing to separate water organisations under Local Water Done Well are not modelled or substituted. Where water was already separately owned, billed or excluded at the source date, that published treatment remains.</p>
+      <p>This choice provides a consistent historical comparison through an in-flight national transition. It does not reconstruct every water organisation or claim to show a council’s post-reform legal balance sheet or a household’s current combined council-and-water charge.</p>
+      <h3>Historic net assets per resident — 30 June 2024</h3>
+      <p>For the balance-sheet comparison, the tool subtracts liabilities from assets for every selected council, pools those dollar amounts, and divides by the combined population. It then compares that pooled figure with each council’s historic net assets per resident. Water assets and liabilities held directly by councils at 30 June 2024 remain included; assets already held outside the council-only accounts remain excluded. Later water transfers are ignored. This is an accounting comparison, not a transfer payable to residents or a post-reform legal balance sheet.</p>
+      <h3>Why the Wellington financial report differs</h3>
+      <p>The <a href="https://huttcity.infocouncil.biz/Open/2026/08/HCC_05082026_AGN_6478_AT.PDF">July 2026 Wellington/Wairarapa financial analysis</a> removes water activities from council forecasts, except Kāpiti Coast’s in-house water services. Its rates, debt and financial-resilience findings therefore use a different, post-transfer financial perimeter and are not directly comparable with this tool’s historical water-continuity figures.</p>
     </section>
 
     <section class="panel" id="limitations" aria-labelledby="limitations-heading">
@@ -375,6 +386,8 @@
         <li>efficiency gains or losses;</li>
         <li>property values or the circumstances of an individual property;</li>
         <li>the separate regional-council rates layer;</li>
+        <li>later transfers of water services, assets, liabilities, debt or customer billing to separate water organisations;</li>
+        <li>a uniform treatment of water where it was already separately owned, billed or excluded at the source date;</li>
         <li>the location, condition or remaining life of council assets; or</li>
         <li>any decision an amalgamated council would actually make about its rating structure.</li>
       </ul>

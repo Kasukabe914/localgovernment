@@ -15,11 +15,11 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /ctx\.fillText\(finding\.councilName, 56, y\)/);
   assert.match(app, /drawShareCard\(canvas, finding, rates, netAssets, totalArea\)/);
   assert.match(app, /RESIDENTIAL RATES/i);
-  assert.match(app, /NET ASSETS PER RESIDENT/i);
+  assert.match(app, /HISTORIC NET ASSETS PER RESIDENT/i);
   assert.match(app, /WHAT THESE ESTIMATES MEAN/);
-  assert.match(app, /separate Stats NZ household count, not councils' residential rating-unit count/);
-  assert.match(app, /30 June 2024 council-only accounts divided by 2024 population/);
-  assert.match(app, /labelFor: \(row\) =>[\s\S]*money\(row\.before\).*now/);
+  assert.match(app, /Water follows the source-date treatment; later transfers and charges are ignored/);
+  assert.match(app, /Historic net assets use 30 June 2024 council-only accounts and 2024 population/);
+  assert.match(app, /labelFor: \(row\) =>[\s\S]*money\(row\.before\).*at 30 Jun 2024/);
 });
 
 test("both result explanations frame the estimates as direction rather than final results", () => {

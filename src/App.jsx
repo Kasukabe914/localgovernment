@@ -1334,6 +1334,10 @@ function LegacyApp() {
             published levels; harmonisation assumed instant and uniform; the optional "trim" is a hypothetical cut to
             the whole take, not an evidenced savings estimate; the opening map resolves late-July 2026 reporting into
             one group per council even where positions were contested.</p>
+            <p><strong>Historical water-continuity basis.</strong> Water services are kept as they appeared in each
+            published source at its stated date. Later transfers of water services, assets, liabilities, debt and
+            customer billing to separate water organisations are not modelled. Where water was already separately
+            owned, billed or excluded at the source date, that published treatment remains.</p>
             <p><strong>Not modelled.</strong> Transition costs and phasing (establishment costs, rates caps, phased
             harmonisation, legacy differentials and ring-fenced debt, which defer or smooth everything shown);
             governance design and representation (wards, Māori wards, councillor numbers, community boards);
@@ -1718,7 +1722,8 @@ function LegacyApp() {
             layer are excluded, so no figure here is a household's complete rates bill. Auckland, Gisborne, Nelson,
             Tasman and Marlborough formally include regional functions, while Chatham Islands performs some regional
             functions, so they aren't strictly comparable with the rest. Rates revenue is the total take and includes
-            metered water for most councils.
+            metered water for most councils. Water retains the treatment in each source at its stated date; later
+            water-organisation transfers and charges are not substituted.
             Buller's 2023/24 actual was unavailable, so its 2021/22 figure stands in (flagged where it affects a result).
             Auckland is locked: it amalgamated in 2010 and sits outside this round.
           </p>
@@ -1834,11 +1839,22 @@ function LegacyApp() {
                     <input type="range" min="0" max="15" step="1" value={savings} onChange={(e) => { dirty.current = true; setSavings(+e.target.value); }} />
                   </label>
                   <p className="ratesNote">
-                    Mergers cost money before they save any. MartinJenkins estimated in July 2026 that establishing a
+                    Mergers cost money before they save any.{" "}
+                    <a
+                      href="https://huttcity.infocouncil.biz/Open/2026/08/HCC_05082026_AGN_6478_AT.PDF"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      MartinJenkins estimated in July 2026
+                    </a>{" "}
+                    that establishing a
                     Wellington metro authority would cost about $269m up front against $930m of savings spread over
                     25 years; a Wairarapa authority $42m to establish, with the loss of Wellington subsidies capable
                     of wiping out its $170m of savings; and a Horowhenua–Kāpiti merger $58m to establish against
-                    $240m. This slider models none of that; it just trims the take.
+                    $240m. That analysis removes water activities, except Kāpiti's in-house services, so its rates,
+                    debt and resilience results use a different, post-transfer financial perimeter. They are not
+                    directly comparable with this tool's historical water-continuity figures. This slider models
+                    none of that; it just trims the take.
                   </p>
                 </div>
               )}
@@ -1939,6 +1955,11 @@ function LegacyApp() {
                   household weight. They do not reconstruct the residential rates pool, and no real amalgamation
                   would treat every property identically from day one. The timing, size and even direction of an
                   eventual property-level change could differ.
+                </p>
+                <p className="caveatApply">
+                  Water follows a historical continuity basis: each figure retains the treatment in its published
+                  source, and later transfers or separate water-organisation charges are not substituted. Where
+                  water was already separately owned, billed or excluded at the source date, that treatment remains.
                 </p>
               </details>
               <p className="ratesMethodLink">
@@ -2672,7 +2693,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   );
   drawPanelHeader(
     assetsX,
-    "Net assets per resident",
+    "Historic net assets per resident",
     "How would balance sheets combine?",
     netAssets.mergedPerResident != null
       ? money(netAssets.mergedPerResident)
@@ -2707,7 +2728,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
     labelFor: (row) =>
       row.before == null
         ? row.council.name
-        : `${row.council.name} · ${money(row.before)} now`,
+        : `${row.council.name} · ${money(row.before)} in 2024`,
     valueFor: (row) =>
       row.change == null
         ? "No data"
@@ -2721,7 +2742,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
     x: assetsX + 24,
     y: panelTop + 207,
     width: panelW - 48,
-    labelFor: (row) => `${row.council.name} · ${money(row.before)} now`,
+    labelFor: (row) => `${row.council.name} · ${money(row.before)} at 30 Jun 2024`,
     valueFor: (row) =>
       `${row.change > 0 ? "+" : row.change < 0 ? "−" : ""}${money(Math.abs(row.change))} / resident`,
     colorFor: (row) =>
@@ -2737,9 +2758,9 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   ctx.fillText("WHAT THESE ESTIMATES MEAN", 80, explanationTop + 31);
 
   const rateExplanation =
-    "Published 2024/25 average residential bills are weighted using the report's separate Stats NZ household count, not councils' residential rating-unit count. This compares averages; it does not reconstruct the residential rates pool or forecast a property.";
+    "Published 2024/25 averages use the report's separate Stats NZ household count. Water follows the source-date treatment; later transfers and charges are ignored. This compares averages, not the actual residential rates pool or a property forecast.";
   const assetExplanation =
-    "Net assets use 30 June 2024 council-only accounts divided by 2024 population. This is an accounting comparison, not cash. It does not show asset location or condition, ring-fenced liabilities, services or rates. Council-controlled organisations are excluded.";
+    "Historic net assets use 30 June 2024 council-only accounts and 2024 population. Water follows the source-date treatment; later transfers are ignored. Council-controlled organisations are excluded. This is accounting context, not a post-reform balance sheet.";
   ctx.fillStyle = CARD_INK_SOFT;
   ctx.font = `600 16px ${CARD_FONT}`;
   [
@@ -3849,6 +3870,13 @@ export default function App() {
                   are not included. The bars share one scale within this result, so the
                   longest bar is the largest dollar difference between averages.
                 </p>
+                <p>
+                  Water follows a historical continuity basis. Each 2024/25 figure retains
+                  the treatment in its published source; later transfers to water
+                  organisations and later separate water charges are not substituted.
+                  Where water was already separately owned, billed or excluded, that
+                  source-date treatment remains.
+                </p>
               </details>
               <p className="simpleMethodLink">
                 <a href="about/#limitations">What these numbers mean</a>
@@ -3858,7 +3886,7 @@ export default function App() {
             <article className="simplePanel">
               <div className="simplePanelHead">
                 <div>
-                  <p className="simpleEyebrow">Net assets per resident</p>
+                  <p className="simpleEyebrow">Historic net assets per resident · 30 June 2024</p>
                   <h2>How would the balance sheets combine?</h2>
                 </div>
                 {netAssets.mergedPerResident != null && (
@@ -3893,7 +3921,7 @@ export default function App() {
                         <div className="simpleRateRow simpleAssetRow" key={row.council.id}>
                           <div className="simpleRateCopy">
                             <strong>{row.council.name}</strong>
-                            <span>{money(row.before)} per resident now</span>
+                            <span>{money(row.before)} per resident at 30 June 2024</span>
                           </div>
                           <strong
                             className={
@@ -3935,7 +3963,7 @@ export default function App() {
                   figure pools the selected councils’ 30 June 2024 council-only
                   balance sheets and divides the result by their combined 2024
                   population. Each row compares that accounting benchmark with the
-                  TLA’s current net assets per resident. It shows the direction of
+                  TLA’s historic net assets per resident. It shows the direction of
                   that comparison, not what residents would receive or what a final
                   merger agreement would allocate.
                 </p>
@@ -3945,6 +3973,13 @@ export default function App() {
                   liabilities would be ring-fenced, or how services and rates
                   would change. Council-controlled organisations are excluded;
                   unitary authorities also perform regional functions.
+                </p>
+                <p>
+                  Water follows a historical continuity basis. Water assets and
+                  liabilities held directly by councils at 30 June 2024 remain in
+                  these figures; later transfers to separate water organisations
+                  are ignored. Assets already held outside council-only accounts
+                  remain excluded. This is not a post-reform legal balance sheet.
                 </p>
                 <p>
                   Source:{" "}
