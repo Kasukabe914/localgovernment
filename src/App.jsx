@@ -2827,19 +2827,19 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   ctx.font = `800 20px ${CARD_FONT}`;
   ctx.fillText("WHAT THESE ESTIMATES MEAN", 80, explanationTop + 31);
 
-  const rateExplanation =
-    "Published 2024/25 averages use the report's separate Stats NZ household count. Water follows the source-date treatment; later transfers and charges are ignored. This compares averages, not the actual residential rates pool or a property forecast.";
-  const assetExplanation =
-    "Historic net assets use 30 June 2024 council-only accounts and 2024 population. Water follows the source-date treatment; later transfers are ignored. Council-controlled organisations are excluded. This is accounting context, not a post-reform balance sheet.";
+  const methodExplanation =
+    "Rates compare published 2024/25 council averages weighted by the report's Stats NZ household count—not individual property forecasts. Net assets use 30 June 2024 council-only accounts and 2024 population—not post-reform balance sheets. Council-controlled organisations are excluded.";
+  const waterExplanation =
+    "Water follows each source date; later transfers and charges are ignored.";
   ctx.fillStyle = CARD_INK_SOFT;
   ctx.font = `600 16px ${CARD_FONT}`;
-  [
-    [80, rateExplanation],
-    [620, assetExplanation],
-  ].forEach(([textX, text]) => {
-    wrapCardText(ctx, text, 500).slice(0, 5).forEach((line, index) => {
-      ctx.fillText(line, textX, explanationTop + 62 + index * 20);
-    });
+  const methodLines = wrapCardText(ctx, methodExplanation, CARD_W - 160).slice(0, 4);
+  methodLines.forEach((line, index) => {
+    ctx.fillText(line, 80, explanationTop + 62 + index * 20);
+  });
+  ctx.font = `700 16px ${CARD_FONT}`;
+  wrapCardText(ctx, waterExplanation, CARD_W - 160).slice(0, 2).forEach((line, index) => {
+    ctx.fillText(line, 80, explanationTop + 62 + methodLines.length * 20 + index * 20);
   });
 
   // Footer
