@@ -17,14 +17,14 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /RESIDENTIAL RATES/i);
   assert.match(app, /HISTORIC NET ASSETS PER RESIDENT/i);
   assert.match(app, /WHAT THESE ESTIMATES MEAN/);
-  assert.match(app, /Rates compare published 2024\/25 council averages weighted by the report's Stats NZ household count—not individual property forecasts/);
-  assert.match(app, /Net assets use 30 June 2024 council-only accounts and 2024 population—not post-reform balance sheets/);
-  assert.match(app, /Water follows each source date; later transfers and charges are ignored/);
-  assert.equal(
-    [...app.matchAll(/Water follows each source date/g)].length,
-    1,
-    "the common water caveat should appear only once on the card"
-  );
+  assert.match(app, /We combine each council's published 2024\/25 average residential rates bill, weighted by the report's household count/);
+  assert.match(app, /This compares council-wide averages\. It does not predict what any individual property would pay/);
+  assert.match(app, /We subtract liabilities from assets for each council at 30 June 2024, combine the results, and divide by the combined population/);
+  assert.match(app, /This is an accounting comparison\. It is not money residents would receive or a forecast balance sheet/);
+  assert.match(app, /Assets outside the councils' own accounts are not included/);
+  assert.match(app, /Water is included exactly as it appeared in each source at that date/);
+  assert.match(app, /Later transfers of water services, assets, debt and billing to separate water organisations are not included/);
+  assert.doesNotMatch(app, /accounting comparison—not money residents/);
   assert.match(app, /"Historic net assets per resident · 30 June 2024"/);
   assert.match(app, /labelFor: \(row\) => `\$\{row\.council\.name\} · \$\{money\(row\.before\)\}`/);
   assert.doesNotMatch(app, /money\(row\.before\)\} at 30 Jun 2024/);

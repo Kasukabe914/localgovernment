@@ -2822,24 +2822,37 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
 
   const explanationTop = panelTop + panelH + 28;
   ctx.fillStyle = "#f1ede2";
-  ctx.fillRect(56, explanationTop, CARD_W - 112, 151);
+  ctx.fillRect(56, explanationTop, CARD_W - 112, 190);
   ctx.fillStyle = CARD_INK;
   ctx.font = `800 20px ${CARD_FONT}`;
   ctx.fillText("WHAT THESE ESTIMATES MEAN", 80, explanationTop + 31);
 
-  const methodExplanation =
-    "Rates compare published 2024/25 council averages weighted by the report's Stats NZ household count—not individual property forecasts. Net assets use 30 June 2024 council-only accounts and 2024 population—not post-reform balance sheets. Council-controlled organisations are excluded.";
+  const rateExplanation =
+    "We combine each council's published 2024/25 average residential rates bill, weighted by the report's household count. This compares council-wide averages. It does not predict what any individual property would pay.";
+  const assetExplanation =
+    "We subtract liabilities from assets for each council at 30 June 2024, combine the results, and divide by the combined population. This is an accounting comparison. It is not money residents would receive or a forecast balance sheet. Assets outside the councils' own accounts are not included.";
   const waterExplanation =
-    "Water follows each source date; later transfers and charges are ignored.";
-  ctx.fillStyle = CARD_INK_SOFT;
-  ctx.font = `600 16px ${CARD_FONT}`;
-  const methodLines = wrapCardText(ctx, methodExplanation, CARD_W - 160).slice(0, 4);
-  methodLines.forEach((line, index) => {
-    ctx.fillText(line, 80, explanationTop + 62 + index * 20);
+    "Water is included exactly as it appeared in each source at that date. Later transfers of water services, assets, debt and billing to separate water organisations are not included.";
+  [
+    ["RATES", rateExplanation, 80],
+    ["NET ASSETS", assetExplanation, 620],
+  ].forEach(([label, text, textX]) => {
+    ctx.fillStyle = CARD_INK;
+    ctx.font = `800 14px ${CARD_FONT}`;
+    ctx.fillText(label, textX, explanationTop + 59);
+    ctx.fillStyle = CARD_INK_SOFT;
+    ctx.font = `600 15px ${CARD_FONT}`;
+    wrapCardText(ctx, text, 500).slice(0, 4).forEach((line, index) => {
+      ctx.fillText(line, textX, explanationTop + 82 + index * 19);
+    });
   });
-  ctx.font = `700 16px ${CARD_FONT}`;
-  wrapCardText(ctx, waterExplanation, CARD_W - 160).slice(0, 2).forEach((line, index) => {
-    ctx.fillText(line, 80, explanationTop + 62 + methodLines.length * 20 + index * 20);
+  ctx.fillStyle = CARD_INK;
+  ctx.font = `800 14px ${CARD_FONT}`;
+  ctx.fillText("WATER", 80, explanationTop + 160);
+  ctx.fillStyle = CARD_INK_SOFT;
+  ctx.font = `600 15px ${CARD_FONT}`;
+  wrapCardText(ctx, waterExplanation, CARD_W - 230).slice(0, 2).forEach((line, index) => {
+    ctx.fillText(line, 150, explanationTop + 160 + index * 19);
   });
 
   // Footer
