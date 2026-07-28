@@ -38,7 +38,7 @@
       "name": "Brenden Mischewski",
       "homeLocation": {
         "@type": "Place",
-        "name": "Whitby, Porirua, New Zealand"
+        "name": "Porirua, New Zealand"
       }
     },
     "isPartOf": {
@@ -156,6 +156,20 @@
       border-left: 5px solid var(--accent);
       font-size: 19px;
     }
+    .method-note {
+      margin: 22px 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--white);
+    }
+    .method-note p { margin: 0; }
+    .method-note p + p { margin-top: 10px; }
+    .method-note code {
+      overflow-wrap: anywhere;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.9em;
+    }
     .table-wrap { overflow-x: auto; margin-top: 20px; }
     table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; line-height: 1.45; }
     th, td { padding: 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
@@ -258,8 +272,8 @@
 
     <section class="panel" aria-labelledby="author-heading">
       <h2 id="author-heading">Who built this</h2>
-      <p>This tool was built by Brenden Mischewski, based in Whitby, Porirua.</p>
-      <p>I work in public sector policy and advisory through Mischewski Consulting Limited, with a background in research and policy analysis in New Zealand. I built this because communities are being asked to assess merger options, and the distributional arithmetic underneath those options is not easy to see.</p>
+      <p>This tool was built by Brenden Mischewski, based in Porirua.</p>
+      <p>I work at Mischewski Consulting Limited, with a background in research and policy analysis in New Zealand.</p>
     </section>
 
     <section class="panel" id="independence" aria-labelledby="independence-heading">
@@ -278,6 +292,12 @@
       <h2 id="shows-heading">What this tool shows</h2>
       <p>The tool lets a user combine territorial authorities and compare four things: the population and land area of the combined council, how published 2024/25 average residential rates bills differ from a pooled average, each council’s historic net assets per resident at 30 June 2024 compared with the pooled position, and where the combined population would live.</p>
       <p>The dataset covers all 67 territorial authorities: 12 city councils, 53 district councils, Auckland Council and Chatham Islands Council. It excludes the 11 regional councils and their separate rates. Five territorial authorities formally carry regional-council functions; Chatham Islands performs some regional functions. Auckland remains in the national dataset but is locked out of Head Start combinations.</p>
+    </section>
+
+    <section class="panel" id="briefing" aria-labelledby="briefing-heading">
+      <h2 id="briefing-heading">Briefing report</h2>
+      <p><strong>Published <cite>Build a bigger council</cite>, Version 1.0.</strong> This six-slide briefing records the tool’s purpose, method and selected figures as at 28 July 2026. The live tool remains authoritative for current numbers and combinations not shown in the briefing.</p>
+      <p><a href="../reports/amalgamator-build-a-bigger-council-v1.0.pptx" download>Download the six-slide briefing (PowerPoint, Version 1.0)</a></p>
     </section>
 
     <section class="panel" id="sources" aria-labelledby="sources-heading">
@@ -349,12 +369,11 @@
         <a href="../the-amalgamator-data.csv" download>Download the 67-authority dataset (CSV)</a> ·
         <a href="../source-register.csv" download>Download the detailed source register (CSV)</a>
       </p>
-      <p>The historical rating-unit compilation did not retain a URL and retrieval date for every underlying council document. The source register identifies that gap explicitly. Those counts support a secondary normalisation in the older interface; they are not used in the main residential-bill result.</p>
     </section>
 
     <section class="panel" id="method" aria-labelledby="method-heading">
       <h2 id="method-heading">How the rate figures are calculated</h2>
-      <p>The main result compares each council’s published average residential rates bill using the Ratepayers’ Report’s separately published household count as a weight. It does not divide total council revenue by population and call that a household bill.</p>
+      <p>The main result uses two figures published for each council in the New Zealand Taxpayers’ Union’s <cite>Ratepayers’ Report 2026</cite>: the published 2024/25 average residential rates bill and the report’s separately published household count, which the report attributes to Stats NZ. The household count is used as a weight. Population figures elsewhere in the tool are separate 2024 Stats NZ estimates published through the Department of Internal Affairs.</p>
       <ol>
         <li>Start with each selected council’s published average residential rates bill for 2024/25.</li>
         <li>Multiply that bill by the report’s published household count for the council.</li>
@@ -362,6 +381,14 @@
         <li>Divide by the combined published household count. This produces one household-weighted comparison.</li>
         <li>Compare that figure with each council’s own published average. The chart shows the dollar difference between those council-wide averages.</li>
       </ol>
+      <div class="method-note">
+        <p><strong>How the weighted amount differs from the actual residential total</strong></p>
+        <p>For council <em>i</em>, let <em>Aᵢ</em> be the published average bill, <em>Hᵢ</em> the published household count, and <em>Zᵢ</em> the council-defined residential rating-unit count used to calculate that average.</p>
+        <p><code>Tool’s implied amount = Σ(Aᵢ × Hᵢ)</code></p>
+        <p><code>Actual residential rates and applicable charges = Σ(Aᵢ × Zᵢ)</code></p>
+        <p><code>Difference = Σ[Aᵢ × (Hᵢ − Zᵢ)]</code></p>
+        <p>The public report does not expose <em>Zᵢ</em>, or the underlying residential rates and applicable charges, so the exact dollar difference cannot be calculated from the published dataset. Total council rates revenue is available, but it includes non-residential rates and is not a valid substitute for the residential total.</p>
+      </div>
       <p><strong>This does not reproduce the Taxpayers’ Union’s residential-rates calculation.</strong> Its methodology defines an average bill as residential rates and applicable charges divided by council-defined residential rating units. The underlying rates, charges and residential rating-unit count—its X, Y and Z—are not exposed in the public report data. The separate household count used by this tool is therefore not necessarily the denominator used to calculate the published bill.</p>
       <p>If a council has no comparable published bill, it is shown as “no data” and is not included in the weighted comparison. The output compares published council-wide averages. It does not reconstruct the residential rates pool, forecast an individual property, or determine the rating policy a merged council would adopt.</p>
       <h3>Historical water-continuity basis</h3>

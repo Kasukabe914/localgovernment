@@ -75,6 +75,16 @@ test("the public trust statements cover authorship, funding, interests and posit
     about,
     /href="mailto:brenden@mischewski\.co\.nz">brenden@mischewski\.co\.nz<\/a>/
   );
+  assert.match(
+    about,
+    /This tool was built by Brenden Mischewski, based in Porirua\./
+  );
+  assert.match(
+    about,
+    /I work at Mischewski Consulting Limited, with a background in research and policy analysis in New Zealand\./
+  );
+  assert.doesNotMatch(about, /Whitby/);
+  assert.doesNotMatch(about, /public sector policy and advisory through/);
 });
 
 test("the limitations are explicit and linked from both rates experiences", () => {
@@ -109,6 +119,18 @@ test("the limitations are explicit and linked from both rates experiences", () =
 test("the public method accurately distinguishes households from residential rating units", () => {
   assert.match(
     about,
+    /two figures published for each council in the New Zealand Taxpayers’ Union’s <cite>Ratepayers’ Report 2026<\/cite>/
+  );
+  assert.match(
+    about,
+    /published 2024\/25 average residential rates bill and the report’s separately published household count/
+  );
+  assert.match(
+    about,
+    /Population figures elsewhere in the tool are separate 2024 Stats NZ estimates/
+  );
+  assert.match(
+    about,
     /does not reproduce the Taxpayers’ Union’s residential-rates calculation/
   );
   assert.match(
@@ -121,6 +143,20 @@ test("the public method accurately distinguishes households from residential rat
     /separately\s+published household count\. That count is not necessarily the residential\s+rating-unit count/
   );
   assert.doesNotMatch(about, /combined residential rating base/);
+  assert.match(about, /Tool’s implied amount = Σ\(Aᵢ × Hᵢ\)/);
+  assert.match(
+    about,
+    /Actual residential rates and applicable charges = Σ\(Aᵢ × Zᵢ\)/
+  );
+  assert.match(about, /Difference = Σ\[Aᵢ × \(Hᵢ − Zᵢ\)\]/);
+  assert.match(
+    about,
+    /exact dollar difference cannot be calculated from the published dataset/
+  );
+  assert.match(
+    about,
+    /Total council rates revenue is available, but it includes non-residential rates/
+  );
 });
 
 test("rates and assets use an explicit historical water-continuity basis", () => {
@@ -201,6 +237,31 @@ test("the source register is complete at source-family level and exposes its his
   assert.match(ratepayersReport.fields_or_use, /households_published_2026/);
   assert.match(ratepayersReport.notes, /not the council-defined residential rating-unit count/);
   assert.match(about, /href="\.\.\/source-register\.csv"/);
+});
+
+test("the briefing report is discoverable outside the change log", () => {
+  const briefingSection = about.match(
+    /<section class="panel" id="briefing"[\s\S]*?<\/section>/
+  )?.[0] || "";
+  assert.match(briefingSection, /<h2 id="briefing-heading">Briefing report<\/h2>/);
+  assert.match(briefingSection, /Build a bigger council<\/cite>, Version 1\.0/);
+  assert.match(briefingSection, /six-slide briefing/);
+  assert.match(
+    briefingSection,
+    /href="\.\.\/reports\/amalgamator-build-a-bigger-council-v1\.0\.pptx" download/
+  );
+});
+
+test("privacy requests use a private email channel rather than public GitHub issues", () => {
+  assert.match(
+    privacy,
+    /mailto:brenden@mischewski\.co\.nz\?subject=Amalgamator%20privacy%20request/
+  );
+  assert.doesNotMatch(
+    privacy,
+    /github\.com\/Kasukabe914\/localgovernment\/issues/
+  );
+  assert.match(privacy, /Do not send passwords, identity documents, financial information/);
 });
 
 test("code, outputs and source data have distinct licence statements", () => {

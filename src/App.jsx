@@ -3146,6 +3146,19 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const chooseExploringCouncil = (id) => {
+    const council = BY_ID[id];
+    if (!council || council.locked) return;
+    setTalksActive(true);
+    setRegion(council.region);
+    setAllCouncils(false);
+    setSelectedIds([id]);
+    setCustomName("");
+    setQuery("");
+    setScreen("build");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const toggleCouncil = (id) => {
     setSelectedIds((current) =>
       current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
@@ -3543,13 +3556,22 @@ export default function App() {
                   Status notes updated 28 July 2026. This list includes councils
                   still exploring, councils that have decided not to submit, and
                   councils pursuing alternative approaches. The starter
-                  combinations above are unchanged.
+                  combinations above are unchanged. Select a council to test who
+                  it could join.
                 </p>
                 {Object.entries(EXPLORING).map(([id, status]) => (
-                  <article key={id}>
-                    <strong>{BY_ID[id]?.name || id}</strong>
-                    <p>{status}</p>
-                  </article>
+                  <button
+                    className="simpleExploringCouncil"
+                    type="button"
+                    key={id}
+                    onClick={() => chooseExploringCouncil(id)}
+                  >
+                    <span>
+                      <strong>{BY_ID[id]?.name || id}</strong>
+                      <span>{status}</span>
+                    </span>
+                    <span aria-hidden="true">Choose partners →</span>
+                  </button>
                 ))}
                 <p className="simpleExploringSource">
                   <a href="about/#sources">Sources and status notes</a>
@@ -3569,7 +3591,9 @@ export default function App() {
               <p className="simpleEyebrow">Step 1 of 2</p>
               <h1>Which councils should join?</h1>
               <p>
-                {allCouncils
+                {selectedIds.length === 1
+                  ? `${members[0].name} is selected. Choose at least one more council.`
+                  : allCouncils
                   ? "Search across Aotearoa and choose at least two councils."
                   : `Choose at least two councils in ${region}.`}
               </p>
@@ -4496,14 +4520,41 @@ const SIMPLE_CSS = `
 .simpleExploringSource a {
   font-weight: 800;
 }
-.simpleExploring article {
+.simpleExploringCouncil {
+  width: 100%;
   padding-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: transparent;
+  color: var(--ink);
   border-top: 1px solid var(--line);
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
 }
-.simpleExploring article p {
-  margin: 3px 0 0;
+.simpleExploringCouncil:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.simpleExploringCouncil > span:first-child {
+  display: grid;
+  gap: 3px;
+}
+.simpleExploringCouncil > span:first-child > span {
   color: var(--ink-soft);
   font-size: 13px;
+  line-height: 1.45;
+}
+.simpleExploringCouncil > span:last-child {
+  flex: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .simpleCrossRegion {

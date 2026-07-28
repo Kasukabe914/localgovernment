@@ -55,6 +55,21 @@ test("the exploring section includes the 28 July council status updates", () => 
   assert.match(app, /The starter\s+combinations above are unchanged/);
 });
 
+test("an exploring council opens the chooser preselected", () => {
+  assert.match(app, /const chooseExploringCouncil = \(id\) =>/);
+  assert.match(app, /setSelectedIds\(\[id\]\)/);
+  assert.match(app, /setRegion\(council\.region\)/);
+  assert.match(app, /setScreen\("build"\)/);
+  assert.match(
+    app,
+    /className="simpleExploringCouncil"[\s\S]*onClick=\{\(\) => chooseExploringCouncil\(id\)\}/
+  );
+  assert.match(
+    app,
+    /\$\{members\[0\]\.name\} is selected\. Choose at least one more council\./
+  );
+});
+
 test("the MartinJenkins Head Start update is cited in About and the source register", () => {
   const citation =
     "Carlaw, N. (2026). <cite>Head Start map update</cite>. MartinJenkins. LinkedIn. 28 July 2026.";
