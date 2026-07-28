@@ -68,6 +68,10 @@ test("the exploring section includes the 28 July council status updates", () => 
     "selwyn",
     "centralotago",
     "clutha",
+    "kapiti",
+    "horowhenua",
+    "nelson",
+    "tasman",
   ];
   const exploringBlock = app.match(/const EXPLORING = \{([\s\S]*?)\};/)?.[1] || "";
   for (const id of additionalStatusIds) {
@@ -82,7 +86,7 @@ test("a status council opens the chooser preselected", () => {
   assert.match(app, /setScreen\("build"\)/);
   assert.match(
     app,
-    /className="simpleExploringCouncil"[\s\S]*onClick=\{\(\) => chooseStatusCouncil\(id\)\}/
+    /className="simpleExploringCouncil"[\s\S]*onClick=\{\(\) => chooseStatusCouncil\(council\.id\)\}/
   );
   assert.match(
     app,
@@ -145,8 +149,25 @@ test("where things stand accounts for all territorial authorities", () => {
 
   assert.equal(allCouncilIds.length, 67);
   assert.deepEqual(lockedCouncilIds, ["auckland"]);
-  assert.equal(otherEligibleIds.length, 8);
+  assert.equal(otherEligibleIds.length, 5);
   assert.equal(represented.size, allCouncilIds.length);
+});
+
+test("the long council-status list is collapsed into regional groups", () => {
+  assert.match(app, /const EXPLORING_BY_REGION = \[\.\.\.REGIONS_N, \.\.\.REGIONS_S\]/);
+  assert.match(app, /<details className="simpleStatusRegion" key=\{region\}>/);
+  assert.match(app, /className="simpleStatusRegions"/);
+  assert.match(app, /\{councils\.length\} \{councils\.length === 1 \? "council" : "councils"\}/);
+});
+
+test("Kāpiti-Horowhenua and Nelson-Tasman positions are qualified", () => {
+  assert.match(
+    app,
+    /kapiti: "No decision has been made\.[\s\S]*standalone Kāpiti authority was the first preference \(43%\)[\s\S]*Kāpiti with Horowhenua was the second preference \(36\.2%\)/
+  );
+  assert.match(app, /horowhenua: "In discussions with Kāpiti/);
+  assert.match(app, /nelson: "Supports amalgamation with Tasman District Council/);
+  assert.match(app, /tasman: "Remains opposed to amalgamating with Nelson/);
 });
 
 test("the MartinJenkins Head Start update is cited in About and the source register", () => {

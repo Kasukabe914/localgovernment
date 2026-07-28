@@ -334,8 +334,20 @@ const EXPLORING = {
   tararua: "Weighing 'go west' into Horizons or 'go south' toward Wairarapa; overall prefers a different reform approach.",
   palmy: "In talks with neighbouring councils; no settled configuration. Decision due 5 August.",
   whanganui: "Engaging neighbours; its mayor says the Horizons councils won't have an agreed proposal by 9 August.",
-  horowhenua: "No amalgamation partner selected; existing Central Districts Water partnership with Palmerston North and Rangitīkei.",
+  kapiti: "No decision has been made. In its community survey, a standalone Kāpiti authority was the first preference (43%) and Kāpiti with Horowhenua was the second preference (36.2%).",
+  horowhenua: "In discussions with Kāpiti, where a Kāpiti-Horowhenua authority was the second preference in Kāpiti's community survey. No joint proposal has been agreed.",
+  nelson: "Supports amalgamation with Tasman District Council, but there is no joint Nelson-Tasman position.",
+  tasman: "Remains opposed to amalgamating with Nelson. No joint Nelson-Tasman proposal has been agreed.",
 };
+
+const EXPLORING_BY_REGION = [...REGIONS_N, ...REGIONS_S]
+  .map((region) => ({
+    region,
+    councils: Object.entries(EXPLORING)
+      .map(([id, status]) => ({ council: BY_ID[id], status }))
+      .filter(({ council }) => council?.region === region),
+  }))
+  .filter(({ councils }) => councils.length);
 
 const REGION_POP = {};
 COUNCILS.forEach((c) => { if (!c.locked) REGION_POP[c.region] = (REGION_POP[c.region] || 0) + c.pop; });
@@ -3609,20 +3621,34 @@ export default function App() {
                   combinations above are unchanged. Select a council to test who
                   it could join.
                 </p>
-                {Object.entries(EXPLORING).map(([id, status]) => (
-                  <button
-                    className="simpleExploringCouncil"
-                    type="button"
-                    key={id}
-                    onClick={() => chooseStatusCouncil(id)}
-                  >
-                    <span>
-                      <strong>{BY_ID[id]?.name || id}</strong>
-                      <span>{status}</span>
-                    </span>
-                    <span aria-hidden="true">Choose partners →</span>
-                  </button>
-                ))}
+                <div className="simpleStatusRegions">
+                  {EXPLORING_BY_REGION.map(({ region, councils }) => (
+                    <details className="simpleStatusRegion" key={region}>
+                      <summary>
+                        <span>{region}</span>
+                        <span>
+                          {councils.length} {councils.length === 1 ? "council" : "councils"}
+                        </span>
+                      </summary>
+                      <div>
+                        {councils.map(({ council, status }) => (
+                          <button
+                            className="simpleExploringCouncil"
+                            type="button"
+                            key={council.id}
+                            onClick={() => chooseStatusCouncil(council.id)}
+                          >
+                            <span>
+                              <strong>{council.name}</strong>
+                              <span>{status}</span>
+                            </span>
+                            <span aria-hidden="true">Choose partners →</span>
+                          </button>
+                        ))}
+                      </div>
+                    </details>
+                  ))}
+                </div>
                 <p className="simpleExploringSource">
                   <a href="about/#sources">Sources and status notes</a>
                 </p>
@@ -4643,6 +4669,31 @@ const SIMPLE_CSS = `
 }
 .simpleExploringSource a {
   font-weight: 800;
+}
+.simpleStatusRegions {
+  display: grid;
+  gap: 8px;
+}
+.simpleStatusRegion {
+  border-top: 1px solid var(--line);
+}
+.simpleStatusRegion > summary {
+  padding: 11px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.simpleStatusRegion > summary > span:last-child {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+.simpleStatusRegion > div {
+  display: grid;
+}
+.simpleStatusRegion .simpleExploringCouncil:first-child {
+  border-top: 0;
 }
 .simpleExploringCouncil {
   width: 100%;
