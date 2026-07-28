@@ -11,6 +11,7 @@ const publicFacingFiles = [
   "README.md",
   "src/App.jsx",
   "public/about/index.html",
+  "public/share/index.html",
   "public/privacy.html",
   "public/privacy-policy/index.html",
   "public/methodology.html",
@@ -53,4 +54,29 @@ test("root metadata declares the custom canonical and social image", () => {
   assert.match(index, /<meta property="og:image:width" content="1200" \/>/);
   assert.match(index, /<meta property="og:image:height" content="627" \/>/);
   assert.ok(fs.existsSync(path.join(repoRoot, "public", "og-image-2.jpg")));
+});
+
+test("the fresh social gateway has independent page and image cache keys", () => {
+  const sharePage = fs.readFileSync(
+    path.join(repoRoot, "public", "share", "index.html"),
+    "utf8"
+  );
+
+  assert.match(
+    sharePage,
+    /<meta property="og:url" content="https:\/\/www\.amalgamator\.nz\/share\/">/
+  );
+  assert.match(
+    sharePage,
+    /<meta property="og:image" content="https:\/\/www\.amalgamator\.nz\/og-image-3\.jpg">/
+  );
+  assert.match(
+    sharePage,
+    /<meta property="og:image:secure_url" content="https:\/\/www\.amalgamator\.nz\/og-image-3\.jpg">/
+  );
+  assert.match(
+    sharePage,
+    /<link rel="canonical" href="https:\/\/www\.amalgamator\.nz\/share\/">/
+  );
+  assert.ok(fs.existsSync(path.join(repoRoot, "public", "og-image-3.jpg")));
 });
