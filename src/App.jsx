@@ -303,11 +303,19 @@ const CROSS_LINKS = [
   { a: "ruapehu", b: "taupo", label: "northern Ruapehu's Taupō option" },
 ];
 
-// Councils publicly exploring partners without a committed proposal, and what
-// they have actually said. Shown as a status, not a grouping, because none had
-// converted talks into a jointly sponsored proposal by 26 July 2026.
+// Dated council status notes that supplement, but do not change, the starter
+// combinations in PRESETS.article. Some councils are exploring, some have
+// declined to submit, and some are pursuing an alternative approach.
 const EXPLORING = {
-  manawatu: "Prefers Rangitīkei if amalgamation is unavoidable; decided 23 July not to lodge a proposal without committed partners.",
+  kaipara: "Resolved not to submit a Head Start proposal and does not support Whangārei District Council's preferred pairing with Kaipara.",
+  wairoa: "Resolved not to participate in the Head Start process.",
+  newplymouth: "Intends to put an alternative, non-common Pathfinder proposal to the Minister.",
+  manawatu: "Resolved not to submit a Head Start proposal under the present circumstances.",
+  kaikoura: "Prefers a unitary authority with Marlborough, but this is not yet a shared, mutually resolved grouping.",
+  waimate: "Prefers an Aoraki grouping with Waitaki, Mackenzie and Timaru, but this is not yet a shared, mutually resolved grouping.",
+  waitaki: "Prefers an Aoraki grouping with Waimate, Mackenzie and Timaru, but this is not yet a shared, mutually resolved grouping.",
+  mackenzie: "Is named in the Aoraki preferences of Waimate and Waitaki, but the grouping is not yet shared and mutually resolved.",
+  timaru: "Is named in the Aoraki preferences of Waimate and Waitaki, but the grouping is not yet shared and mutually resolved.",
   rangitikei: "Tested three options: the whole Horizons region, a western grouping with Whanganui and Ruapehu, and a rural districts grouping (27%, 26%, 23% support). Decision due 30 July.",
   ruapehu: "Options include Whanganui, Rangitīkei or Manawatū in the south, and Taupō in the north. None selected.",
   tararua: "Weighing 'go west' into Horizons or 'go south' toward Wairarapa; overall prefers a different reform approach.",
@@ -1260,7 +1268,7 @@ function LegacyApp() {
                   >
                     <span className="pieceName">{c.name}</span>
                     <span className="piecePop">{c.locked ? "merged 2010" : pieceValue(c)}</span>
-                    {!g && !c.locked && EXPLORING[c.id] && <span className="exploreTag" title={EXPLORING[c.id]}>exploring</span>}
+                    {!g && !c.locked && EXPLORING[c.id] && <span className="exploreTag" title={EXPLORING[c.id]}>status</span>}
                   </button>
                 </div>
               </div>
@@ -1400,13 +1408,13 @@ function LegacyApp() {
       <p className="mapLead">Tap the pieces to build a council. Whatever you tap joins the <strong>active</strong> group, shown at the bottom of the screen and in the list below the map.</p>
       {scope && [...new Set(COUNCILS.filter((c) => (c.region === scope || scope === "ALL") && EXPLORING[c.id] && !assignment[c.id]).map((c) => c.id))].length > 0 && (
         <details className="exploreBox">
-          <summary>Some councils here are exploring partners, without a committed proposal</summary>
+          <summary>Council status notes</summary>
           <ul>
             {COUNCILS.filter((c) => (c.region === scope || scope === "ALL") && EXPLORING[c.id] && !assignment[c.id]).map((c) => (
               <li key={c.id}><strong>{c.name}:</strong> {EXPLORING[c.id]}</li>
             ))}
           </ul>
-          <p>As reported to 26 July 2026. These are identified options and talks, not agreements; none had become a jointly sponsored proposal. Grouping any of these pieces is your scenario, not a settled position.</p>
+          <p>Updated 28 July 2026. These notes include exploratory positions, decisions not to submit, and alternative approaches. They do not change the starter combinations. Grouping any of these pieces is your scenario, not a settled position.</p>
         </details>
       )}
       <main className="map" id="map">
@@ -3510,12 +3518,23 @@ export default function App() {
             <details className="simpleExploring">
               <summary>Councils still exploring options</summary>
               <div>
+                <p className="simpleExploringIntro">
+                  Status notes updated 28 July 2026. This list includes councils
+                  still exploring, councils that have decided not to submit, and
+                  councils pursuing alternative approaches. The starter
+                  combinations above are unchanged.
+                </p>
                 {Object.entries(EXPLORING).map(([id, status]) => (
                   <article key={id}>
                     <strong>{BY_ID[id]?.name || id}</strong>
                     <p>{status}</p>
                   </article>
                 ))}
+                <p className="simpleExploringSource">
+                  Source: Carlaw, N. (2026). <cite>Head Start map update</cite>.
+                  MartinJenkins. LinkedIn. 28 July 2026.{" "}
+                  <a href="about/#sources">Source details</a>
+                </p>
               </div>
             </details>
 
@@ -4429,6 +4448,20 @@ const SIMPLE_CSS = `
   margin-top: 15px;
   display: grid;
   gap: 12px;
+}
+.simpleExploringIntro,
+.simpleExploringSource {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.simpleExploringSource {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.simpleExploringSource a {
+  font-weight: 800;
 }
 .simpleExploring article {
   padding-top: 12px;
