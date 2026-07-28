@@ -38,6 +38,20 @@ test("the downloadable card includes the selected name and both result explanati
   );
 });
 
+test("the headline comparison uses the approved plain-English wording", () => {
+  assert.match(
+    app,
+    /Compared with each council’s published 2024\/25 average residential rates bill, the combined figure would be higher in \$\{rising\.length\} of the \$\{scored\.length\} council areas and lower in \$\{falling\.length\}/
+  );
+  assert.match(
+    app,
+    /In \$\{biggestFall\.council\.name\}, it is \$\{money\(Math\.abs\(biggestFall\.change\)\)\} lower a year/
+  );
+  assert.match(app, /\? finding\.comparisonSummary/);
+  assert.match(app, /lines\.push\(finding\.comparisonSummary\)/);
+  assert.doesNotMatch(app, /The household-weighted comparison is above the published average/);
+});
+
 test("both result explanations frame the estimates as direction rather than final results", () => {
   const heading =
     /<summary>These figures show a possible direction rather than a final result<\/summary>/g;

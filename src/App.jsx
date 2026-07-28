@@ -2470,10 +2470,13 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
   const biggestRise = rising.length ? rising[0] : null;
   const biggestFall = falling.length ? falling[falling.length - 1] : null;
   const headline = biggestFall
-    ? `For ${biggestFall.council.name}, the comparison is ${money(Math.abs(biggestFall.change))} below its published average`
+    ? `In ${biggestFall.council.name}, it is ${money(Math.abs(biggestFall.change))} lower a year`
     : biggestRise
-      ? `For ${biggestRise.council.name}, the comparison is ${money(biggestRise.change)} above its published average`
+      ? `In ${biggestRise.council.name}, it is ${money(biggestRise.change)} higher a year`
       : "No comparable rates data for this combination";
+  const comparisonSummary = rates.blended
+    ? `Compared with each council’s published 2024/25 average residential rates bill, the combined figure would be higher in ${rising.length} of the ${scored.length} council areas and lower in ${falling.length}. ${headline}.`
+    : "Population, land area and rates data for this combination.";
 
   const noData = rates.rows
     .filter((row) => row.change == null)
@@ -2492,10 +2495,9 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
     biggestFall,
     blended: rates.blended,
     headline,
-    // Short enough to survive LinkedIn's description truncation (~200 chars).
-    summary: `${rates.blended
-      ? `The household-weighted comparison is above the published average in ${rising.length} of ${scored.length} council areas and below it in ${falling.length}. ${headline}.`
-      : "Population, land area and rates data for this combination."}${
+    comparisonSummary,
+    // Reused across the result view, copied post text and social descriptions.
+    summary: `${comparisonSummary}${
       members.some((member) => member.locked)
         ? " Hypothetical only: Auckland is outside Head Start."
         : ""
@@ -2528,9 +2530,8 @@ function sharePostText(finding, url) {
       );
     }
     lines.push("");
-    lines.push(
-      `The household-weighted comparison is above the published average in ${finding.rising.length} of ${finding.rising.length + finding.falling.length} council areas and below it in ${finding.falling.length}. Weighted average: ${money(finding.blended)} a year.`
-    );
+    lines.push(finding.comparisonSummary);
+    lines.push(`Combined figure: ${money(finding.blended)} a year.`);
     if (finding.noData.length) {
       lines.push(
         `(${finding.noData.join(", ")} ${finding.noData.length > 1 ? "publish" : "publishes"} no average residential bill, so ${finding.noData.length > 1 ? "they are" : "it is"} left out of the blend.)`
@@ -4007,7 +4008,7 @@ export default function App() {
                 <>
                   <p className="simpleAnswer">
                     {rising.length > 0 || falling.length > 0
-                      ? `The household-weighted comparison is above the published average in ${rising.length} of ${rising.length + falling.length} council areas and below it in ${falling.length}.`
+                      ? finding.comparisonSummary
                       : "Published averages are already very similar."}
                   </p>
                   <div className="simpleRateChart">
