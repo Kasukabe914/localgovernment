@@ -2549,10 +2549,10 @@ function sharePostText(finding, url) {
   return lines.join("\n");
 }
 
-function fitText(ctx, text, maxWidth, startSize, weight) {
+function fitText(ctx, text, maxWidth, startSize, weight, minSize = 18) {
   let size = startSize;
   ctx.font = `${weight} ${size}px ${CARD_FONT}`;
-  while (ctx.measureText(text).width > maxWidth && size > 18) {
+  while (ctx.measureText(text).width > maxWidth && size > minSize) {
     size -= 2;
     ctx.font = `${weight} ${size}px ${CARD_FONT}`;
   }
@@ -2601,7 +2601,7 @@ function drawCardRows(ctx, rows, {
     ctx.textAlign = "left";
     ctx.fillStyle = CARD_INK;
     const label = labelFor(row);
-    const nameSize = fitText(ctx, label, width - 190, 17, 650);
+    const nameSize = fitText(ctx, label, width - 190, 17, 650, 11);
     ctx.font = `650 ${nameSize}px ${CARD_FONT}`;
     ctx.fillText(label, x, rowY);
 
@@ -2726,7 +2726,8 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
 
   const drawPanelHeader = (x, eyebrow, title, metric, suffix) => {
     ctx.fillStyle = CARD_INK_SOFT;
-    ctx.font = `750 16px ${CARD_FONT}`;
+    const eyebrowSize = fitText(ctx, eyebrow.toUpperCase(), panelW - 48, 16, 750, 12);
+    ctx.font = `750 ${eyebrowSize}px ${CARD_FONT}`;
     ctx.fillText(eyebrow.toUpperCase(), x + 24, panelTop + 35);
     ctx.fillStyle = CARD_INK;
     ctx.font = `800 25px ${CARD_FONT}`;
@@ -2747,7 +2748,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   );
   drawPanelHeader(
     assetsX,
-    "Historic net assets per resident",
+    "Historic net assets per resident · 30 June 2024",
     "How would balance sheets combine?",
     netAssets.mergedPerResident != null
       ? money(netAssets.mergedPerResident)
@@ -2796,7 +2797,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
     x: assetsX + 24,
     y: panelTop + 207,
     width: panelW - 48,
-    labelFor: (row) => `${row.council.name} · ${money(row.before)} at 30 Jun 2024`,
+    labelFor: (row) => `${row.council.name} · ${money(row.before)}`,
     valueFor: (row) =>
       `${row.change > 0 ? "+" : row.change < 0 ? "−" : ""}${money(Math.abs(row.change))} / resident`,
     colorFor: (row) =>
