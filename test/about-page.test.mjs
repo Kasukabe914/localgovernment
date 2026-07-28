@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import test from "node:test";
 
 const read = (relativePath) =>
@@ -190,12 +190,25 @@ test("code, outputs and source data have distinct licence statements", () => {
   assert.match(dataLicence, /Original text and visual outputs.*CC BY 4\.0/is);
   assert.match(about, /Suggested citation:/);
   assert.match(about, /<h2 id="changes-heading">Change log<\/h2>/);
-  assert.match(about, /public change log will begin when the site is shared publicly/i);
   const changeLogSection = about.match(
     /<section class="panel" aria-labelledby="changes-heading">([\s\S]*?)<\/section>/
   )?.[1] || "";
-  assert.doesNotMatch(changeLogSection, /<li>/);
-  assert.doesNotMatch(changeLogSection, /Established the authorship/);
+  assert.match(changeLogSection, /<time datetime="2026-07-28">28 July 2026<\/time>/);
+  assert.match(changeLogSection, /Build a bigger council<\/cite>, Version 1\.0/);
+  assert.match(changeLogSection, /authoritative live tool/i);
+  assert.match(changeLogSection, /any combination not shown/i);
+  assert.match(
+    changeLogSection,
+    /href="\.\.\/reports\/amalgamator-build-a-bigger-council-v1\.0\.pptx" download/
+  );
+  assert.ok(
+    statSync(
+      new URL(
+        "../public/reports/amalgamator-build-a-bigger-council-v1.0.pptx",
+        import.meta.url
+      )
+    ).size > 0
+  );
 });
 
 test("social descriptions point readers to the method page", () => {
