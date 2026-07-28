@@ -17,9 +17,18 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /RESIDENTIAL RATES/i);
   assert.match(app, /NET ASSETS PER RESIDENT/i);
   assert.match(app, /WHAT THESE ESTIMATES MEAN/);
-  assert.match(app, /published 2024\/25 average residential bills weighted by household count/);
+  assert.match(app, /separate Stats NZ household count, not councils' residential rating-unit count/);
   assert.match(app, /30 June 2024 council-only accounts divided by 2024 population/);
   assert.match(app, /labelFor: \(row\) =>[\s\S]*money\(row\.before\).*now/);
+});
+
+test("both result explanations frame the estimates as direction rather than final results", () => {
+  const heading =
+    /<summary>These figures show a possible direction rather than a final result<\/summary>/g;
+  assert.equal([...app.matchAll(heading)].length, 2);
+  assert.doesNotMatch(app, /<summary>How to read this estimate<\/summary>/);
+  assert.match(app, /does not reconstruct the residential rates pool or forecast an\s+individual property/);
+  assert.match(app, /alter the size, timing\s+and direction of a property-level change/);
 });
 
 test("the downloadable card lists the selected councils", () => {

@@ -24,7 +24,7 @@ does not re-license:
 
 - the source code, which is licensed under the MIT License in `LICENSE`;
 - Crown data supplied by the Department of Internal Affairs or Stats NZ;
-- residential-property and average residential-rates data from the New Zealand
+- published household-count and average residential-rates data from the New Zealand
   Taxpayers' Union; or
 - third-party names, marks, documents or other material.
 

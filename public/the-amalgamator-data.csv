@@ -1,4 +1,4 @@
-﻿"id","name","region","population_2024","land_area_km2","rates_revenue_2023_24_nzd_excl_gst","rates_revenue_2025_26_forecast_nzd_excl_gst","residential_properties","residential_properties_flag","avg_residential_bill_2024_25_nzd_incl_gst","rating_units","rating_units_status","total_assets_2024_nzd","total_liabilities_2024_nzd","net_assets_2024_nzd","notes"
+﻿"id","name","region","population_2024","land_area_km2","rates_revenue_2023_24_nzd_excl_gst","rates_revenue_2025_26_forecast_nzd_excl_gst","households_published_2026","households_flag","avg_residential_bill_2024_25_nzd_incl_gst","rating_units","rating_units_status","total_assets_2024_nzd","total_liabilities_2024_nzd","net_assets_2024_nzd","notes"
 "farnorth","Far North","Northland","73500","6687","103039000","122142000","32538","","3276.19","40045","actual","2772994000","170582000","2602412000",""
 "whangarei","Whangārei","Northland","100500","2711","127432000","162152000","41319","","3112.65","46203","older","2805602000","319828000","2485774000",""
 "kaipara","Kaipara","Northland","26800","3109","45682000","55604000","13368","","3181.0","16936","actual","1191620000","78192000","1113428000",""

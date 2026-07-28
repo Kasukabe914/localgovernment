@@ -6,8 +6,8 @@ const HUMAN = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/126';
 const base = 'https://share.example.nz/';
 const q = new URLSearchParams({
   title: 'Megatron',
-  desc: 'Residents of 3 of 5 councils would pay more, 2 would pay less. Waikato District ratepayers pay $507 on average less a year.',
-  name: 'Megatron: Residents of 3 of 5 councils would pay more...',
+  desc: 'Three published council averages are above the household-weighted comparison and two are below it. Waikato District is $507 below the comparison.',
+  name: 'Megatron: Three published council averages are above the comparison...',
   result: 'https://www.amalgamator.nz/?m=1b26~Megatron:0:0a0b',
 });
 const compact = new URLSearchParams({
@@ -36,7 +36,7 @@ console.log('full legacy title:', tag('og:title'));
 console.log('full legacy desc :', tag('og:description'));
 
 // 4. Legacy `name` only
-const legacy = new URLSearchParams({ name: 'Aoraki Council: Residents of 1 of 3 councils would pay more.', result: 'https://www.amalgamator.nz/?m=x' });
+const legacy = new URLSearchParams({ name: 'Aoraki Council: One published council average is above the comparison.', result: 'https://www.amalgamator.nz/?m=x' });
 r = await handleShare(mk(base + '?' + legacy, BOT));
 html = await r.text();
 console.log('legacy title    :', tag('og:title'));

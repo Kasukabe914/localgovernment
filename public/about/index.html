@@ -164,6 +164,18 @@
       font-size: 20px;
       font-weight: 700;
     }
+    .result-return {
+      display: inline-flex;
+      align-items: center;
+      margin: 0 0 22px;
+      padding: 10px 15px;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--white);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .result-return:hover { background: var(--ink); color: var(--white); }
     .contact {
       display: inline-block;
       margin: 6px 0;
@@ -287,7 +299,7 @@
             </tr>
             <tr>
               <td>New Zealand Taxpayers’ Union</td>
-              <td><a href="https://ratepayersreport.nz/">Ratepayers’ Report 2026</a>: published average residential rates bills and the residential-property counts used as weights</td>
+              <td><a href="https://ratepayersreport.nz/">Ratepayers’ Report 2026</a>: published average residential rates bills and household counts. The report says its household data comes from Stats NZ; these counts are used here as approximate weights and are not council-defined residential rating units.</td>
               <td>Year ended 30 June 2025</td>
               <td>28 July 2026</td>
             </tr>
@@ -315,23 +327,26 @@
 
     <section class="panel" id="method" aria-labelledby="method-heading">
       <h2 id="method-heading">How the rate figures are calculated</h2>
-      <p>The main result uses each council’s published average residential rates bill and its residential-property count. It does not divide total council revenue by population and call that a household bill.</p>
+      <p>The main result compares each council’s published average residential rates bill using the Ratepayers’ Report’s separately published household count as a weight. It does not divide total council revenue by population and call that a household bill.</p>
       <ol>
         <li>Start with each selected council’s published average residential rates bill for 2024/25.</li>
-        <li>Multiply that bill by the council’s residential-property count to estimate the total represented by those published averages.</li>
-        <li>Add those estimated totals across the selected councils.</li>
-        <li>Divide by the combined residential-property count. This produces one property-weighted average for the hypothetical merged council.</li>
-        <li>Compare that pooled average with each council’s own published average. The difference is the amount shown as potentially more or less per year.</li>
+        <li>Multiply that bill by the report’s published household count for the council.</li>
+        <li>Add those weighted amounts across the selected councils.</li>
+        <li>Divide by the combined published household count. This produces one household-weighted comparison.</li>
+        <li>Compare that figure with each council’s own published average. The chart shows the dollar difference between those council-wide averages.</li>
       </ol>
-      <p>If a council has no comparable published bill, it is shown as “no data” and is not included in the pooled average. The wording “could pay more” or “could pay less” refers to movement from one council-wide average to another. It does not describe any particular property.</p>
+      <p><strong>This does not reproduce the Taxpayers’ Union’s residential-rates calculation.</strong> Its methodology defines an average bill as residential rates and applicable charges divided by council-defined residential rating units. The underlying rates, charges and residential rating-unit count—its X, Y and Z—are not exposed in the public report data. The separate household count used by this tool is therefore not necessarily the denominator used to calculate the published bill.</p>
+      <p>If a council has no comparable published bill, it is shown as “no data” and is not included in the weighted comparison. The output compares published council-wide averages. It does not reconstruct the residential rates pool, forecast an individual property, or determine the rating policy a merged council would adopt.</p>
       <h3>Net assets per resident</h3>
       <p>For the balance-sheet comparison, the tool subtracts liabilities from assets for every selected council, pools those dollar amounts, and divides by the combined population. It then compares that pooled figure with each council’s current net assets per resident. This is an accounting comparison, not a transfer payable to residents.</p>
     </section>
 
     <section class="panel" id="limitations" aria-labelledby="limitations-heading">
       <h2 id="limitations-heading">What these numbers are not</h2>
-      <p>The indicative rate figures are arithmetic redistribution across a combined residential rating base. They do <strong>not</strong> model:</p>
+      <a class="result-return" href="../" onclick="if (document.referrer.indexOf(location.origin + '/') === 0) { history.back(); return false; }">← Back to your result</a>
+      <p>The indicative rate figures are a household-weighted comparison of published council-wide averages. They are not a redistribution across the actual residential rating base and do <strong>not</strong> model:</p>
       <ul class="limitations">
+        <li>the residential rates, applicable charges and council-defined residential rating-unit counts used to produce each published average;</li>
         <li>transition and implementation costs;</li>
         <li>debt harmonisation or ring-fencing across merging entities;</li>
         <li>service-level changes, up or down;</li>
@@ -342,7 +357,7 @@
         <li>the location, condition or remaining life of council assets; or</li>
         <li>any decision an amalgamated council would actually make about its rating structure.</li>
       </ul>
-      <p class="closing">These are not forecasts. They show how today’s rates burden would redistribute across a combined rating base if nothing else changed—and in a real amalgamation, a great deal else changes. Treat the outputs as a starting point for a question, not an answer to one.</p>
+      <p class="closing">These are not forecasts. They show a possible direction when published council-wide averages are compared using a separate household weight. A real amalgamation would set a new rating structure, and the size, timing and direction of property-level changes could differ. Treat the outputs as a starting point for a question, not an answer to one.</p>
       <h3>Auckland is not evidence either way</h3>
       <p>The tool does not use the 2010 Auckland amalgamation as evidence for or against current proposals. Its post-merger rates and efficiency outcomes are contested, and this model does not attempt to resolve that literature.</p>
     </section>

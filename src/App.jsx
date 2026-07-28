@@ -83,13 +83,14 @@ const COUNCILS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Households and average residential rates bill (2024/25), by council.
-// Source: NZ Taxpayers' Union, Ratepayers' Report 2026 (year ended 30 June
-// 2025), compiled from council annual reports and LGOIMA requests — a separate,
-// non-government source from the DIA/Stats NZ figures above. hh = households;
-// avgRes = average residential rates bill in dollars (null where the council
-// refused or did not respond). Chatham Islands is not in the report; its
-// household count is an estimate (est: true).
+// Published households and average residential rates bill (2024/25), by
+// council. Source: NZ Taxpayers' Union, Ratepayers' Report 2026 (year ended
+// 30 June 2025). The report says its household field comes from Stats NZ,
+// while its average-bill methodology uses a separate, council-defined count of
+// residential rating units that is not exposed in the public report data.
+// hh = published households; avgRes = published average residential rates bill
+// in dollars (null where the council refused or did not respond). Chatham
+// Islands is not in the report; its household count is an estimate (est: true).
 // ---------------------------------------------------------------------------
 const HH = {
   farnorth: { hh: 32538, avgRes: 3276.19 },
@@ -709,9 +710,9 @@ const OPENING = buildPreset("article");
 let uid = 1;
 const newId = () => "g" + uid++;
 const STORE_KEY = "nz-amalgamator-v9";
-// Rates BILLS are GST-inclusive (what a ratepayer is charged); rates REVENUE in
+// Published average residential rates BILLS are GST-inclusive; rates REVENUE in
 // annual reports is GST-exclusive. Everything here is put on a GST-INCLUSIVE
-// footing so the four bases are comparable and match what people actually pay.
+// footing so the four bases can be compared consistently.
 const GST = 1.15;
 
 function LegacyApp() {
@@ -721,7 +722,7 @@ function LegacyApp() {
   const [suggestIdx, setSuggestIdx] = useState({});
   const [year, setYear] = useState("r26");
   const [savings, setSavings] = useState(0);
-  const [basis, setBasis] = useState("bill"); // "bill" | "unit" | "person" — bill is the default: it is the only figure that is an actual bill
+  const [basis, setBasis] = useState("bill"); // "bill" | "unit" | "person" — bill compares published residential-bill averages
   const [loaded, setLoaded] = useState(false);
   const [sharedView, setSharedView] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
@@ -1015,10 +1016,12 @@ function LegacyApp() {
     const r = ratesFor(members, "bill");
     if (r && r.blended != null) {
       const scored = r.rows.filter((q) => q.delta != null);
-      line(`Blended average residential bill: ${money(r.blended)} a year.`, H - 158, 34);
+      line(`Household-weighted comparison: ${money(r.blended)} a year.`, H - 158, 34);
       if (scored.length >= 2) {
         const hi = scored[0], lo = scored[scored.length - 1];
-        line(`Biggest rise ${hi.m.name} ${signed(hi.delta)}. Biggest fall ${lo.m.name} ${signed(lo.delta)}.`, H - 110, 34);
+        const hiLabel = hi.delta > 0 ? "Furthest above" : "Closest below";
+        const loLabel = lo.delta < 0 ? "Furthest below" : "Closest above";
+        line(`${hiLabel} ${hi.m.name} ${signed(hi.delta)}. ${loLabel} ${lo.m.name} ${signed(lo.delta)}.`, H - 110, 34);
       }
     }
 
@@ -1289,7 +1292,7 @@ function LegacyApp() {
         <h1>The Amalgamator</h1>
         <p className="standfirst">
           Every non-Auckland council has been told to team up with its neighbours, or have a merger imposed on it.
-          Pick a new council, tap the pieces to build it, then see who runs the place and whose rates move.
+          Pick a new council, tap the pieces to build it, then see who runs the place and how published rates averages compare.
         </p>
         <div className="presets">
           <button onClick={() => applyPreset("article")}>{PRESETS.article.label}</button>
@@ -1304,16 +1307,19 @@ function LegacyApp() {
             <h2>How this works</h2>
             <p><strong>Inputs.</strong> 2024 population and 2025 land area (Stats NZ, via DIA's July 2025 council
             profiles release); rates revenue for 2023/24 (actual) and 2025/26 (forecast) from council accounts,
-            GST-exclusive as reported; residential property counts and each council's published average residential
+            GST-exclusive as reported; published household counts and each council's published average residential
             bill for 2024/25 (NZ Taxpayers' Union Ratepayers' Report, GST-inclusive); and best-available rating-unit
             counts with data-quality flags.</p>
             <p><strong>What it computes.</strong> Pick councils into a group and the tool blends them as one entity:
-            the default view blends their published residential bills weighted by property count; the other two
+            the default view compares their published residential bills using the report's separate household count
+            as a weight. That count is not necessarily the residential rating-unit count used by each council to
+            calculate its published bill, so this is a comparison of council-wide averages, not a reconstruction of
+            the residential rates pool. The other two
             views spread the combined rates take (grossed up 15% so it's GST-inclusive like a bill) across people or
             rating units. A per-residential-property view was deliberately left out: dividing the whole take (which
             includes commercial and farm rates) by a residential dwelling count muddles the rating base with a
-            residential measure, and the dwelling count itself includes empty holiday homes. The change shown per council is the blend minus its own figure:
-            an immediate, fully harmonised redistribution of today's revenue. The regional-mandate figure is the
+            residential measure. The difference shown per council is the household-weighted comparison minus its
+            own published average. The regional-mandate figure is the
             group's share of its region's 2024 population, against the reported majority threshold for lodging a
             proposal that covers objecting councils.</p>
             <p><strong>Assumptions.</strong> One denominator vintage (2024 population) everywhere; revenue held at
@@ -1592,9 +1598,8 @@ function LegacyApp() {
                           const scored = r.rows.filter((x) => x.delta != null);
                           if (scored.length < 2) return null;
                           const hi = scored[0], lo = scored[scored.length - 1];
-                          // Sign-aware: only call it a rise if positive.
-                          const hiLabel = hi.delta > 0 ? "biggest rise" : "smallest fall";
-                          const loLabel = lo.delta < 0 ? "biggest fall" : "smallest rise";
+                          const hiLabel = hi.delta > 0 ? "furthest above" : "closest below";
+                          const loLabel = lo.delta < 0 ? "furthest below" : "closest above";
                           return (
                             <span>
                               {" · "}{hiLabel} <b className={hi.delta >= 0 ? "up" : "down"}>{hi.m.name} {signed(hi.delta)}</b>, {loLabel}{" "}
@@ -1641,17 +1646,20 @@ function LegacyApp() {
               council-controlled organisations. Net assets are total assets
               minus total liabilities.
             </dd>
-            <dt>Residential property count &amp; average residential rates bill (2024/25)</dt>
+            <dt>Published household count &amp; average residential rates bill (2024/25)</dt>
             <dd>
               NZ Taxpayers' Union,{" "}
               <a href="https://ratepayersreport.nz/" target="_blank" rel="noreferrer">Ratepayers' Report 2026</a>{" "}
-              (year ended 30 June 2025), compiled from council annual reports and LGOIMA requests. A separate,
-              non-government source from the figures above. The report labels the property count "households", but it
-              behaves as a <strong>dwelling count</strong>: nine bach-heavy districts imply under two residents per
-              dwelling (Thames-Coromandel 1.2), which is impossible for occupied households. It is treated here as
-              residential properties, not households, and is used only to weight the residential-bill blend; it is
-              not offered as a rates denominator. Western Bay of Plenty, Westland and Waitaki declined or did not
-              supply an average bill; Chatham Islands isn't in the report, so its property count is an estimate.
+              (year ended 30 June 2025), a separate, non-government source from the figures above. The report says
+              household data comes from Stats NZ. Its{" "}
+              <a href="https://www.taxpayers.org.nz/rp_methodology" target="_blank" rel="noreferrer">
+                average-rates methodology
+              </a>{" "}
+              instead uses council-defined residential rating units. Those underlying X, Y and Z values are not
+              exposed in the public report data, so the published household count is used here only as an
+              approximation for weighting council-wide averages. It is not treated as the residential rating base.
+              Western Bay of Plenty, Westland and Waitaki declined or did not supply an average bill; Chatham Islands
+              isn't in the report, so its household count is an estimate.
             </dd>
             <dt>Rating units</dt>
             <dd>
@@ -1694,7 +1702,8 @@ function LegacyApp() {
           <p className="sourceNote">
             <strong>GST:</strong> rates bills are GST-inclusive; rates revenue in annual reports is GST-exclusive.
             Every figure here is shown GST-inclusive (revenue-derived figures are grossed up by 15%) so the four
-            measures are comparable and match what a ratepayer is charged.
+            measures can be compared consistently. The residential-bill input is a published council-wide average,
+            not a bill for an individual property.
           </p>
           <p className="sourceNote">
             <strong>Scope:</strong> territorial-council figures only. The 11 regional councils and their separate rates
@@ -1719,7 +1728,7 @@ function LegacyApp() {
             charts and figures are licensed{" "}
             <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC&nbsp;BY&nbsp;4.0</a>.
             Crown data (DIA, Stats NZ) is separately CC&nbsp;BY&nbsp;4.0;
-            residential property counts and average bills are © NZ
+            published household counts and average bills are © NZ
             Taxpayers' Union and carry their own terms. Independent project,
             not affiliated with any of them.{" "}
             <a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">Source on GitHub</a>.
@@ -1778,10 +1787,10 @@ function LegacyApp() {
               </div>
             )}
 
-            <div className="shareHead">Whose rates move</div>
+            <div className="shareHead">How published averages compare</div>
             <div className="rates">
               <div className="basisGroup">
-                <span className="basisTier">Closest to a real bill</span>
+                <span className="basisTier">Published residential-bill averages</span>
                 <div className="basis">
                   <button className={"basisBtn" + (basis === "bill" ? " basisOn" : "")} onClick={() => setBasis("bill")} aria-pressed={basis === "bill"}>Avg residential bill</button>
                 </div>
@@ -1793,12 +1802,12 @@ function LegacyApp() {
                 </div>
               </div>
               <div className="blended">
-                <span className="blendedLabel">Blended<br />{unit}</span>
+                <span className="blendedLabel">Weighted comparison<br />{unit}</span>
                 <span className="blendedValue" aria-live="polite">{money(activeRates.blended)}</span>
               </div>
               <p className="scopeLine">
                 {isBill
-                  ? "What an average home pays. Residential properties only: no commercial or industrial rates."
+                  ? "Published council-wide averages compared using the report's separate household count as an approximate weight."
                   : basis === "unit"
                   ? "The whole rates take, including commercial, industrial and targeted rates, divided across every rateable property. Higher than a household bill wherever there's a big commercial base."
                   : "The whole rates take, including commercial and industrial rates, divided by residents. Not what anyone is billed."}
@@ -1830,11 +1839,11 @@ function LegacyApp() {
                   <strong>These measures disagree.</strong>{" "}
                   {divergence.slice(0, 2).map((d, i) => (
                     <span key={d.m.id}>
-                      {i > 0 ? " " : ""}On residential bills <b>{d.m.name}</b> {d.onBill < 0 ? "falls" : "rises"} {signed(d.onBill)}, but on this measure it {d.here < 0 ? "falls" : "rises"} {signed(d.here)}.
+                      {i > 0 ? " " : ""}For <b>{d.m.name}</b>, the published-bill comparison is {d.onBill < 0 ? "below" : "above"} its current average by {money(Math.abs(d.onBill))}, but this measure is {d.here < 0 ? "below" : "above"} its current value by {money(Math.abs(d.here))}.
                     </span>
                   ))}{" "}
                   {divergence.length > 2 ? `(${divergence.length - 2} more also flip.) ` : ""}
-                  The measures differ because the total rates take is spread over all rateable property (commercial, industrial and farm land included) while a residential bill is only what a home is charged. Where a district has little commercial property, its households carry more of the load than the per-property average suggests. For what a homeowner actually pays, use the bill basis.
+                  The measures differ because the total rates take is spread over all rateable property (commercial, industrial and farm land included), while the bill basis compares published residential averages using a separate household weight. Neither result predicts an individual property's bill.
                 </div>
               )}
               {activeRates.blended == null ? (
@@ -1872,7 +1881,7 @@ function LegacyApp() {
                           <div className="deltaZero" />
                           {delta !== 0 && <div className={"deltaFill " + cls} style={{ width: Math.min(50, Math.abs(pctDelta)) + "%" }} />}
                         </div>
-                        <div className="deltaFoot">{money(now)} → {money(then)} {unit}{flag}{vintageNote(m) ? " · " + vintageNote(m) : ""}
+                        <div className="deltaFoot">{money(now)} published → {money(then)} comparison {unit}{flag}{vintageNote(m) ? " · " + vintageNote(m) : ""}
                           {load != null && <span className={"load" + (load >= 1.35 ? " loadHi" : "")}> · all-property average is {load.toFixed(2)}× the residential bill</span>}
                         </div>
                       </li>
@@ -1882,17 +1891,18 @@ function LegacyApp() {
               )}
               <p className="ratesNote">
                 {isBill ? (
-                  <>Each council's own published average residential rates bill (2024/25), blended across the group
-                  weighted by household count. Closest thing to a real bill here, but "average" hides a wide spread
-                  within any district, the weighting denominator is an approximation, and a merger would set new
-                  differentials and phase them in over years. Western Bay of Plenty, Westland and Waitaki didn't
-                  supply a figure and Chatham Islands isn't in the report, so those show as no data.</>
+                  <>Each council's own published average residential rates bill (2024/25), compared with a weighted
+                  average using the report's separately published household count. That count is not necessarily the
+                  council-defined residential rating-unit count used to calculate the published bill. This therefore
+                  compares council-wide averages; it does not reconstruct the residential rates pool or predict a
+                  property's bill. Western Bay of Plenty, Westland and Waitaki didn't supply a figure and Chatham
+                  Islands isn't in the report, so those show as no data.</>
                 ) : basis === "unit" ? (
                   <>{yearLabel} rates revenue divided by <strong>rating units</strong>: every separately rateable
                   property (homes, farms, commercial sites, baches). A rough per-property normalisation: real bills
                   use land or capital value, targeted rates, uniform charges and differentials, so this isn't an
-                  actual bill. Some counts are older, projected, draft or a proxy (flagged on the rows). Direction of
-                  travel only.</>
+                  actual bill. Some counts are older, projected, draft or a proxy (flagged on the rows). It is a
+                  comparison only.</>
                 ) : (
                   <>{yearLabel} rates revenue spread evenly across residents. Rates aren't levied per head (they're
                   on property value) and mergers phase differentials in over years, so this is a normalisation, not
@@ -1905,7 +1915,7 @@ function LegacyApp() {
               </p>
 
               <details className="caveat">
-                <summary>Why the change shown here may never arrive as shown</summary>
+                <summary>Why this comparison is not a final result</summary>
                 <p>
                   Changes in rates between the pre- and post-amalgamation periods should be interpreted with
                   caution. Post-amalgamation rating liabilities may have been affected by transitional arrangements,
@@ -1917,9 +1927,10 @@ function LegacyApp() {
                   of each former council area.
                 </p>
                 <p className="caveatApply">
-                  Applied to this tool: the figures above are an <em>immediate, fully harmonised</em> redistribution:
-                  every property in the merged entity treated identically from day one. No real amalgamation has
-                  worked that way. Expect the direction to hold and the timing and size to differ, often for years.
+                  Applied to this tool: the figures above compare published council-wide averages using a separate
+                  household weight. They do not reconstruct the residential rates pool, and no real amalgamation
+                  would treat every property identically from day one. The timing, size and even direction of an
+                  eventual property-level change could differ.
                 </p>
               </details>
               <p className="ratesMethodLink">
@@ -2028,7 +2039,7 @@ function LegacyApp() {
           </div>
           <div className="sfCol">
             <div className="sfHead">Attribution</div>
-            <p>Crown data (DIA, Stats NZ) under CC BY 4.0. Residential property counts and average residential bills © NZ Taxpayers' Union.</p>
+            <p>Crown data (DIA, Stats NZ) under CC BY 4.0. Published household counts and average residential bills © NZ Taxpayers' Union.</p>
             <p className="sfAi">Generated with Anthropic's Claude (Fable and Opus models), directed and reviewed by the author. Figures were cross-checked against the cited sources; the About &amp; method page shows how to reproduce them.</p>
           </div>
         </div>
@@ -2368,12 +2379,9 @@ function simpleRates(members) {
 }
 
 // ---------------------------------------------------------------------------
-// Share card palette. The app's UI uses green/red for "pays less"/"pays more",
-// but that pair fails deuteranopia separation at every step we tested (best
-// ΔE 6.2 against a floor of 8), and a share card is seen once, at speed, with
-// no tooltip to fall back on. The card therefore keeps the brand red for "pays
-// more" and swaps the green pole for a deep blue: red↔blue measures ΔE 18.0
-// (CVD) and 26.4 (normal vision) on the paper surface, passing every check.
+// Share card palette. Red marks averages above the comparison and deep blue
+// marks averages below it. That pair measures ΔE 18.0 (CVD) and 26.4 (normal
+// vision) on the paper surface, passing every check.
 // Direction is additionally carried by side-of-zero position and a signed
 // dollar label on every bar, so hue is never the only channel.
 // ---------------------------------------------------------------------------
@@ -2397,9 +2405,9 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
   const biggestRise = rising.length ? rising[0] : null;
   const biggestFall = falling.length ? falling[falling.length - 1] : null;
   const headline = biggestFall
-    ? `${biggestFall.council.name} ratepayers pay ${money(Math.abs(biggestFall.change))} on average less a year`
+    ? `For ${biggestFall.council.name}, the comparison is ${money(Math.abs(biggestFall.change))} below its published average`
     : biggestRise
-      ? `${biggestRise.council.name} ratepayers pay ${money(biggestRise.change)} on average more a year`
+      ? `For ${biggestRise.council.name}, the comparison is ${money(biggestRise.change)} above its published average`
       : "No comparable rates data for this combination";
 
   const noData = rates.rows
@@ -2420,7 +2428,7 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
     headline,
     // Short enough to survive LinkedIn's description truncation (~200 chars).
     summary: rates.blended
-      ? `Residents of ${rising.length} of ${scored.length} councils would pay more, ${falling.length} would pay less. ${headline}.`
+      ? `The household-weighted comparison is above the published average in ${rising.length} of ${scored.length} council areas and below it in ${falling.length}. ${headline}.`
       : "Population, land area and rates data for this combination.",
   };
 }
@@ -2435,20 +2443,20 @@ function sharePostText(finding, url) {
   );
   lines.push("");
   if (finding.blended) {
-    lines.push("If rates were harmonised tomorrow:");
+    lines.push("Comparing the published council-wide averages:");
     if (finding.biggestRise) {
       lines.push(
-        `↑ ${finding.biggestRise.council.name} ratepayers pay ${money(finding.biggestRise.change)} on average more a year`
+        `↑ ${finding.biggestRise.council.name}: ${money(finding.biggestRise.change)} above its published average`
       );
     }
     if (finding.biggestFall) {
       lines.push(
-        `↓ ${finding.biggestFall.council.name} ratepayers pay ${money(Math.abs(finding.biggestFall.change))} on average less a year`
+        `↓ ${finding.biggestFall.council.name}: ${money(Math.abs(finding.biggestFall.change))} below its published average`
       );
     }
     lines.push("");
     lines.push(
-      `Residents of ${finding.rising.length} of ${finding.rising.length + finding.falling.length} councils would pay more, ${finding.falling.length} would pay less. Blended average residential bill: ${money(finding.blended)} a year.`
+      `The household-weighted comparison is above the published average in ${finding.rising.length} of ${finding.rising.length + finding.falling.length} council areas and below it in ${finding.falling.length}. Weighted average: ${money(finding.blended)} a year.`
     );
     if (finding.noData.length) {
       lines.push(
@@ -2650,9 +2658,9 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   drawPanelHeader(
     ratesX,
     "Residential rates",
-    "Who could pay more or less?",
+    "How do averages compare?",
     rates.blended != null ? money(rates.blended) : "Not enough data",
-    rates.blended != null ? "blended average residential bill a year" : "for a blended residential bill"
+    rates.blended != null ? "household-weighted comparison a year" : "for a household-weighted comparison"
   );
   drawPanelHeader(
     assetsX,
@@ -2668,7 +2676,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   ctx.font = `600 15px ${CARD_FONT}`;
   ctx.fillText(
     rates.blended != null
-      ? `Residents of ${finding.rising.length} of ${finding.rising.length + finding.falling.length} councils could pay more; ${finding.falling.length} could pay less.`
+      ? `Above ${finding.rising.length} published council averages; below ${finding.falling.length}.`
       : "Not enough published residential-bill data to compare.",
     ratesX + 24,
     panelTop + 174
@@ -2721,7 +2729,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   ctx.fillText("WHAT THESE ESTIMATES MEAN", 80, explanationTop + 31);
 
   const rateExplanation =
-    "Rates use published 2024/25 average residential bills weighted by household count. They show redistribution, not an individual-property forecast. Property values, targeted rates, differentials, caps, transition costs and savings are not modelled.";
+    "Published 2024/25 average residential bills are weighted using the report's separate Stats NZ household count, not councils' residential rating-unit count. This compares averages; it does not reconstruct the residential rates pool or forecast a property.";
   const assetExplanation =
     "Net assets use 30 June 2024 council-only accounts divided by 2024 population. This is an accounting comparison, not cash. It does not show asset location or condition, ring-fenced liabilities, services or rates. Council-controlled organisations are excluded.";
   ctx.fillStyle = CARD_INK_SOFT;
@@ -3405,7 +3413,7 @@ export default function App() {
             <p className="simpleEyebrow">Aotearoa local government explorer</p>
             <h1>Build a bigger council.</h1>
             <p className="simpleLead">
-              Choose a region, pick the councils, and see who could pay more or less.
+              Choose a region, pick the councils, and compare their published residential rates averages.
             </p>
 
             <div className="simpleStartOptions">
@@ -3729,11 +3737,11 @@ export default function App() {
               <div className="simplePanelHead">
                 <div>
                   <p className="simpleEyebrow">Residential rates</p>
-                  <h2>Which residents could pay more or less?</h2>
+                  <h2>How do the published council averages compare?</h2>
                 </div>
                 {rates.blended != null && (
                   <div className="simpleBlend">
-                    <span>Blended average</span>
+                    <span>Weighted comparison</span>
                     <strong>{money(rates.blended)}</strong>
                     <span>a year</span>
                   </div>
@@ -3748,13 +3756,13 @@ export default function App() {
                 <>
                   <p className="simpleAnswer">
                     {rising.length > 0 || falling.length > 0
-                      ? `Residents of ${rising.length} of ${rising.length + falling.length} councils would pay more, ${falling.length} would pay less.`
+                      ? `The household-weighted comparison is above the published average in ${rising.length} of ${rising.length + falling.length} council areas and below it in ${falling.length}.`
                       : "Published averages are already very similar."}
                   </p>
                   <div className="simpleRateChart">
                     <div className="simpleRateAxis" aria-hidden="true">
-                      <span>Could pay less</span>
-                      <span>Could pay more</span>
+                      <span>Below published average</span>
+                      <span>Above published average</span>
                     </div>
                     <div className="simpleRateRows">
                       {rates.rows.map((row) => (
@@ -3807,17 +3815,22 @@ export default function App() {
               )}
 
               <details className="simpleDisclosure">
-                <summary>How to read this estimate</summary>
+                <summary>These figures show a possible direction rather than a final result</summary>
                 <p>
-                  This blends each council’s published 2024/25 average residential bill,
-                  weighted by household count. It shows the direction of redistribution,
-                  not a forecast for an individual property. The bars share one scale
-                  within this result, so the longest bar is the largest dollar change.
+                  This compares each council’s published 2024/25 average residential bill
+                  with a weighted average using the Ratepayers’ Report’s separately
+                  published household count. That count is not necessarily the residential
+                  rating-unit count used by the council to calculate its published bill.
+                  The result can indicate how the council-wide averages compare, but it
+                  does not reconstruct the residential rates pool or forecast an
+                  individual property.
                 </p>
                 <p>
                   Real mergers use property values, targeted rates, differentials, caps,
-                  and multi-year transition arrangements. Establishment costs and savings
-                  are not included.
+                  and multi-year transition arrangements. These can alter the size, timing
+                  and direction of a property-level change. Establishment costs and savings
+                  are not included. The bars share one scale within this result, so the
+                  longest bar is the largest dollar difference between averages.
                 </p>
               </details>
               <p className="simpleMethodLink">
@@ -3899,13 +3912,15 @@ export default function App() {
               )}
 
               <details className="simpleDisclosure">
-                <summary>How to read this estimate</summary>
+                <summary>These figures show a possible direction rather than a final result</summary>
                 <p>
                   Net assets are total assets minus total liabilities. The merged
                   figure pools the selected councils’ 30 June 2024 council-only
                   balance sheets and divides the result by their combined 2024
-                  population. Each row compares that figure with the TLA’s current
-                  net assets per resident.
+                  population. Each row compares that accounting benchmark with the
+                  TLA’s current net assets per resident. It shows the direction of
+                  that comparison, not what residents would receive or what a final
+                  merger agreement would allocate.
                 </p>
                 <p>
                   This is an accounting comparison, not a cash gain or loss. It

@@ -7,7 +7,8 @@ The application guides users through one proposed council at a time:
 - start from a dated snapshot of reported council talks or build a combination from scratch;
 - select councils within one region, from neighbouring regions, or from further afield;
 - distinguish nearby options from distant councils organised by region;
-- compare indicative residential-rates redistribution;
+- compare published average residential rates bills using a separate published
+  household count as an approximate weight;
 - compare the pooled net-asset position per resident for each selected TLA;
 - choose from curated council names; and
 - share the finding as a generated card image or as a link.
@@ -15,9 +16,10 @@ The application guides users through one proposed council at a time:
 ## Sharing
 
 The result screen generates a 1200×630 share card in the browser — the council
-name, the rates redistribution as a diverging bar chart, the blended bill, and a
-note naming any council with no published bill. No server and no new
-dependencies: it is drawn on a `<canvas>` and offered as a PNG download.
+name, a diverging chart comparing published average residential rates bills,
+the household-weighted comparison, and a note naming any council with no
+published bill. No server and no new dependencies: it is drawn on a `<canvas>`
+and offered as a PNG download.
 
 The result screen shows the same five sharing controls on mobile and desktop:
 Facebook, X, LinkedIn, Reddit and Copy link. The four platform controls are
@@ -46,13 +48,11 @@ actions.
 
 ### Card colours
 
-The interface uses green for "pays less" and red for "pays more". The card does
-not: that pair fails deuteranopia separation at every step tested (best ΔE 6.2
-against a floor of 8). The card keeps the brand red and uses a deep blue for the
-other pole — ΔE 18.0 simulated, 26.4 normal vision, and passing chroma,
-lightness and contrast against the paper surface. Direction is additionally
-carried by side-of-zero position and a signed dollar label on every bar, so hue
-is never the only channel.
+The interface and card use red for an average above the comparison and deep blue
+for an average below it. This pair provides stronger deuteranopia separation
+than red and green (ΔE 18.0 simulated and 26.4 in normal vision). Direction is
+also carried by side-of-zero position and a signed dollar label on every bar,
+so hue is never the only channel.
 
 The population-share bar uses discrete, high-contrast colours with matching
 legend swatches rather than progressively lighter shades of one colour.
@@ -146,6 +146,15 @@ git push origin main
 ## Important modelling limitations
 
 This is an independent modelling tool. It is not an official proposal or a prediction of any household’s rates.
+
+The rates result is a household-weighted comparison of councils' published
+average residential rates bills. The household count is a separate Stats NZ
+measure published in the Ratepayers' Report; it is not necessarily the
+residential rating-unit denominator used to calculate those average bills.
+Because the public report does not publish that denominator or the underlying
+residential rates pool, the app does not reconstruct either one. The result
+shows a possible direction for comparison, not a final rate or property-level
+forecast.
 
 The About & method page documents authorship, independence, sources,
 calculations, data vintages, corrections and known limitations. The Current

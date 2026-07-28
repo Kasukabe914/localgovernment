@@ -99,6 +99,28 @@ test("the limitations are explicit and linked from both rates experiences", () =
     [...app.matchAll(/>What these numbers mean<\/a>/g)].length,
     2
   );
+  assert.match(
+    about,
+    /class="result-return" href="\.\.\/"[^>]*>← Back to your result<\/a>/
+  );
+  assert.match(about, /history\.back\(\)/);
+});
+
+test("the public method accurately distinguishes households from residential rating units", () => {
+  assert.match(
+    about,
+    /does not reproduce the Taxpayers’ Union’s residential-rates calculation/
+  );
+  assert.match(
+    about,
+    /separate household count used by this tool is therefore not necessarily the denominator/
+  );
+  assert.match(about, /does not reconstruct the residential rates pool/);
+  assert.match(
+    app,
+    /separate Stats NZ household count, not councils' residential rating-unit count/
+  );
+  assert.doesNotMatch(about, /combined residential rating base/);
 });
 
 test("About & method is persistent and the old methodology URL is a canonical compatibility redirect", () => {
@@ -150,6 +172,12 @@ test("the source register is complete at source-family level and exposes its his
   );
   assert.ok(ratingUnits);
   assert.match(ratingUnits.notes, /retrieval dates and URLs were not retained/);
+  const ratepayersReport = rows.find(
+    (row) => row.source_id === "ratepayers_report_2026"
+  );
+  assert.ok(ratepayersReport);
+  assert.match(ratepayersReport.fields_or_use, /households_published_2026/);
+  assert.match(ratepayersReport.notes, /not the council-defined residential rating-unit count/);
   assert.match(about, /href="\.\.\/source-register\.csv"/);
 });
 

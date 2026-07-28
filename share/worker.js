@@ -26,7 +26,7 @@ const OG_IMAGE = "https://www.amalgamator.nz/og-image.jpg";
 
 const DEFAULT_TITLE = "Build a bigger council.";
 const DEFAULT_DESC =
-  "Choose a region, pick the councils, and see who could pay more or less. About & method: https://www.amalgamator.nz/about/";
+  "Choose councils, compare published average residential rates bills, and see the population balance. About & method: https://www.amalgamator.nz/about/";
 
 // Every crawler that needs server-rendered tags. Anything not on this list is
 // treated as a human and redirected.

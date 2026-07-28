@@ -41,15 +41,16 @@ the feed carried what the user had actually found.
 ## Application changes
 
 - Generates a 1200×630 share card in the browser on the result screen: council
-  name, councils/population/area, the rates redistribution as a diverging bar
-  chart, the blended average bill, and a legend.
+  name, councils/population/area, a diverging comparison of published average
+  residential bills, the household-weighted comparison, and a legend.
 - Shows the card on screen before posting, so the share reads as publishing a
   finding rather than pasting a link.
 - Names any council excluded from the blend for want of a published average
   bill, on the card and in the write-up. Previously those councils simply
   vanished from a card that still counted them in its header.
-- Generates suggested post copy from the finding — biggest riser, biggest
-  faller, the split, the blended bill, the caveat, and the result link.
+- Generates suggested post copy from the finding — largest differences above
+  and below the comparison, the split, the weighted comparison, the caveat, and
+  the result link.
 - Adds the native-image-post route: copies the write-up, downloads the card, and
   opens the LinkedIn composer. LinkedIn deprioritises posts carrying an outbound
   link, so this route reaches further than a link share.

@@ -39,24 +39,29 @@ Net assets are calculated as total assets minus total liabilities.
 
 | Field | Source | Notes |
 | --- | --- | --- |
-| Households | NZ Taxpayers' Union, Ratepayers' Report 2026 | Year ended 30 June 2025; from council annual reports and LGOIMA requests. |
-| Average residential rates bill (2024/25) | NZ Taxpayers' Union, Ratepayers' Report 2026 | Western Bay of Plenty, Westland and Waitaki declined or did not supply a figure. |
+| Households | NZ Taxpayers' Union, Ratepayers' Report 2026 | The report says this field comes from Stats NZ. It is separate from councils' residential rating-unit counts. |
+| Average residential rates bill (2024/25) | NZ Taxpayers' Union, Ratepayers' Report 2026 | Calculated by the report from council-supplied residential rates, applicable charges and residential rating units. Western Bay of Plenty, Westland and Waitaki declined or did not supply a figure. |
 
 These two fields come from the [**NZ Taxpayers' Union Ratepayers' Report
 2026**](https://ratepayersreport.nz/), an **independent, non-government** source,
-and are attributed separately in the app. Chatham Islands is not in that report,
-so its household count is an estimate.
+and are attributed separately in the app. The public report does not expose the
+underlying residential rates, applicable charges or residential rating-unit
+count used to calculate each average bill. This app therefore uses the separate
+published household count only as an approximate weight when comparing those
+published averages; it does not reconstruct the residential rates pool or the
+Taxpayers' Union calculation. Chatham Islands is not in that report, so its
+household count is an estimate.
 
 ## What the app adds
 
-Blended rates per capita, pooled net assets per resident, the population
-power-share, per-household estimates and the efficiency-saving slider are this
-tool's **own arithmetic**, derived from the figures above. They are illustrative,
-not official DIA or Stats NZ outputs, and are not a prediction of anyone's
-actual rates bill. The net-assets comparison is not a cash gain or loss and does
-not reflect asset location, condition, ring-fencing or service levels. Rates are
-levied on property value, not per head, and real amalgamations phase in
-differentials over years.
+The household-weighted comparison of published average residential bills,
+pooled net assets per resident, population power-share and efficiency-saving
+slider are this tool's **own arithmetic**, derived from the figures above. They
+are illustrative, not official DIA or Stats NZ outputs, and are not a prediction
+of anyone's actual rates bill. The net-assets comparison is not a cash gain or
+loss and does not reflect asset location, condition, ring-fencing or service
+levels. Rates are levied under council rating policies, not as a uniform
+per-household charge, and real amalgamations phase in differentials over years.
 
 ## Attribution statement
 
