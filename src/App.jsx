@@ -2628,6 +2628,17 @@ function drawCardRows(ctx, rows, {
   }
 }
 
+function drawCardColumnHeaders(ctx, x, y, width) {
+  ctx.fillStyle = CARD_INK_SOFT;
+  ctx.font = `750 13px ${CARD_FONT}`;
+  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = "left";
+  ctx.fillText("CURRENT STATE", x, y);
+  ctx.textAlign = "right";
+  ctx.fillText("AFTER AMALGAMATION", x + width, y);
+  ctx.textAlign = "left";
+}
+
 // Renders a complete result card. It is deliberately taller than an OG image:
 // the download is an infographic, not a teaser, so it carries the selected name,
 // both estimates, and the interpretation needed to read them responsibly.
@@ -2776,9 +2787,13 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   );
 
   const rateRows = rates.rows;
+  const cardRowsY = panelTop + 235;
+  drawCardColumnHeaders(ctx, ratesX + 24, panelTop + 207, panelW - 48);
+  drawCardColumnHeaders(ctx, assetsX + 24, panelTop + 207, panelW - 48);
+
   drawCardRows(ctx, rateRows, {
     x: ratesX + 24,
-    y: panelTop + 207,
+    y: cardRowsY,
     width: panelW - 48,
     labelFor: (row) =>
       row.before == null
@@ -2795,7 +2810,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
 
   drawCardRows(ctx, netAssets.rows, {
     x: assetsX + 24,
-    y: panelTop + 207,
+    y: cardRowsY,
     width: panelW - 48,
     labelFor: (row) => `${row.council.name} · ${money(row.before)}`,
     valueFor: (row) =>

@@ -23,6 +23,13 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /labelFor: \(row\) => `\$\{row\.council\.name\} · \$\{money\(row\.before\)\}`/);
   assert.doesNotMatch(app, /money\(row\.before\)\} at 30 Jun 2024/);
   assert.match(app, /fitText\(ctx, label, width - 190, 17, 650, 11\)/);
+  assert.match(app, /ctx\.fillText\("CURRENT STATE", x, y\)/);
+  assert.match(app, /ctx\.fillText\("AFTER AMALGAMATION", x \+ width, y\)/);
+  assert.equal(
+    [...app.matchAll(/drawCardColumnHeaders\(ctx, (?:ratesX|assetsX)[^)]+\)/g)].length,
+    2,
+    "both sharing-card panels should label their columns"
+  );
 });
 
 test("both result explanations frame the estimates as direction rather than final results", () => {
