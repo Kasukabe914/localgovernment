@@ -35,8 +35,18 @@ test("the downloadable card lists the selected councils", () => {
   assert.match(app, /councilNames: members\.map\(\(member\) => member\.name\)/);
   assert.match(app, /ctx\.fillText\("COUNCILS INCLUDED", 56, y\)/);
   assert.match(app, /const councilList = finding\.councilNames\.join\(" · "\)/);
-  assert.match(app, /const cardHeight = CARD_H \+ extraCouncilLines \* 23/);
+  assert.match(
+    app,
+    /const cardHeight = CARD_H \+ extraCouncilLines \* 23 \+ outsideHeadStartHeight/
+  );
   assert.match(app, /councilLines\.forEach\(\(line, index\) =>/);
+});
+
+test("Auckland scenarios carry the Head Start warning into shared outputs", () => {
+  assert.match(app, /outsideHeadStart: members\.some\(\(member\) => member\.locked\)/);
+  assert.match(app, /Hypothetical only: Auckland is expressly excluded from Head Start/);
+  assert.match(app, /HYPOTHETICAL ONLY · AUCKLAND IS OUTSIDE HEAD START/);
+  assert.match(app, /Hypothetical only: Auckland is outside Head Start/);
 });
 
 test("the population-balance panel follows the combined-summary strip", () => {

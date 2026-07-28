@@ -22,12 +22,12 @@ test("the main current-talks starter combinations remain unchanged", () => {
     '{ name: "Megatron", ids: ["waikatod", "hamilton", "waipa", "swaikato", "taupo"] }',
     '{ name: "Kiwiana Country", ids: ["otorohanga", "waitomo"] }',
     '{ name: "Stratford–South Taranaki", ids: ["stratford", "staranaki"] }',
-    '{ name: "Wellington metro", ids: ["wellington", "hutt", "porirua", "upperhutt"] }',
+    '{ name: "The Big Windy", ids: ["wellington", "hutt", "porirua", "upperhutt"] }',
     '{ name: "The Wairarapa Three", ids: ["masterton", "carterton", "swairarapa"] }',
     '{ name: "Wine & Whales", ids: ["marlborough", "kaikoura"] }',
     '{ name: "The Coast", ids: ["buller", "grey", "westland"] }',
     '{ name: "Aoraki Council", ids: ["timaru", "mackenzie", "waimate", "waitaki"] }',
-    '{ name: "Rural Southland", ids: ["southlandd", "gore"] }',
+    '{ name: "The Deep South", ids: ["southlandd", "gore"] }',
   ];
 
   assert.equal(
@@ -55,19 +55,78 @@ test("the exploring section includes the 28 July council status updates", () => 
   assert.match(app, /The starter\s+combinations above are unchanged/);
 });
 
-test("an exploring council opens the chooser preselected", () => {
-  assert.match(app, /const chooseExploringCouncil = \(id\) =>/);
+test("a status council opens the chooser preselected", () => {
+  assert.match(app, /const chooseStatusCouncil = \(id\) =>/);
   assert.match(app, /setSelectedIds\(\[id\]\)/);
   assert.match(app, /setRegion\(council\.region\)/);
   assert.match(app, /setScreen\("build"\)/);
   assert.match(
     app,
-    /className="simpleExploringCouncil"[\s\S]*onClick=\{\(\) => chooseExploringCouncil\(id\)\}/
+    /className="simpleExploringCouncil"[\s\S]*onClick=\{\(\) => chooseStatusCouncil\(id\)\}/
   );
   assert.match(
     app,
     /\$\{members\[0\]\.name\} is selected\. Choose at least one more council\./
   );
+});
+
+test("where things stand accounts for all territorial authorities", () => {
+  assert.match(
+    app,
+    /const CURRENT_TALKS_COUNCIL_IDS = new Set\([\s\S]*PRESETS\.article\.groups\.flatMap/
+  );
+  assert.match(
+    app,
+    /const OTHER_HEAD_START_COUNCILS = COUNCILS\.filter\([\s\S]*!council\.locked[\s\S]*!CURRENT_TALKS_COUNCIL_IDS\.has\(council\.id\)[\s\S]*!EXPLORING\[council\.id\]/
+  );
+  assert.match(
+    app,
+    /const OUTSIDE_HEAD_START_COUNCILS = COUNCILS\.filter\(\(council\) => council\.locked\)/
+  );
+  assert.match(app, /<summary>Other eligible councils<\/summary>/);
+  assert.match(app, /<summary>Outside Head Start<\/summary>/);
+  assert.match(
+    app,
+    /Auckland is the only territorial authority expressly excluded/
+  );
+  assert.match(app, /Hypothetical only: Auckland is outside Head Start/);
+
+  const councilBlock = app.match(/const COUNCILS = \[([\s\S]*?)\];/)?.[1] || "";
+  const allCouncilIds = [
+    ...councilBlock.matchAll(/\{ id: "([^"]+)"/g),
+  ].map((match) => match[1]);
+  const lockedCouncilIds = [
+    ...councilBlock.matchAll(/\{ id: "([^"]+)"[^\n]+locked: true/g),
+  ].map((match) => match[1]);
+  const currentTalksBlock = app.match(
+    /article:\s*\{\s*label: "Where talks stand, mid-July",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
+  )?.[1] || "";
+  const currentTalksIds = [
+    ...currentTalksBlock.matchAll(/"([a-z0-9]+)"/g),
+  ]
+    .map((match) => match[1])
+    .filter((id) => allCouncilIds.includes(id));
+  const exploringBlock = app.match(/const EXPLORING = \{([\s\S]*?)\};/)?.[1] || "";
+  const exploringIds = [
+    ...exploringBlock.matchAll(/^\s*([a-z0-9]+):/gm),
+  ].map((match) => match[1]);
+  const otherEligibleIds = allCouncilIds.filter(
+    (id) =>
+      !lockedCouncilIds.includes(id) &&
+      !currentTalksIds.includes(id) &&
+      !exploringIds.includes(id)
+  );
+  const represented = new Set([
+    ...currentTalksIds,
+    ...exploringIds,
+    ...otherEligibleIds,
+    ...lockedCouncilIds,
+  ]);
+
+  assert.equal(allCouncilIds.length, 67);
+  assert.deepEqual(lockedCouncilIds, ["auckland"]);
+  assert.equal(otherEligibleIds.length, 21);
+  assert.equal(represented.size, allCouncilIds.length);
 });
 
 test("the MartinJenkins Head Start update is cited in About and the source register", () => {

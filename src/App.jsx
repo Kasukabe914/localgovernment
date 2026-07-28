@@ -373,7 +373,7 @@ function decodeMap(code) {
         const chunk = mem.slice(k, k + 2);
         if (chunk.length < 2) break;
         const c = COUNCILS[parseInt(chunk, 36)];
-        if (c && !c.locked && assignment[c.id] == null) { assignment[c.id] = id; picked.push(c.id); }
+        if (c && assignment[c.id] == null) { assignment[c.id] = id; picked.push(c.id); }
       }
       if (picked.length) groups.push({ id, name, color });
     });
@@ -670,12 +670,12 @@ const PRESETS = {
       { name: "Megatron", ids: ["waikatod", "hamilton", "waipa", "swaikato", "taupo"] },
       { name: "Kiwiana Country", ids: ["otorohanga", "waitomo"] },
       { name: "Stratford–South Taranaki", ids: ["stratford", "staranaki"] },
-      { name: "Wellington metro", ids: ["wellington", "hutt", "porirua", "upperhutt"] },
+      { name: "The Big Windy", ids: ["wellington", "hutt", "porirua", "upperhutt"] },
       { name: "The Wairarapa Three", ids: ["masterton", "carterton", "swairarapa"] },
       { name: "Wine & Whales", ids: ["marlborough", "kaikoura"] },
       { name: "The Coast", ids: ["buller", "grey", "westland"] },
       { name: "Aoraki Council", ids: ["timaru", "mackenzie", "waimate", "waitaki"] },
-      { name: "Rural Southland", ids: ["southlandd", "gore"] },
+      { name: "The Deep South", ids: ["southlandd", "gore"] },
     ],
   },
   wgtnOne: {
@@ -703,6 +703,17 @@ const PRESETS = {
     ],
   },
 };
+
+const CURRENT_TALKS_COUNCIL_IDS = new Set(
+  PRESETS.article.groups.flatMap((group) => group.ids)
+);
+const OTHER_HEAD_START_COUNCILS = COUNCILS.filter(
+  (council) =>
+    !council.locked &&
+    !CURRENT_TALKS_COUNCIL_IDS.has(council.id) &&
+    !EXPLORING[council.id]
+);
+const OUTSIDE_HEAD_START_COUNCILS = COUNCILS.filter((council) => council.locked);
 
 // Build a preset's state. Used for the opening view as well as the buttons, so
 // first-time visitors land on a populated map rather than an empty board.
@@ -2447,6 +2458,7 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
     councilName,
     councilCount: members.length,
     councilNames: members.map((member) => member.name),
+    outsideHeadStart: members.some((member) => member.locked),
     population: totalPopulation,
     rising,
     falling,
@@ -2456,9 +2468,13 @@ function shareFinding({ councilName, members, rates, totalPopulation }) {
     blended: rates.blended,
     headline,
     // Short enough to survive LinkedIn's description truncation (~200 chars).
-    summary: rates.blended
+    summary: `${rates.blended
       ? `The household-weighted comparison is above the published average in ${rising.length} of ${scored.length} council areas and below it in ${falling.length}. ${headline}.`
-      : "Population, land area and rates data for this combination.",
+      : "Population, land area and rates data for this combination."}${
+      members.some((member) => member.locked)
+        ? " Hypothetical only: Auckland is outside Head Start."
+        : ""
+    }`,
   };
 }
 
@@ -2470,6 +2486,9 @@ function sharePostText(finding, url) {
   lines.push(
     `Meet ${finding.councilName} — ${finding.councilCount} New Zealand councils merged into one, ${fmtPop(finding.population)} people.`
   );
+  if (finding.outsideHeadStart) {
+    lines.push("Hypothetical only: Auckland is expressly excluded from Head Start.");
+  }
   lines.push("");
   if (finding.blended) {
     lines.push("Comparing the published council-wide averages:");
@@ -2595,7 +2614,8 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   const councilList = finding.councilNames.join(" · ");
   const councilLines = wrapCardText(ctx, councilList, CARD_W - 112);
   const extraCouncilLines = Math.max(0, councilLines.length - 3);
-  const cardHeight = CARD_H + extraCouncilLines * 23;
+  const outsideHeadStartHeight = finding.outsideHeadStart ? 32 : 0;
+  const cardHeight = CARD_H + extraCouncilLines * 23 + outsideHeadStartHeight;
   if (cardHeight !== CARD_H) {
     canvas.height = cardHeight;
     ctx = canvas.getContext("2d");
@@ -2646,8 +2666,17 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   councilLines.forEach((line, index) => {
     ctx.fillText(line, 56, y + index * 23);
   });
+  if (finding.outsideHeadStart) {
+    ctx.fillStyle = CARD_MORE;
+    ctx.font = `750 16px ${CARD_FONT}`;
+    ctx.fillText(
+      "HYPOTHETICAL ONLY · AUCKLAND IS OUTSIDE HEAD START",
+      56,
+      y + councilLines.length * 23 + 14
+    );
+  }
 
-  y = headH + 246 + extraCouncilLines * 23;
+  y = headH + 246 + extraCouncilLines * 23 + outsideHeadStartHeight;
   ctx.strokeStyle = CARD_RULE;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -2958,7 +2987,7 @@ export default function App() {
       const ids = Object.entries(decoded.assignment)
         .filter(([, groupId]) => groupId === first.id)
         .map(([id]) => id)
-        .filter((id) => BY_ID[id] && !BY_ID[id].locked);
+        .filter((id) => BY_ID[id]);
       if (ids.length < 2) return;
       const regions = [...new Set(ids.map((id) => BY_ID[id].region))];
       const restoredMembers = ids.map((id) => BY_ID[id]).filter(Boolean);
@@ -3016,8 +3045,12 @@ export default function App() {
 
   const availableCouncils = useMemo(() => {
     const base = allCouncils
-      ? COUNCILS.filter((c) => !c.locked)
-      : COUNCILS.filter((c) => c.region === region && !c.locked);
+      ? COUNCILS.filter((c) => !c.locked || selectedIds.includes(c.id))
+      : COUNCILS.filter(
+          (c) =>
+            c.region === region &&
+            (!c.locked || selectedIds.includes(c.id))
+        );
     if (allCouncils) {
       base.sort((a, b) => {
         const tier = (c) => {
@@ -3085,6 +3118,7 @@ export default function App() {
     () => calculateNetAssetsPerCapita(members),
     [members]
   );
+  const includesHeadStartExcluded = members.some((member) => member.locked);
 
   const totalPopulation = members.reduce((sum, m) => sum + m.pop, 0);
   const totalArea = members.reduce((sum, m) => sum + m.area, 0);
@@ -3146,12 +3180,12 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const chooseExploringCouncil = (id) => {
+  const chooseStatusCouncil = (id) => {
     const council = BY_ID[id];
-    if (!council || council.locked) return;
+    if (!council) return;
     setTalksActive(true);
     setRegion(council.region);
-    setAllCouncils(false);
+    setAllCouncils(Boolean(council.locked));
     setSelectedIds([id]);
     setCustomName("");
     setQuery("");
@@ -3415,6 +3449,9 @@ export default function App() {
             {fmtPop(council.pop)} people
             {allCouncils ? ` · ${council.region}` : ""}
           </span>
+          {council.locked && (
+            <span className="simpleCouncilRelation">Outside Head Start</span>
+          )}
           {allCouncils && councilProximity.linkedCouncils.has(council.id) && (
             <span
               className="simpleCouncilRelation"
@@ -3564,7 +3601,7 @@ export default function App() {
                     className="simpleExploringCouncil"
                     type="button"
                     key={id}
-                    onClick={() => chooseExploringCouncil(id)}
+                    onClick={() => chooseStatusCouncil(id)}
                   >
                     <span>
                       <strong>{BY_ID[id]?.name || id}</strong>
@@ -3575,6 +3612,61 @@ export default function App() {
                 ))}
                 <p className="simpleExploringSource">
                   <a href="about/#sources">Sources and status notes</a>
+                </p>
+              </div>
+            </details>
+
+            <details className="simpleExploring">
+              <summary>Other eligible councils</summary>
+              <div>
+                <p className="simpleExploringIntro">
+                  These councils are eligible for Head Start, but this dated
+                  snapshot records no separate reported combination or status
+                  note for them. Select one to test possible partners. Any
+                  grouping you make is your scenario, not a reported proposal.
+                </p>
+                {OTHER_HEAD_START_COUNCILS.map((council) => (
+                  <button
+                    className="simpleExploringCouncil"
+                    type="button"
+                    key={council.id}
+                    onClick={() => chooseStatusCouncil(council.id)}
+                  >
+                    <span>
+                      <strong>{council.name}</strong>
+                      <span>Eligible; no separate status recorded in this snapshot.</span>
+                    </span>
+                    <span aria-hidden="true">Choose partners →</span>
+                  </button>
+                ))}
+              </div>
+            </details>
+
+            <details className="simpleExploring simpleOutsideHeadStart">
+              <summary>Outside Head Start</summary>
+              <div>
+                <p className="simpleExploringIntro">
+                  Auckland is the only territorial authority expressly excluded
+                  from Head Start. You can still combine it with other councils
+                  here as a hypothetical comparison, but the result is not a
+                  Head Start option.
+                </p>
+                {OUTSIDE_HEAD_START_COUNCILS.map((council) => (
+                  <button
+                    className="simpleExploringCouncil"
+                    type="button"
+                    key={council.id}
+                    onClick={() => chooseStatusCouncil(council.id)}
+                  >
+                    <span>
+                      <strong>{council.name}</strong>
+                      <span>Excluded from the Head Start pathway.</span>
+                    </span>
+                    <span aria-hidden="true">Test hypothetically →</span>
+                  </button>
+                ))}
+                <p className="simpleExploringSource">
+                  <a href="about/#sources">Official eligibility source</a>
                 </p>
               </div>
             </details>
@@ -3598,6 +3690,16 @@ export default function App() {
                   : `Choose at least two councils in ${region}.`}
               </p>
             </div>
+
+            {includesHeadStartExcluded && (
+              <div className="simpleHeadStartWarning" role="note">
+                <strong>Hypothetical only: Auckland is outside Head Start.</strong>
+                <span>
+                  This tool lets you compare it with other councils, but the
+                  combination is not eligible under the Head Start pathway.
+                </span>
+              </div>
+            )}
 
             {!allCouncils && (
               <div className="simpleCrossRegion">
@@ -3728,10 +3830,19 @@ export default function App() {
           <section className="simpleResult">
             {talksActive && (
               <div className="simpleTalkOrigin">
-                <span>Started from the current-talks snapshot.</span>
+                <span>Started from the “where things stand” snapshot.</span>
                 <button className="simpleTextButton" type="button" onClick={openCurrentTalks}>
                   View all reported combinations
                 </button>
+              </div>
+            )}
+            {includesHeadStartExcluded && (
+              <div className="simpleHeadStartWarning" role="note">
+                <strong>Hypothetical only: this combination includes Auckland.</strong>
+                <span>
+                  Auckland is expressly excluded from Head Start, so this is a
+                  comparison scenario rather than an eligible proposal.
+                </span>
               </div>
             )}
             <div className="simplePageHead simpleResultHead">
@@ -4555,6 +4666,24 @@ const SIMPLE_CSS = `
   color: var(--accent);
   font-size: 12px;
   font-weight: 800;
+}
+.simpleOutsideHeadStart {
+  border-left: 5px solid var(--accent);
+}
+.simpleHeadStartWarning {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 3px;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 12px;
+}
+.simpleHeadStartWarning span {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .simpleCrossRegion {
