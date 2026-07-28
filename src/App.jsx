@@ -3320,7 +3320,7 @@ export default function App() {
     facebookUrl.searchParams.set("redirect_uri", PUBLIC_APP_URL);
     facebookUrl.searchParams.set("link", shareUrl);
     facebookUrl.searchParams.set("name", shareTitle);
-    facebookUrl.searchParams.set("picture", `${PUBLIC_APP_URL}og-image.jpg`);
+    facebookUrl.searchParams.set("picture", `${PUBLIC_APP_URL}og-image-2.jpg`);
     facebookUrl.searchParams.set("description", finding.summary);
     return facebookUrl.toString();
   };

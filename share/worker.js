@@ -22,9 +22,9 @@
 
 const APP_ORIGIN = "https://www.amalgamator.nz";
 const APP_URL = "https://www.amalgamator.nz/";
-const OG_IMAGE = "https://www.amalgamator.nz/og-image.jpg";
+const OG_IMAGE = "https://www.amalgamator.nz/og-image-2.jpg";
 
-const DEFAULT_TITLE = "Build a bigger council.";
+const DEFAULT_TITLE = "The Amalgamator";
 const DEFAULT_DESC =
   "Choose councils, compare published average residential rates bills, and see the population balance. About & method: https://www.amalgamator.nz/about/";
 
@@ -128,9 +128,10 @@ function page({ title, description, heading, bodyDescription, canonical, result 
 <meta property="og:description" content="${safeDesc}">
 <meta property="og:url" content="${safeCanonical}">
 <meta property="og:image" content="${OG_IMAGE}">
+<meta property="og:image:secure_url" content="${OG_IMAGE}">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:height" content="627">
 <meta property="og:image:alt" content="The Amalgamator — modelling New Zealand council amalgamations">
 
 <meta name="twitter:card" content="summary_large_image">
@@ -176,7 +177,7 @@ export function handleShare(request) {
   // older links use to carry the whole finding in one string.
   const legacy = clean(params.get("name"), 200);
   const title = state
-    ? DEFAULT_TITLE
+    ? `${compactName} — The Amalgamator`
     : clean(params.get("title"), 70) || (legacy ? legacy.split(":")[0] : "") || DEFAULT_TITLE;
   const description = state
     ? `${compactName}. ${DEFAULT_DESC}`

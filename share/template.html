@@ -16,7 +16,7 @@
     {{RESULT}}   the validated app URL to redirect to        (HTML-escaped)
 
   Three things matter and were all missing before:
-    1. og:image, absolute, 1200x630 - without it LinkedIn renders a small
+    1. og:image, absolute, 1200x627 - without it LinkedIn renders a small
        text-only strip instead of a large card.
     2. twitter:card = summary_large_image, not summary.
     3. og:title and og:description carrying the finding, not tool boilerplate.
@@ -36,16 +36,17 @@
 <meta property="og:title" content="{{TITLE}}">
 <meta property="og:description" content="{{DESC}}">
 <meta property="og:url" content="{{CANONICAL}}">
-<meta property="og:image" content="https://www.amalgamator.nz/og-image.jpg">
+<meta property="og:image" content="https://www.amalgamator.nz/og-image-2.jpg">
+<meta property="og:image:secure_url" content="https://www.amalgamator.nz/og-image-2.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:height" content="627">
 <meta property="og:image:alt" content="The Amalgamator — modelling New Zealand council amalgamations">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{TITLE}}">
 <meta name="twitter:description" content="{{DESC}}">
-<meta name="twitter:image" content="https://www.amalgamator.nz/og-image.jpg">
+<meta name="twitter:image" content="https://www.amalgamator.nz/og-image-2.jpg">
 
 <link rel="canonical" href="{{CANONICAL}}">
 <meta http-equiv="refresh" content="0; url={{RESULT}}">

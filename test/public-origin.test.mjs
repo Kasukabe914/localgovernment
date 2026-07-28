@@ -40,10 +40,17 @@ test("root metadata declares the custom canonical and social image", () => {
   );
   assert.match(
     index,
-    /<meta property="og:image" content="https:\/\/www\.amalgamator\.nz\/og-image\.jpg" \/>/
+    /<meta property="og:image" content="https:\/\/www\.amalgamator\.nz\/og-image-2\.jpg" \/>/
   );
   assert.match(
     index,
-    /<meta name="twitter:image" content="https:\/\/www\.amalgamator\.nz\/og-image\.jpg" \/>/
+    /<meta property="og:image:secure_url" content="https:\/\/www\.amalgamator\.nz\/og-image-2\.jpg" \/>/
   );
+  assert.match(
+    index,
+    /<meta name="twitter:image" content="https:\/\/www\.amalgamator\.nz\/og-image-2\.jpg" \/>/
+  );
+  assert.match(index, /<meta property="og:image:width" content="1200" \/>/);
+  assert.match(index, /<meta property="og:image:height" content="627" \/>/);
+  assert.ok(fs.existsSync(path.join(repoRoot, "public", "og-image-2.jpg")));
 });

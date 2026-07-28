@@ -127,7 +127,7 @@ The repository includes `.github/workflows/deploy-pages.yml`.
 - `public/methodology.html` — compatibility redirect to `/about/`
 - `public/source-register.csv` — source-level publisher, vintage, retrieval-date, scope, and link register
 - `public/the-amalgamator-data.csv` — downloadable dataset
-- `public/og-image.jpg` — social preview image
+- `public/og-image-2.jpg` — current 1200 × 627 social preview image
 - `vite.config.js` — local and GitHub Pages build configuration
 - `.github/workflows/deploy-pages.yml` — automatic Pages deployment
 - `share/` — source for the LinkedIn share shim (deployed separately, not part
