@@ -153,11 +153,13 @@ test("where things stand accounts for all territorial authorities", () => {
   assert.equal(represented.size, allCouncilIds.length);
 });
 
-test("the long council-status list is collapsed into regional groups", () => {
+test("the council-status list shows every regional group without nested disclosures", () => {
   assert.match(app, /const EXPLORING_BY_REGION = \[\.\.\.REGIONS_N, \.\.\.REGIONS_S\]/);
-  assert.match(app, /<details className="simpleStatusRegion" key=\{region\}>/);
+  assert.match(app, /<section className="simpleStatusRegion" key=\{region\}>/);
   assert.match(app, /className="simpleStatusRegions"/);
   assert.match(app, /\{councils\.length\} \{councils\.length === 1 \? "council" : "councils"\}/);
+  assert.doesNotMatch(app, /<details className="simpleStatusRegion"/);
+  assert.match(app, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 });
 
 test("Kāpiti-Horowhenua and Nelson-Tasman positions are qualified", () => {

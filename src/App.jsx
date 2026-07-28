@@ -3623,13 +3623,13 @@ export default function App() {
                 </p>
                 <div className="simpleStatusRegions">
                   {EXPLORING_BY_REGION.map(({ region, councils }) => (
-                    <details className="simpleStatusRegion" key={region}>
-                      <summary>
+                    <section className="simpleStatusRegion" key={region}>
+                      <h3>
                         <span>{region}</span>
-                        <span>
+                        <span className="simpleStatusRegionCount">
                           {councils.length} {councils.length === 1 ? "council" : "councils"}
                         </span>
-                      </summary>
+                      </h3>
                       <div>
                         {councils.map(({ council, status }) => (
                           <button
@@ -3646,7 +3646,7 @@ export default function App() {
                           </button>
                         ))}
                       </div>
-                    </details>
+                    </section>
                   ))}
                 </div>
                 <p className="simpleExploringSource">
@@ -4677,20 +4677,24 @@ const SIMPLE_CSS = `
 .simpleStatusRegion {
   border-top: 1px solid var(--line);
 }
-.simpleStatusRegion > summary {
+.simpleStatusRegion > h3 {
+  margin: 0;
   padding: 11px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  font-size: 15px;
 }
-.simpleStatusRegion > summary > span:last-child {
+.simpleStatusRegionCount {
   color: var(--ink-soft);
   font-size: 12px;
   font-weight: 700;
 }
 .simpleStatusRegion > div {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 18px;
 }
 .simpleStatusRegion .simpleExploringCouncil:first-child {
   border-top: 0;
@@ -4733,6 +4737,11 @@ const SIMPLE_CSS = `
 }
 .simpleOutsideHeadStart {
   border-left: 5px solid var(--accent);
+}
+@media (max-width: 720px) {
+  .simpleStatusRegion > div {
+    grid-template-columns: 1fr;
+  }
 }
 .simpleHeadStartWarning {
   margin: 0 0 18px;
