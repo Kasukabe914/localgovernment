@@ -94,6 +94,15 @@ test("a status council opens the chooser preselected", () => {
   );
 });
 
+test("every simple-app screen transition resets the page to the top after rendering", () => {
+  assert.match(
+    app,
+    /const resetAppScroll = \(\) => \{[\s\S]*document\.documentElement\.scrollTop = 0;[\s\S]*document\.body\.scrollTop = 0;[\s\S]*window\.scrollTo\(\{ top: 0, left: 0, behavior: "auto" \}\);/
+  );
+  assert.match(app, /window\.requestAnimationFrame\?\.\(resetAppScroll\)/);
+  assert.match(app, /\}, \[screen\]\);/);
+});
+
 test("where things stand accounts for all territorial authorities", () => {
   assert.match(
     app,

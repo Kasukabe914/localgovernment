@@ -3037,6 +3037,22 @@ export default function App() {
     }
   }, []);
 
+  // Reset after the new screen has rendered. Calling scrollTo in individual
+  // click handlers can run against the outgoing page and is unreliable in
+  // mobile browsers when the incoming screen is a different height.
+  useEffect(() => {
+    const resetAppScroll = () => {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
+    resetAppScroll();
+    const frame = window.requestAnimationFrame?.(resetAppScroll);
+    return () => {
+      if (frame != null) window.cancelAnimationFrame?.(frame);
+    };
+  }, [screen]);
+
   const members = useMemo(
     () => selectedIds.map((id) => BY_ID[id]).filter(Boolean),
     [selectedIds]
@@ -3190,7 +3206,6 @@ export default function App() {
     setSelectedIds([]);
     setQuery("");
     setScreen("talks");
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const loadTalkCombination = (combination) => {
@@ -3202,7 +3217,6 @@ export default function App() {
     setSelectedIds(ids);
     setCustomName(combination.name);
     setScreen("result");
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const chooseStatusCouncil = (id) => {
@@ -3215,7 +3229,6 @@ export default function App() {
     setCustomName("");
     setQuery("");
     setScreen("build");
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleCouncil = (id) => {
@@ -3228,12 +3241,10 @@ export default function App() {
     if (selectedIds.length < 2) return;
     setCustomName("");
     setScreen("result");
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const editSelection = () => {
     setScreen("build");
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const startOver = () => {
@@ -3251,7 +3262,6 @@ export default function App() {
     setQuery("");
     setCustomName("");
     setTalksActive(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const makeUrl = () => {
