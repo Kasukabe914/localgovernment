@@ -65,4 +65,22 @@ test("the MartinJenkins Head Start update is cited in About and the source regis
     sourceRegister,
     /Used only for the status notes below the starter combinations; the main options remain unchanged/
   );
+  assert.doesNotMatch(app, /Source: Carlaw/);
+  assert.doesNotMatch(app, /Head Start map update<\/cite>/);
+  assert.match(
+    app,
+    /<a href="about\/#sources">Sources and status notes<\/a>/
+  );
+});
+
+test("Amalgamation.nz is included as a supplementary source", () => {
+  assert.match(
+    about,
+    /<a href="https:\/\/amalgamation\.nz\/">Council amalgamation and merger news<\/a>/
+  );
+  assert.match(
+    sourceRegister,
+    /"amalgamation_nz","Amalgamation\.nz","Council amalgamation and merger news"/
+  );
+  assert.match(sourceRegister, /not as a numerical model input/);
 });

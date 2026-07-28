@@ -3531,9 +3531,7 @@ export default function App() {
                   </article>
                 ))}
                 <p className="simpleExploringSource">
-                  Source: Carlaw, N. (2026). <cite>Head Start map update</cite>.
-                  MartinJenkins. LinkedIn. 28 July 2026.{" "}
-                  <a href="about/#sources">Source details</a>
+                  <a href="about/#sources">Sources and status notes</a>
                 </p>
               </div>
             </details>
