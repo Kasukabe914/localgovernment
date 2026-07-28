@@ -53,6 +53,26 @@ test("the exploring section includes the 28 July council status updates", () => 
   }
   assert.match(app, /Status notes updated 28 July 2026/);
   assert.match(app, /The starter\s+combinations above are unchanged/);
+
+  const additionalStatusIds = [
+    "thames",
+    "hauraki",
+    "matamata",
+    "tauranga",
+    "wbop",
+    "rotorua",
+    "ashburton",
+    "hurunui",
+    "waimakariri",
+    "christchurch",
+    "selwyn",
+    "centralotago",
+    "clutha",
+  ];
+  const exploringBlock = app.match(/const EXPLORING = \{([\s\S]*?)\};/)?.[1] || "";
+  for (const id of additionalStatusIds) {
+    assert.match(exploringBlock, new RegExp(`^\\s*${id}:`, "m"), id);
+  }
 });
 
 test("a status council opens the chooser preselected", () => {
@@ -125,7 +145,7 @@ test("where things stand accounts for all territorial authorities", () => {
 
   assert.equal(allCouncilIds.length, 67);
   assert.deepEqual(lockedCouncilIds, ["auckland"]);
-  assert.equal(otherEligibleIds.length, 21);
+  assert.equal(otherEligibleIds.length, 8);
   assert.equal(represented.size, allCouncilIds.length);
 });
 
@@ -157,4 +177,5 @@ test("Amalgamation.nz is included as a supplementary source", () => {
     /"amalgamation_nz","Amalgamation\.nz","Council amalgamation and merger news"/
   );
   assert.match(sourceRegister, /not as a numerical model input/);
+  assert.match(sourceRegister, /A tag or mention alone is not treated as a council decision/);
 });
