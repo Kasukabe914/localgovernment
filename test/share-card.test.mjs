@@ -34,11 +34,12 @@ test("the downloadable card includes the selected name and both result explanati
   assert.match(app, /Water is included exactly as it appeared in each source at that date/);
   assert.match(app, /Later transfers of water services, assets, debt and billing to separate water organisations are not included/);
   assert.doesNotMatch(app, /accounting comparison—not money residents/);
-  assert.match(app, /const explanationHeight = 230/);
+  assert.match(app, /const explanationHeight = 247/);
   assert.match(app, /ctx\.fillRect\(56, explanationTop, CARD_W - 112, explanationHeight\)/);
-  assert.match(app, /ctx\.moveTo\(80, explanationTop \+ 150\.5\)/);
-  assert.match(app, /ctx\.fillText\("WATER", 80, explanationTop \+ 176\)/);
-  assert.match(app, /ctx\.fillText\(line, 80, explanationTop \+ 199 \+ index \* 17\)/);
+  assert.match(app, /wrapCardText\(ctx, text, 500\)\.slice\(0, 5\)/);
+  assert.match(app, /ctx\.moveTo\(80, explanationTop \+ 167\.5\)/);
+  assert.match(app, /ctx\.fillText\("WATER", 80, explanationTop \+ 193\)/);
+  assert.match(app, /ctx\.fillText\(line, 80, explanationTop \+ 216 \+ index \* 17\)/);
   assert.match(app, /explanationTop \+ 82 \+ index \* 17/);
   assert.match(app, /"Historic net assets per resident · 30 June 2024"/);
   assert.match(app, /labelFor: \(row\) => `\$\{row\.council\.name\} · \$\{money\(row\.before\)\}`/);

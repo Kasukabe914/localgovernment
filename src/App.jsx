@@ -2667,7 +2667,7 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   const comparisonY = contentBottom + 36;
   const dividerY = comparisonY + (comparisonLines.length - 1) * 22 + 30;
   const panelTop = dividerY + 32;
-  const explanationHeight = 230;
+  const explanationHeight = 247;
   const layoutExtraHeight = Math.max(0, panelTop - 362);
   const cardHeight = CARD_H + layoutExtraHeight + (explanationHeight - 200);
   if (cardHeight !== CARD_H) {
@@ -2863,23 +2863,23 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
     ctx.fillText(label, textX, explanationTop + 59);
     ctx.fillStyle = CARD_INK_SOFT;
     ctx.font = `600 14px ${CARD_FONT}`;
-    wrapCardText(ctx, text, 500).slice(0, 4).forEach((line, index) => {
+    wrapCardText(ctx, text, 500).slice(0, 5).forEach((line, index) => {
       ctx.fillText(line, textX, explanationTop + 82 + index * 17);
     });
   });
   ctx.strokeStyle = CARD_RULE;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(80, explanationTop + 150.5);
-  ctx.lineTo(CARD_W - 80, explanationTop + 150.5);
+  ctx.moveTo(80, explanationTop + 167.5);
+  ctx.lineTo(CARD_W - 80, explanationTop + 167.5);
   ctx.stroke();
   ctx.fillStyle = CARD_INK;
   ctx.font = `800 14px ${CARD_FONT}`;
-  ctx.fillText("WATER", 80, explanationTop + 176);
+  ctx.fillText("WATER", 80, explanationTop + 193);
   ctx.fillStyle = CARD_INK_SOFT;
   ctx.font = `600 14px ${CARD_FONT}`;
   wrapCardText(ctx, waterExplanation, CARD_W - 160).slice(0, 2).forEach((line, index) => {
-    ctx.fillText(line, 80, explanationTop + 199 + index * 17);
+    ctx.fillText(line, 80, explanationTop + 216 + index * 17);
   });
 
   // Footer
