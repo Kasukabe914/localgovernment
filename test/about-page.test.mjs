@@ -57,6 +57,39 @@ test("the About page remains useful with JavaScript disabled", () => {
   assert.match(about, /id="corrections"/);
 });
 
+test("the homepage is descriptive and useful before React loads", () => {
+  assert.match(
+    index,
+    /<title>New Zealand Council Amalgamation Calculator \| The Amalgamator<\/title>/
+  );
+  assert.match(index, /<div class="staticHome">/);
+  assert.match(index, /<h1>Build a bigger council\.<\/h1>/);
+  assert.match(index, /<h2 id="static-comparisons">What this tool compares<\/h2>/);
+  assert.match(index, /href="\/about\/">About, method and limitations<\/a>/);
+  assert.match(index, /href="\/the-amalgamator-data\.csv" download/);
+
+  const match = index.match(
+    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
+  );
+  assert.ok(match, "homepage JSON-LD block is present");
+  const structuredData = JSON.parse(match[1]);
+  const types = structuredData["@graph"].map((entry) => entry["@type"]);
+  assert.deepEqual(types, ["WebSite", "WebApplication"]);
+  assert.equal(structuredData["@graph"][1].creator.name, "Brenden Mischewski");
+  assert.equal(structuredData["@graph"][1].offers.price, "0");
+});
+
+test("the interactive homepage repeats the static comparison summary", () => {
+  assert.match(
+    app,
+    /Explore possible New Zealand council amalgamations\. Choose territorial/
+  );
+  assert.match(app, /<h2 id="simpleHomeSummaryHeading">What this tool compares<\/h2>/);
+  assert.match(app, /covers all 67 New Zealand territorial authorities/);
+  assert.match(app, /Read the methodology and limitations/);
+  assert.match(app, /Download the underlying dataset/);
+});
+
 test("the public trust statements cover authorship, funding, interests and position", () => {
   for (const statement of [
     "This tool was built by Brenden Mischewski",
@@ -294,11 +327,19 @@ test("code, outputs and source data have distinct licence statements", () => {
   );
 });
 
-test("social descriptions point readers to the method page", () => {
+test("social descriptions explain the tool and the method remains discoverable", () => {
   const aboutUrl = "https://www.amalgamator.nz/about/";
-  assert.match(index, /property="og:description"[\s\S]*About &amp; method:/);
-  assert.match(index, /name="twitter:description"[\s\S]*About &amp; method:/);
-  assert.ok(index.includes(aboutUrl));
+  const description =
+    "Combine New Zealand councils and compare population, land area, published 2024/25 average residential rates and historic net assets per resident.";
+  assert.equal(
+    index.match(/property="og:description"\s+content="([^"]+)"/)?.[1],
+    description
+  );
+  assert.equal(
+    index.match(/name="twitter:description"\s+content="([^"]+)"/)?.[1],
+    description
+  );
+  assert.match(index, /href="\/about\/">About, method and limitations<\/a>/);
   assert.ok(shareWorker.includes(aboutUrl));
   assert.match(app, /About, method and limitations: \$\{ABOUT_URL\}/);
 });

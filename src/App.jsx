@@ -3618,7 +3618,9 @@ export default function App() {
             <p className="simpleEyebrow">Aotearoa local government explorer</p>
             <h1>Build a bigger council.</h1>
             <p className="simpleLead">
-              Choose a region, pick the councils, and compare their published residential rates averages.
+              Explore possible New Zealand council amalgamations. Choose territorial
+              authorities and compare their combined population, land area, published
+              2024/25 average residential rates and historic net assets per resident.
             </p>
 
             <div className="simpleStartOptions">
@@ -3665,6 +3667,34 @@ export default function App() {
             <p className="simpleIndependence">
               Independent modelling tool. It is not an official proposal or a prediction of any household’s rates.
             </p>
+
+            <section className="simpleHomeSummary" aria-labelledby="simpleHomeSummaryHeading">
+              <h2 id="simpleHomeSummaryHeading">What this tool compares</h2>
+              <p>
+                The Amalgamator covers all 67 New Zealand territorial authorities.
+                Choose two or more councils to compare:
+              </p>
+              <ul>
+                <li>Their combined population and land area.</li>
+                <li>
+                  Published 2024/25 average residential rates bills using a
+                  household-weighted comparison.
+                </li>
+                <li>Historic net assets per resident at 30 June 2024.</li>
+                <li>Where the combined population would live.</li>
+              </ul>
+              <p>
+                The figures are indicative comparisons, not forecasts of an individual
+                property’s rates. Regional council rates and future decisions by a
+                merged council are not modelled.
+              </p>
+              <div className="simpleHomeSummaryLinks">
+                <a href="about/">Read the methodology and limitations</a>
+                <a href="the-amalgamator-data.csv" download>
+                  Download the underlying dataset
+                </a>
+              </div>
+            </section>
           </section>
         )}
 
@@ -4870,6 +4900,41 @@ const SIMPLE_CSS = `
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.simpleHomeSummary {
+  max-width: 680px;
+  margin: 42px 0 0;
+  padding: 22px;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+}
+.simpleHomeSummary h2 {
+  margin-bottom: 10px;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+.simpleHomeSummary p,
+.simpleHomeSummary li {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.simpleHomeSummary p { margin-bottom: 12px; }
+.simpleHomeSummary ul {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+.simpleHomeSummaryLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.simpleHomeSummaryLinks a {
+  font-size: 14px;
+  font-weight: 800;
+  text-underline-offset: 4px;
 }
 
 .simpleCrossRegion {
