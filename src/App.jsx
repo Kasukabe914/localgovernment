@@ -3694,6 +3694,73 @@ export default function App() {
                   Download the underlying dataset
                 </a>
               </div>
+
+              <section className="simpleHomeDetail" aria-labelledby="simpleHomeHowHeading">
+                <h2 id="simpleHomeHowHeading">How the calculator works</h2>
+                <ol>
+                  <li>Choose two or more of New Zealand’s 67 territorial authorities.</li>
+                  <li>
+                    The calculator combines their published population, land area and
+                    historic balance-sheet figures.
+                  </li>
+                  <li>
+                    It pools published 2024/25 average residential rates to show the
+                    indicative direction of change.
+                  </li>
+                </ol>
+                <p>
+                  The result is a comparison, not a forecast or an official amalgamation
+                  proposal.
+                </p>
+              </section>
+
+              <section
+                className="simpleHomeDetail simpleHomeQuestions"
+                id="common-questions"
+                aria-labelledby="simpleHomeQuestionsHeading"
+              >
+                <h2 id="simpleHomeQuestionsHeading">Common questions</h2>
+                <h3>What does council amalgamation mean?</h3>
+                <p>
+                  Council amalgamation means combining two or more existing councils into
+                  one local authority. Any actual reform would require an official process
+                  and decisions that this tool does not model.
+                </p>
+                <h3>Are the rates figures predictions?</h3>
+                <p>
+                  No. They compare published 2024/25 average residential rates. They do
+                  not predict the bill for an individual property or decisions a future
+                  council might make. <a href="about/#method">See the rates method.</a>
+                </p>
+                <h3>What do net assets per resident mean?</h3>
+                <p>
+                  This is a historic accounting comparison: council assets less
+                  liabilities at 30 June 2024, divided by population. It is not cash
+                  available to residents and does not forecast a merged council’s balance
+                  sheet. <a href="about/#sources">See the source details.</a>
+                </p>
+                <h3>Where does the information come from?</h3>
+                <p>
+                  The calculator uses published council and public-sector data. The full
+                  sources, calculation method and limitations are available on the{" "}
+                  <a href="about/#sources">About and method page.</a>
+                </p>
+              </section>
+
+              <section className="simpleHomeDetail" aria-labelledby="simpleHomeCoverageHeading">
+                <h2 id="simpleHomeCoverageHeading">Data coverage</h2>
+                <p>
+                  Covers all 67 New Zealand territorial authorities. Rates comparisons
+                  use published 2024/25 averages. Net assets use council accounts at 30
+                  June 2024.
+                </p>
+                <div className="simpleHomeSummaryLinks">
+                  <a href="about/#sources">See the sources and methodology</a>
+                  <a href="the-amalgamator-data.csv" download>
+                    Download the dataset
+                  </a>
+                </div>
+              </section>
             </section>
           </section>
         )}
@@ -4935,6 +5002,27 @@ const SIMPLE_CSS = `
   font-size: 14px;
   font-weight: 800;
   text-underline-offset: 4px;
+}
+.simpleHomeDetail {
+  margin-top: 26px;
+  padding-top: 24px;
+  border-top: 1px solid #dce4e5;
+}
+.simpleHomeDetail h2 {
+  margin-bottom: 10px;
+}
+.simpleHomeDetail h3 {
+  margin: 18px 0 5px;
+  font-size: 15px;
+}
+.simpleHomeDetail ol {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+.simpleHomeDetail a {
+  color: var(--ink);
+  font-weight: 700;
+  text-underline-offset: 3px;
 }
 
 .simpleCrossRegion {

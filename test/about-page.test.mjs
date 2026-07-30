@@ -67,6 +67,10 @@ test("the homepage is descriptive and useful before React loads", () => {
   assert.match(index, /<div class="staticHome">/);
   assert.match(index, /<h1>Build a bigger council\.<\/h1>/);
   assert.match(index, /<h2 id="static-comparisons">What this tool compares<\/h2>/);
+  assert.match(index, /<h2 id="static-how">How the calculator works<\/h2>/);
+  assert.match(index, /<h2 id="static-questions">Common questions<\/h2>/);
+  assert.match(index, /<h2 id="static-coverage">Data coverage<\/h2>/);
+  assert.match(index, /What do net assets per resident mean\?/);
   assert.match(index, /href="\/about\/">About, method and limitations<\/a>/);
   assert.match(index, /href="\/the-amalgamator-data\.csv" download/);
 
@@ -76,9 +80,16 @@ test("the homepage is descriptive and useful before React loads", () => {
   assert.ok(match, "homepage JSON-LD block is present");
   const structuredData = JSON.parse(match[1]);
   const types = structuredData["@graph"].map((entry) => entry["@type"]);
-  assert.deepEqual(types, ["WebSite", "WebApplication"]);
+  assert.deepEqual(types, ["WebSite", "WebApplication", "FAQPage"]);
   assert.equal(structuredData["@graph"][1].creator.name, "Brenden Mischewski");
+  assert.equal(
+    structuredData["@graph"][1].creator.url,
+    "https://www.amalgamator.nz/about/"
+  );
   assert.equal(structuredData["@graph"][1].offers.price, "0");
+  assert.equal(structuredData["@graph"][1].dateModified, "2026-07-31");
+  assert.equal(structuredData["@graph"][1].featureList.length, 5);
+  assert.equal(structuredData["@graph"][2].mainEntity.length, 4);
 });
 
 test("robots and sitemap expose only the intended canonical search pages", () => {
@@ -110,6 +121,10 @@ test("the interactive homepage repeats the static comparison summary", () => {
   );
   assert.match(app, /<h2 id="simpleHomeSummaryHeading">What this tool compares<\/h2>/);
   assert.match(app, /covers all 67 New Zealand territorial authorities/);
+  assert.match(app, /id="simpleHomeHowHeading">How the calculator works/);
+  assert.match(app, /id="simpleHomeQuestionsHeading">Common questions/);
+  assert.match(app, /id="simpleHomeCoverageHeading">Data coverage/);
+  assert.match(app, /does not forecast a merged council’s balance/);
   assert.match(app, /Read the methodology and limitations/);
   assert.match(app, /Download the underlying dataset/);
 });
