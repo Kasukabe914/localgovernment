@@ -34,7 +34,6 @@ jobs:
       - name: Build site
         run: npm run build
         env:
-          VITE_FACEBOOK_APP_ID: ${{ vars.FACEBOOK_APP_ID }}
           UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
 
       - name: Configure GitHub Pages

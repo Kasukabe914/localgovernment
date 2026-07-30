@@ -28,13 +28,10 @@ user-tapped universal link to an installed app. They do not use `window.open()`
 or the Web Share API. Every route uses the public GitHub Pages result URL with
 its compact scenario token.
 
-Facebook uses Meta's official Share Dialog when `VITE_FACEBOOK_APP_ID` is
-configured. GitHub Pages maps the repository variable `FACEBOOK_APP_ID` into
-that build setting. The Meta app should list `amalgamator.nz` as an app domain
-and `https://www.amalgamator.nz/` as its website URL.
-The Facebook Feed Dialog shares that same GitHub Pages domain, avoiding a
-cross-domain link that Meta can reject as invalid. Without an App ID, local
-development falls back to Facebook's legacy web sharer.
+Facebook uses the standard `sharer/sharer.php` URL composer. It needs no Meta
+App ID or redirect-domain configuration, and shares the same public result URL
+as the other platform links. Facebook builds the post preview from the site's
+Open Graph metadata.
 
 LinkedIn receives the public GitHub Pages result URL directly so the shared
 link displays the application domain. This intentionally uses the site's

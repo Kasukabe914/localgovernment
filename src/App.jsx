@@ -2419,8 +2419,6 @@ const SIMPLE_REGIONS = [...REGIONS_N, ...REGIONS_S].filter(
 );
 const PUBLIC_APP_URL = "https://www.amalgamator.nz/";
 const ABOUT_URL = `${PUBLIC_APP_URL}about/`;
-const facebookAppIdValue = String(import.meta.env.VITE_FACEBOOK_APP_ID || "").trim();
-const FACEBOOK_APP_ID = /^\d+$/.test(facebookAppIdValue) ? facebookAppIdValue : "";
 
 function simpleRates(members) {
   const usable = members.filter((m) => m.avgRes != null && m.hh);
@@ -3516,21 +3514,9 @@ export default function App() {
     return linkedInUrl.toString();
   };
 
-  const buildFacebookFallbackLink = (shareUrl) => {
-    return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  };
-
   const buildFacebookLink = () => {
     const shareUrl = addShareAttribution(makeUrl(), "facebook");
-    if (!FACEBOOK_APP_ID) return buildFacebookFallbackLink(shareUrl);
-    const facebookUrl = new URL("https://www.facebook.com/dialog/feed");
-    facebookUrl.searchParams.set("app_id", FACEBOOK_APP_ID);
-    facebookUrl.searchParams.set("redirect_uri", PUBLIC_APP_URL);
-    facebookUrl.searchParams.set("link", shareUrl);
-    facebookUrl.searchParams.set("name", shareTitle);
-    facebookUrl.searchParams.set("picture", `${PUBLIC_APP_URL}og-image-2.jpg`);
-    facebookUrl.searchParams.set("description", finding.summary);
-    return facebookUrl.toString();
+    return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
   };
 
   const buildXLink = () => {

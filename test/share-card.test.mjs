@@ -7,6 +7,15 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const app = fs.readFileSync(path.join(repoRoot, "src", "App.jsx"), "utf8");
 
+test("Facebook sharing does not depend on a Meta App ID or redirect domain", () => {
+  assert.match(
+    app,
+    /https:\/\/www\.facebook\.com\/sharer\/sharer\.php\?u=\$\{encodeURIComponent\(shareUrl\)\}/
+  );
+  assert.doesNotMatch(app, /facebook\.com\/dialog\/feed/);
+  assert.doesNotMatch(app, /VITE_FACEBOOK_APP_ID|FACEBOOK_APP_ID|redirect_uri/);
+});
+
 test("visible app copy contains no common UTF-8 mojibake markers", () => {
   assert.doesNotMatch(app, /â|Ã|Â|�/);
 });
