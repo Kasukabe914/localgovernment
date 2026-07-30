@@ -106,6 +106,13 @@ social-link clicks, successful Copy link and Copy write-up actions, and share
 image downloads. Event data includes the app-generated council name selected
 for the share, but no underlying council selection or scenario code.
 
+The application also records fixed journey milestones for starting the tool,
+making the first council selection, adding another council, viewing a result,
+completing or revising a scenario, opening explanatory material, sharing, and
+copying or downloading result material. Journey milestones contain no event
+properties: council identities, scenario data, calculations, and changed values
+remain in the browser. The site does not add a cross-day return identifier.
+
 ## Deploy with GitHub Pages
 
 The repository includes `.github/workflows/deploy-pages.yml`.

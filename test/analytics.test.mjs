@@ -157,6 +157,10 @@ test("Umami configuration, event schema, and privacy disclosure are wired into p
   assert.match(privacy, /removes the\s+encoded council scenario/);
   assert.match(privacy, /app-generated council name selected for that share/);
   assert.match(privacy, /not\s+a free-text field/);
+  assert.match(privacy, /fixed stages in the tool journey/);
+  assert.match(privacy, /do not include the councils selected/);
+  assert.match(privacy, /rotating pseudonymous session identifier/);
+  assert.match(privacy, /does not assign a distinct ID or other permanent identifier/);
   assert.match(privacy, /Session replay and heatmaps are not enabled/);
 
   for (const platform of ["facebook", "x", "linkedin", "reddit"]) {
@@ -169,6 +173,21 @@ test("Umami configuration, event schema, and privacy disclosure are wired into p
   assert.match(app, /trackAnalytics\("share-writeup-copy"/);
   assert.match(app, /platform: "copy-link"/);
   assert.equal((app.match(/chosen_name: councilName/g) || []).length, 4);
+
+  for (const event of [
+    "startedAmalgamation",
+    "selectedFirstCouncil",
+    "addedAnotherCouncil",
+    "viewedCalculatedResult",
+    "completedScenario",
+    "changedAssumptions",
+    "sharedResult",
+    "copiedOrDownloadedResult",
+    "openedExplanatoryMaterial",
+  ]) {
+    assert.match(app, new RegExp(`JOURNEY_EVENTS\\.${event}`));
+  }
+  assert.doesNotMatch(app, /returnedAnotherDay|returned-another-day/);
 });
 
 test("invalid Umami website IDs fail the production build clearly", async () => {

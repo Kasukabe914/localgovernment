@@ -3,7 +3,12 @@ import {
   NET_ASSETS_2024,
   calculateNetAssetsPerCapita,
 } from "./netAssets.js";
-import { addShareAttribution, trackAnalytics } from "./analytics.js";
+import {
+  JOURNEY_EVENTS,
+  addShareAttribution,
+  trackAnalytics,
+  trackJourney,
+} from "./analytics.js";
 
 // ---------------------------------------------------------------------------
 // Source: DIA, "Data release for council profiles – July 2025" (updated Oct 2025).
@@ -3052,6 +3057,7 @@ export default function App() {
   const [copied, setCopied] = useState("");
   const [cardBusy, setCardBusy] = useState(false);
   const [cardPreview, setCardPreview] = useState("");
+  const revisingScenario = useRef(false);
 
   useEffect(() => {
     try {
@@ -3089,6 +3095,12 @@ export default function App() {
       // An invalid shared link should simply open the normal start screen.
     }
   }, []);
+
+  useEffect(() => {
+    if (screen === "result" && selectedIds.length >= 2) {
+      trackJourney(JOURNEY_EVENTS.viewedCalculatedResult);
+    }
+  }, [screen, selectedIds.length]);
 
   // Reset after the new screen has rendered. Calling scrollTo in individual
   // click handlers can run against the outgoing page and is unreliable in
@@ -3233,6 +3245,7 @@ export default function App() {
 
   const startRegion = () => {
     if (!region) return;
+    trackJourney(JOURNEY_EVENTS.startedAmalgamation);
     setTalksActive(false);
     setAllCouncils(false);
     setSelectedIds([]);
@@ -3241,6 +3254,7 @@ export default function App() {
   };
 
   const startAcrossRegions = () => {
+    trackJourney(JOURNEY_EVENTS.startedAmalgamation);
     setTalksActive(false);
     setRegion("");
     setAllCouncils(true);
@@ -3263,6 +3277,9 @@ export default function App() {
 
   const loadTalkCombination = (combination) => {
     const ids = combination.ids.filter((id) => BY_ID[id] && !BY_ID[id].locked);
+    if (ids.length < 2) return;
+    trackJourney(JOURNEY_EVENTS.startedAmalgamation);
+    trackJourney(JOURNEY_EVENTS.completedScenario);
     const regions = [...new Set(ids.map((id) => BY_ID[id].region))];
     setTalksActive(true);
     setRegion(regions.length === 1 ? regions[0] : "");
@@ -3275,6 +3292,8 @@ export default function App() {
   const chooseStatusCouncil = (id) => {
     const council = BY_ID[id];
     if (!council) return;
+    trackJourney(JOURNEY_EVENTS.startedAmalgamation);
+    trackJourney(JOURNEY_EVENTS.selectedFirstCouncil);
     setTalksActive(true);
     setRegion(council.region);
     setAllCouncils(Boolean(council.locked));
@@ -3285,19 +3304,46 @@ export default function App() {
   };
 
   const toggleCouncil = (id) => {
-    setSelectedIds((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
-    );
+    if (revisingScenario.current) {
+      trackJourney(JOURNEY_EVENTS.changedAssumptions);
+      revisingScenario.current = false;
+    }
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((item) => item !== id));
+    } else {
+      trackJourney(
+        selectedIds.length === 0
+          ? JOURNEY_EVENTS.selectedFirstCouncil
+          : JOURNEY_EVENTS.addedAnotherCouncil
+      );
+      setSelectedIds([...selectedIds, id]);
+    }
   };
 
   const showResult = () => {
     if (selectedIds.length < 2) return;
+    trackJourney(JOURNEY_EVENTS.completedScenario);
     setCustomName("");
     setScreen("result");
   };
 
   const editSelection = () => {
+    revisingScenario.current = true;
     setScreen("build");
+  };
+
+  const trackExplanatoryMaterial = () => {
+    trackJourney(JOURNEY_EVENTS.openedExplanatoryMaterial);
+  };
+
+  const trackDisclosureToggle = (event) => {
+    if (event.currentTarget.open) trackExplanatoryMaterial();
+  };
+
+  const trackExplanatoryLink = (event) => {
+    if (event.target.closest?.('a[href^="about/"]')) {
+      trackExplanatoryMaterial();
+    }
   };
 
   const startOver = () => {
@@ -3315,6 +3361,7 @@ export default function App() {
     setQuery("");
     setCustomName("");
     setTalksActive(false);
+    revisingScenario.current = false;
   };
 
   const makeUrl = () => {
@@ -3406,6 +3453,7 @@ export default function App() {
       surface: "result",
       chosen_name: councilName,
     });
+    trackJourney(JOURNEY_EVENTS.copiedOrDownloadedResult);
   };
 
   const downloadCard = async () => {
@@ -3429,6 +3477,7 @@ export default function App() {
         surface: "result",
         chosen_name: councilName,
       });
+      trackJourney(JOURNEY_EVENTS.copiedOrDownloadedResult);
     }
   };
 
@@ -3440,6 +3489,8 @@ export default function App() {
         surface: "result",
         chosen_name: councilName,
       });
+      trackJourney(JOURNEY_EVENTS.sharedResult);
+      trackJourney(JOURNEY_EVENTS.copiedOrDownloadedResult);
     }
   };
 
@@ -3449,6 +3500,7 @@ export default function App() {
       surface: "result",
       chosen_name: councilName,
     });
+    trackJourney(JOURNEY_EVENTS.sharedResult);
   };
 
   const shareTitle = `${councilName} — The Amalgamator`;
@@ -3674,7 +3726,7 @@ export default function App() {
               })}
             </div>
 
-            <details className="simpleExploring">
+            <details className="simpleExploring" onToggle={trackDisclosureToggle}>
               <summary>Councils still exploring options</summary>
               <div>
                 <p className="simpleExploringIntro">
@@ -3712,13 +3764,16 @@ export default function App() {
                     </section>
                   ))}
                 </div>
-                <p className="simpleExploringSource">
+                <p
+                  className="simpleExploringSource"
+                  onClick={trackExplanatoryMaterial}
+                >
                   <a href="about/#sources">Sources and status notes</a>
                 </p>
               </div>
             </details>
 
-            <details className="simpleExploring">
+            <details className="simpleExploring" onToggle={trackDisclosureToggle}>
               <summary>Other eligible councils</summary>
               <div>
                 <p className="simpleExploringIntro">
@@ -3744,7 +3799,10 @@ export default function App() {
               </div>
             </details>
 
-            <details className="simpleExploring simpleOutsideHeadStart">
+            <details
+              className="simpleExploring simpleOutsideHeadStart"
+              onToggle={trackDisclosureToggle}
+            >
               <summary>Outside Head Start</summary>
               <div>
                 <p className="simpleExploringIntro">
@@ -3767,7 +3825,10 @@ export default function App() {
                     <span aria-hidden="true">Test hypothetically →</span>
                   </button>
                 ))}
-                <p className="simpleExploringSource">
+                <p
+                  className="simpleExploringSource"
+                  onClick={trackExplanatoryMaterial}
+                >
                   <a href="about/#sources">Official eligibility source</a>
                 </p>
               </div>
@@ -4089,7 +4150,7 @@ export default function App() {
                 </>
               )}
 
-              <details className="simpleDisclosure">
+              <details className="simpleDisclosure" onToggle={trackDisclosureToggle}>
                 <summary>These figures show a possible direction rather than a final result</summary>
                 <p>
                   This compares each council’s published 2024/25 average residential bill
@@ -4115,7 +4176,7 @@ export default function App() {
                   source-date treatment remains.
                 </p>
               </details>
-              <p className="simpleMethodLink">
+              <p className="simpleMethodLink" onClick={trackExplanatoryMaterial}>
                 <a href="about/#limitations">What these numbers mean</a>
               </p>
             </article>
@@ -4193,7 +4254,7 @@ export default function App() {
                 </>
               )}
 
-              <details className="simpleDisclosure">
+              <details className="simpleDisclosure" onToggle={trackDisclosureToggle}>
                 <summary>These figures show a possible direction rather than a final result</summary>
                 <p>
                   Net assets are total assets minus total liabilities. The merged
@@ -4343,7 +4404,10 @@ export default function App() {
           <strong>The Amalgamator</strong>
           <span>Independent modelling for local government reform.</span>
         </div>
-        <nav aria-label="More information">
+        <nav
+          aria-label="More information"
+          onClickCapture={trackExplanatoryLink}
+        >
           <a href="about/">About &amp; method</a>
           <a href="privacy-policy/">Privacy</a>
           <a href="the-amalgamator-data.csv" download>Download the data</a>

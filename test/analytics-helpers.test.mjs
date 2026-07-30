@@ -1,8 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  JOURNEY_EVENTS,
   addShareAttribution,
   trackAnalytics,
+  trackJourney,
 } from "../src/analytics.js";
 
 test("social share attribution retains the scenario and adds fixed campaign labels", () => {
@@ -52,6 +54,37 @@ test("analytics events are silent without Umami and contain only supplied fixed 
         },
       ],
     ]);
+  } finally {
+    if (previousWindow === undefined) {
+      delete globalThis.window;
+    } else {
+      globalThis.window = previousWindow;
+    }
+  }
+});
+
+test("journey events are fixed, property-free, and reject arbitrary names", () => {
+  const previousWindow = globalThis.window;
+  try {
+    const calls = [];
+    globalThis.window = {
+      umami: {
+        track: (...args) => calls.push(args),
+      },
+    };
+
+    for (const name of Object.values(JOURNEY_EVENTS)) {
+      assert.equal(trackJourney(name), true);
+    }
+
+    assert.deepEqual(
+      calls,
+      Object.values(JOURNEY_EVENTS).map((name) => [name])
+    );
+    assert.throws(
+      () => trackJourney("journey-returned-another-day"),
+      /Unsupported journey event/
+    );
   } finally {
     if (previousWindow === undefined) {
       delete globalThis.window;
