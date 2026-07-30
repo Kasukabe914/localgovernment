@@ -16,6 +16,8 @@ const dataLicence = read("DATA-LICENCE.md");
 const shareWorker = read("share/worker.js");
 const robots = read("public/robots.txt");
 const sitemap = read("public/sitemap.xml");
+const councilData = read("public/council-data/index.html");
+const councilCsv = read("public/the-amalgamator-data.csv");
 
 const parseQuotedCsvLine = (line) =>
   [...line.matchAll(/"((?:[^"]|"")*)"/g)].map((match) =>
@@ -72,6 +74,7 @@ test("the homepage is descriptive and useful before React loads", () => {
   assert.match(index, /<h2 id="static-coverage">Data coverage<\/h2>/);
   assert.match(index, /What do net assets per resident mean\?/);
   assert.match(index, /href="\/about\/">About, method and limitations<\/a>/);
+  assert.match(index, /href="\/council-data\/">Browse the council data<\/a>/);
   assert.match(index, /href="\/the-amalgamator-data\.csv" download/);
 
   const match = index.match(
@@ -111,7 +114,55 @@ test("robots and sitemap expose only the intended canonical search pages", () =>
   assert.deepEqual(sitemapLocations, [
     "https://www.amalgamator.nz/",
     "https://www.amalgamator.nz/about/",
+    "https://www.amalgamator.nz/council-data/",
   ]);
+});
+
+test("the council data directory is canonical, crawlable and reconciles to the CSV", () => {
+  assert.match(
+    councilData,
+    /<title>New Zealand Council Data: Population, Rates and Net Assets \| The Amalgamator<\/title>/
+  );
+  assert.match(
+    councilData,
+    /<link rel="canonical" href="https:\/\/www\.amalgamator\.nz\/council-data\/" \/>/
+  );
+  assert.match(councilData, /<h1>Council data for all 67 territorial authorities<\/h1>/);
+  assert.match(councilData, /fixed-vintage comparison dataset,\s+not live council data/);
+  assert.match(councilData, /id="dataTable"/);
+  assert.match(councilData, /id="councilSearch"/);
+  assert.match(councilData, /id="regionFilter"/);
+  assert.match(councilData, /href="\/about\/#licence">Data terms and attribution<\/a>/);
+
+  const sourceLines = councilCsv.trim().split(/\r?\n/);
+  const sourceHeaders = parseQuotedCsvLine(sourceLines[0]);
+  const nameIndex = sourceHeaders.indexOf("name");
+  const sourceNames = sourceLines
+    .slice(1)
+    .map((line) => parseQuotedCsvLine(line)[nameIndex].toLowerCase());
+  const tableNames = [
+    ...councilData.matchAll(/<tr(?: id="[^"]+")? data-council="([^"]+)"/g),
+  ].map((match) =>
+    match[1]
+      .replaceAll("&amp;", "&")
+      .replaceAll("&#39;", "'")
+      .replaceAll("&quot;", '"')
+  );
+  assert.equal(tableNames.length, 67);
+  assert.deepEqual(tableNames, sourceNames);
+
+  const match = councilData.match(
+    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
+  );
+  assert.ok(match, "Dataset JSON-LD block is present");
+  const structuredData = JSON.parse(match[1]);
+  assert.equal(structuredData["@type"], "Dataset");
+  assert.equal(structuredData.spatialCoverage.name, "New Zealand");
+  assert.equal(structuredData.distribution["@type"], "DataDownload");
+  assert.equal(
+    structuredData.distribution.contentUrl,
+    "https://www.amalgamator.nz/the-amalgamator-data.csv"
+  );
 });
 
 test("the interactive homepage repeats the static comparison summary", () => {
@@ -126,6 +177,7 @@ test("the interactive homepage repeats the static comparison summary", () => {
   assert.match(app, /id="simpleHomeCoverageHeading">Data coverage/);
   assert.match(app, /does not forecast a merged council’s balance/);
   assert.match(app, /Read the methodology and limitations/);
+  assert.match(app, /href="council-data\/">Browse the council data/);
   assert.match(app, /Download the underlying dataset/);
 });
 

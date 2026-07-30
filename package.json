@@ -6,7 +6,7 @@
   "description": "An independent tool for exploring New Zealand council amalgamations.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/inject-analytics.mjs",
+    "build": "node scripts/generate-council-data.mjs && vite build && node scripts/inject-analytics.mjs",
     "preview": "vite preview",
     "test": "node --test test/*.test.mjs"
   },

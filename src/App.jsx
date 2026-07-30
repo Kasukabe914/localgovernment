@@ -3690,6 +3690,7 @@ export default function App() {
               </p>
               <div className="simpleHomeSummaryLinks">
                 <a href="about/">Read the methodology and limitations</a>
+                <a href="council-data/">Browse the council data</a>
                 <a href="the-amalgamator-data.csv" download>
                   Download the underlying dataset
                 </a>
@@ -3756,6 +3757,7 @@ export default function App() {
                 </p>
                 <div className="simpleHomeSummaryLinks">
                   <a href="about/#sources">See the sources and methodology</a>
+                  <a href="council-data/">Browse the council data</a>
                   <a href="the-amalgamator-data.csv" download>
                     Download the dataset
                   </a>
@@ -4493,6 +4495,7 @@ export default function App() {
         >
           <a href="about/">About &amp; method</a>
           <a href="privacy-policy/">Privacy</a>
+          <a href="council-data/">Council data</a>
           <a href="the-amalgamator-data.csv" download>Download the data</a>
           <a href="https://github.com/Kasukabe914/localgovernment" target="_blank" rel="noreferrer">
             Source code
