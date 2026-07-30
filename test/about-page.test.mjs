@@ -14,6 +14,8 @@ const codeLicence = read("LICENSE");
 const outputLicence = read("OUTPUT-LICENCE.md");
 const dataLicence = read("DATA-LICENCE.md");
 const shareWorker = read("share/worker.js");
+const robots = read("public/robots.txt");
+const sitemap = read("public/sitemap.xml");
 
 const parseQuotedCsvLine = (line) =>
   [...line.matchAll(/"((?:[^"]|"")*)"/g)].map((match) =>
@@ -77,6 +79,28 @@ test("the homepage is descriptive and useful before React loads", () => {
   assert.deepEqual(types, ["WebSite", "WebApplication"]);
   assert.equal(structuredData["@graph"][1].creator.name, "Brenden Mischewski");
   assert.equal(structuredData["@graph"][1].offers.price, "0");
+});
+
+test("robots and sitemap expose only the intended canonical search pages", () => {
+  assert.match(robots, /User-agent: \*\s+Allow: \//);
+  assert.match(robots, /User-agent: OAI-SearchBot\s+Allow: \//);
+  assert.match(robots, /User-agent: GPTBot\s+Disallow: \//);
+  assert.match(
+    robots,
+    /Sitemap: https:\/\/www\.amalgamator\.nz\/sitemap\.xml/
+  );
+
+  assert.match(
+    sitemap,
+    /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/
+  );
+  const sitemapLocations = [
+    ...sitemap.matchAll(/<loc>(.*?)<\/loc>/g),
+  ].map((match) => match[1]);
+  assert.deepEqual(sitemapLocations, [
+    "https://www.amalgamator.nz/",
+    "https://www.amalgamator.nz/about/",
+  ]);
 });
 
 test("the interactive homepage repeats the static comparison summary", () => {
