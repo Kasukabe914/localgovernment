@@ -18,6 +18,7 @@ const robots = read("public/robots.txt");
 const sitemap = read("public/sitemap.xml");
 const councilData = read("public/council-data/index.html");
 const councilCsv = read("public/the-amalgamator-data.csv");
+const bingSiteAuth = read("public/BingSiteAuth.xml");
 
 const parseQuotedCsvLine = (line) =>
   [...line.matchAll(/"((?:[^"]|"")*)"/g)].map((match) =>
@@ -120,6 +121,18 @@ test("robots and sitemap expose only the intended canonical search pages", () =>
     "https://www.amalgamator.nz/about/",
     "https://www.amalgamator.nz/council-data/",
   ]);
+});
+
+test("the Bing Webmaster Tools ownership file is published unchanged", () => {
+  assert.equal(
+    bingSiteAuth.replaceAll("\r\n", "\n").trim(),
+    [
+      '<?xml version="1.0"?>',
+      "<users>",
+      "\t<user>F38AAE4E38CFD94CF07965599B233AEE</user>",
+      "</users>",
+    ].join("\n")
+  );
 });
 
 test("the council data directory is canonical, crawlable and reconciles to the CSV", () => {
