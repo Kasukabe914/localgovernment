@@ -66,6 +66,10 @@ test("the homepage is descriptive and useful before React loads", () => {
     index,
     /<title>New Zealand Council Amalgamation Calculator \| The Amalgamator<\/title>/
   );
+  assert.match(
+    index,
+    /<meta name="google-site-verification" content="wsnsUIEg_zeQFEvR-QUSMpu5lSDun5ePL2bVyq35FMA" \/>/
+  );
   assert.match(index, /<div class="staticHome">/);
   assert.match(index, /<h1>Build a bigger council\.<\/h1>/);
   assert.match(index, /<h2 id="static-comparisons">What this tool compares<\/h2>/);
