@@ -54,3 +54,31 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Check out repository for deployment checks
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js for deployment checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate the live production site
+        env:
+          FETCH_BASE_URL: https://www.amalgamator.nz
+          HEALTHCHECK_RETRIES: 12
+          HEALTHCHECK_RETRY_DELAY_MS: 5000
+          INDEXNOW_KEY: b583a9fc76f0257dc9b89f70fffaac88
+        run: node scripts/post-deploy-checks.mjs
+
+      - name: Notify IndexNow of changed canonical pages
+        env:
+          FETCH_BASE_URL: https://www.amalgamator.nz
+          INDEXNOW_KEY: b583a9fc76f0257dc9b89f70fffaac88
+        run: node scripts/notify-indexnow.mjs
+
+      - name: Surface a production alert
+        if: failure()
+        run: echo "::error title=Production deployment alert::The live-site guard or IndexNow notification failed. Review this workflow run."

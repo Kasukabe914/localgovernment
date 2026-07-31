@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-council-data.mjs && vite build && node scripts/inject-analytics.mjs",
+    "check:production": "node scripts/post-deploy-checks.mjs",
     "preview": "vite preview",
     "test": "node --test test/*.test.mjs"
   },
