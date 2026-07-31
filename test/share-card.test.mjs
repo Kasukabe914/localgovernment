@@ -22,7 +22,7 @@ test("visible app copy contains no common UTF-8 mojibake markers", () => {
 
 test("the downloadable card includes the selected name and both result explanations", () => {
   assert.match(app, /ctx\.fillText\(finding\.councilName, 56, y\)/);
-  assert.match(app, /drawShareCard\(canvas, finding, rates, netAssets, totalArea\)/);
+  assert.match(app, /drawShareCard\([\s\S]*shareRepresentation[\s\S]*\);/);
   assert.match(app, /RESIDENTIAL RATES/i);
   assert.match(app, /HISTORIC NET ASSETS PER RESIDENT/i);
   assert.match(app, /WHAT THESE ESTIMATES MEAN/);
@@ -52,6 +52,17 @@ test("the downloadable card includes the selected name and both result explanati
     2,
     "both sharing-card panels should label their columns"
   );
+});
+
+test("the downloadable card includes elected representation", () => {
+  assert.match(app, /ctx\.fillText\("ELECTED REPRESENTATION", 56, representationTop \+ 2\)/);
+  assert.match(app, /beforeRepresentatives: currentElectedRepresentatives/);
+  assert.match(app, /beforeMayors: members\.length/);
+  assert.match(app, /afterRepresentatives: proposedCouncillorSeats/);
+  assert.match(app, /communityCouncilMembers: proposedCommunityRepresentatives/);
+  assert.match(app, /representation\.communityCouncilMembers\} community members/);
+  assert.match(app, /representationTrackX - 150/);
+  assert.match(app, /const panelTop = representationTop \+ 142/);
 });
 
 test("the headline comparison uses the approved plain-English wording", () => {
@@ -88,7 +99,8 @@ test("the downloadable card lists the selected councils", () => {
   assert.match(app, /councilLines\.forEach\(\(line, index\) =>/);
   assert.match(app, /const comparisonLines = wrapCardText\([\s\S]*finding\.comparisonSummary/);
   assert.match(app, /ctx\.fillText\(line, 56, comparisonY \+ index \* 22\)/);
-  assert.match(app, /const panelTop = dividerY \+ 32/);
+  assert.match(app, /const representationTop = dividerY \+ 24/);
+  assert.match(app, /const panelTop = representationTop \+ 142/);
 });
 
 test("Auckland scenarios carry the Head Start warning into shared outputs", () => {
@@ -129,4 +141,11 @@ test("the population-balance panel follows the combined-summary strip", () => {
     /<article className=/,
     "No other result panel should sit between the summary strip and population balance"
   );
+});
+
+test("rates and net-assets bars scale changes relative to their base amounts", () => {
+  assert.match(app, /Math\.abs\(row\.change\) \/ Math\.abs\(rates\.blended\)\) \* 50/);
+  assert.match(app, /Math\.abs\(netAssets\.mergedPerResident\)\) \* 50/);
+  assert.match(app, /same percentage difference therefore has the same/);
+  assert.doesNotMatch(app, /maxRateRelativeChange|maxNetAssetRelativeChange/);
 });

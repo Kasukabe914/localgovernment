@@ -9,6 +9,8 @@ import {
   trackAnalytics,
   trackJourney,
 } from "./analytics.js";
+import { buildCommunityCouncilModel } from "./representation.js";
+import { COUNCILLOR_SEATS, REGIONAL_COUNCILS } from "./electedOfficials.js";
 
 // ---------------------------------------------------------------------------
 // Source: DIA, "Data release for council profiles – July 2025" (updated Oct 2025).
@@ -86,6 +88,98 @@ const COUNCILS = [
   { id: "invercargill", name: "Invercargill City", region: "Southland", pop: 57600, area: 390, r24: 71292000, r26: 85019000 },
   { id: "chathams", name: "Chatham Islands", region: "Chatham Islands", pop: 610, area: 795, r24: 787000, r26: 873000 },
 ];
+
+// Councillor positions for the current governing body. Every territorial
+// authority also has one separately elected mayor. Source: Department of
+// Internal Affairs / MCERT, 2025 Local Authority Election Statistics, TA
+// Summary. Tauranga uses its current 2024–28 representation arrangement.
+// Directly elected regional-council member positions for the current term.
+// Unitary-authority areas do not appear here because their regional functions
+// are already carried by the territorial governing body.
+const estimateRegionalSeatOverlap = (members) => {
+  const selectedByRegion = new Map();
+  members.forEach((member) => {
+    if (!REGIONAL_COUNCILS[member.region]) return;
+    const selected = selectedByRegion.get(member.region) || [];
+    selected.push(member);
+    selectedByRegion.set(member.region, selected);
+  });
+
+  return [...selectedByRegion.entries()].map(([region, selected]) => {
+    const regionalCouncil = REGIONAL_COUNCILS[region];
+    const regionMembers = COUNCILS.filter(
+      (council) => council.region === region && !council.locked
+    );
+    const selectedPopulation = selected.reduce(
+      (sum, council) => sum + council.pop,
+      0
+    );
+    const regionPopulation = regionMembers.reduce(
+      (sum, council) => sum + council.pop,
+      0
+    );
+    const populationShare = regionPopulation
+      ? selectedPopulation / regionPopulation
+      : 0;
+    const wholeRegion = selected.length === regionMembers.length;
+    const overlappingSeats = wholeRegion
+      ? regionalCouncil.seats
+      : Math.max(1, Math.min(
+          regionalCouncil.seats,
+          Math.round(regionalCouncil.seats * populationShare)
+        ));
+    return {
+      ...regionalCouncil,
+      region,
+      overlappingSeats,
+      populationShare,
+      wholeRegion,
+    };
+  });
+};
+
+const suggestedCouncillorSeats = (population, areaCount) => {
+  const floor = Math.max(6, areaCount);
+  return Math.max(floor, Math.min(20, Math.round(population / 25000)));
+};
+
+const councilSizeOptions = (suggested, areaCount) => {
+  const floor = Math.max(6, areaCount);
+  const options = [];
+  [suggested - 2, suggested, suggested + 2, suggested + 4].forEach((value) => {
+    const bounded = Math.max(floor, value);
+    if (!options.includes(bounded)) options.push(bounded);
+  });
+  return options.slice(0, 3);
+};
+
+// Largest-remainder apportionment with one seat reserved for each former
+// council area. This is an illustrative ward split only.
+const allocateWardSeats = (members, seatCount) => {
+  if (!members.length) return [];
+  const guaranteed = Math.min(seatCount, members.length);
+  const remaining = Math.max(0, seatCount - guaranteed);
+  const population = members.reduce((sum, member) => sum + member.pop, 0);
+  const quotas = members.map((member, index) => {
+    const exact = population ? (member.pop / population) * remaining : 0;
+    return {
+      member,
+      index,
+      seats: index < guaranteed ? 1 + Math.floor(exact) : 0,
+      remainder: exact - Math.floor(exact),
+    };
+  });
+  let allocated = quotas.reduce((sum, row) => sum + row.seats, 0);
+  [...quotas]
+    .sort((a, b) => b.remainder - a.remainder || b.member.pop - a.member.pop)
+    .forEach((row) => {
+      if (allocated < seatCount) {
+        quotas[row.index].seats += 1;
+        allocated += 1;
+      }
+    });
+  return quotas;
+};
 
 // ---------------------------------------------------------------------------
 // Published households and average residential rates bill (2024/25), by
@@ -1737,6 +1831,35 @@ function LegacyApp() {
               Affairs, Stats NZ, the NZ Taxpayers' Union, or any council. DIA and Stats NZ publish raw figures under
               CC BY 4.0; nothing here should be read as an official government output.
             </dd>
+            <dt>Representation model</dt>
+            <dd>
+              Before amalgamation, elected representatives are territorial
+              councillors plus the regional councillors estimated to overlap
+              the selected area; mayors are shown separately. The figures use
+              the 2025 Local Authority Election Statistics, with
+              Tauranga&apos;s current 2024–28 arrangement. A whole-region
+              selection includes every regional seat. For a partial region,
+              overlapping regional seats are estimated from the selected
+              population share because constituency boundaries are not
+              modelled.
+              <br /><br />
+              After amalgamation, the governing body is estimated at about one
+              representative per 25,000 residents, rounded to a whole seat,
+              with between six and 20 representatives and at least one for
+              every former council area. The mayor is additional. Seats are
+              allocated to former council areas by population using the
+              largest-remainder method.
+              <br /><br />
+              Community Councils apply the broad model illustrated by
+              MartinJenkins in July 2026: about one member per 15,000
+              residents, with at least four members for each former council
+              area. A Community Council expands if necessary to accommodate
+              all governing-body representatives allocated to that area.
+              Governing-body representatives are assumed to serve on both
+              tiers, so the displayed categories are roles and should not be
+              added together to estimate unique people. These settings are
+              illustrative rather than a recommendation or forecast.
+            </dd>
             <dt>Who's merging with whom</dt>
             <dd>
               Positions and dates as at 24 July 2026, from Local Democracy Reporting and The Post (Justin Wong), RNZ,
@@ -2646,7 +2769,7 @@ function drawCardColumnHeaders(ctx, x, y, width) {
 // Renders a complete result card. It is deliberately taller than an OG image:
 // the download is an infographic, not a teaser, so it carries the selected name,
 // both estimates, and the interpretation needed to read them responsibly.
-function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
+function drawShareCard(canvas, finding, rates, netAssets, totalArea, representation) {
   canvas.width = CARD_W;
   canvas.height = CARD_H;
   let ctx = canvas.getContext("2d");
@@ -2666,7 +2789,8 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   );
   const comparisonY = contentBottom + 36;
   const dividerY = comparisonY + (comparisonLines.length - 1) * 22 + 30;
-  const panelTop = dividerY + 32;
+  const representationTop = dividerY + 24;
+  const panelTop = representationTop + 142;
   const explanationHeight = 247;
   const layoutExtraHeight = Math.max(0, panelTop - 362);
   const cardHeight = CARD_H + layoutExtraHeight + (explanationHeight - 200);
@@ -2741,6 +2865,73 @@ function drawShareCard(canvas, finding, rates, netAssets, totalArea) {
   ctx.moveTo(56, dividerY + 0.5);
   ctx.lineTo(CARD_W - 56, dividerY + 0.5);
   ctx.stroke();
+
+  // Compact before/after representation view, matching the live result.
+  ctx.fillStyle = CARD_INK;
+  ctx.font = `800 16px ${CARD_FONT}`;
+  ctx.fillText("ELECTED REPRESENTATION", 56, representationTop + 2);
+
+  const representationTrackX = 470;
+  const representationTrackW = CARD_W - representationTrackX - 104;
+  const representationMaximum = Math.max(
+    representation.beforeTotal,
+    representation.afterTotal,
+    1
+  );
+  [
+    {
+      y: representationTop + 42,
+      label: "Before",
+      detail: `${representation.beforeRepresentatives} representatives · ${representation.beforeMayors} ${representation.beforeMayors === 1 ? "mayor" : "mayors"}`,
+      total: representation.beforeTotal,
+      parts: [
+        [representation.beforeRepresentatives, CARD_INK],
+        [representation.beforeMayors, "#d39a27"],
+      ],
+    },
+    {
+      y: representationTop + 91,
+      label: "After",
+      detail: `${representation.afterRepresentatives} representatives · ${representation.communityCouncilMembers} community members · 1 mayor`,
+      total: representation.afterTotal,
+      parts: [
+        [representation.afterRepresentatives, CARD_INK],
+        [representation.communityCouncilMembers, "#d94720"],
+        [1, "#d39a27"],
+      ],
+    },
+  ].forEach((row) => {
+    ctx.fillStyle = CARD_INK;
+    ctx.font = `800 17px ${CARD_FONT}`;
+    ctx.fillText(row.label, 56, row.y);
+    ctx.fillStyle = CARD_INK_SOFT;
+    const detailSize = fitText(
+      ctx,
+      row.detail,
+      representationTrackX - 150,
+      14,
+      600,
+      10
+    );
+    ctx.font = `600 ${detailSize}px ${CARD_FONT}`;
+    ctx.fillText(row.detail, 130, row.y);
+
+    ctx.fillStyle = "rgba(25, 48, 54, 0.10)";
+    ctx.fillRect(representationTrackX, row.y - 16, representationTrackW, 20);
+    const barWidth = (row.total / representationMaximum) * representationTrackW;
+    let partX = representationTrackX;
+    row.parts.forEach(([count, color]) => {
+      const partWidth = (count / row.total) * barWidth;
+      ctx.fillStyle = color;
+      ctx.fillRect(partX, row.y - 16, partWidth, 20);
+      partX += partWidth;
+    });
+    ctx.fillStyle = CARD_INK;
+    ctx.font = `800 22px ${CARD_FONT}`;
+    ctx.textAlign = "right";
+    ctx.fillText(String(row.total), CARD_W - 56, row.y + 1);
+    ctx.textAlign = "left";
+  });
 
   const panelGap = 28;
   const panelW = (CARD_W - 112 - panelGap) / 2;
@@ -3055,6 +3246,8 @@ export default function App() {
   const [copied, setCopied] = useState("");
   const [cardBusy, setCardBusy] = useState(false);
   const [cardPreview, setCardPreview] = useState("");
+  const [governanceSeatsByScenario, setGovernanceSeatsByScenario] = useState({});
+  const [regionalFunctionsByScenario, setRegionalFunctionsByScenario] = useState({});
   const revisingScenario = useRef(false);
 
   useEffect(() => {
@@ -3226,20 +3419,96 @@ export default function App() {
 
   const totalPopulation = members.reduce((sum, m) => sum + m.pop, 0);
   const totalArea = members.reduce((sum, m) => sum + m.area, 0);
+  const governanceScenarioKey = selectedIds.slice().sort().join(",");
+  const suggestedGovernanceSeats = suggestedCouncillorSeats(
+    totalPopulation,
+    members.length
+  );
+  const governanceSeatOptions = councilSizeOptions(
+    suggestedGovernanceSeats,
+    members.length
+  );
+  const proposedCouncillorSeats =
+    governanceSeatsByScenario[governanceScenarioKey] || suggestedGovernanceSeats;
+  const currentTerritorialOfficials = members.reduce(
+    (sum, member) => sum + 1 + (COUNCILLOR_SEATS[member.id] || 0),
+    0
+  );
+  const regionalSeatOverlaps = useMemo(
+    () => estimateRegionalSeatOverlap(members),
+    [members]
+  );
+  const regionalFunctionsIncluded = Object.prototype.hasOwnProperty.call(
+    regionalFunctionsByScenario,
+    governanceScenarioKey
+  )
+    ? regionalFunctionsByScenario[governanceScenarioKey]
+    : regionalSeatOverlaps.length > 0;
+  const overlappingRegionalSeats = regionalFunctionsIncluded
+    ? regionalSeatOverlaps.reduce(
+        (sum, council) => sum + council.overlappingSeats,
+        0
+      )
+    : 0;
+  const currentElectedOfficials =
+    currentTerritorialOfficials + overlappingRegionalSeats;
+  const proposedElectedOfficials = proposedCouncillorSeats + 1;
+  const electedOfficialChange = proposedElectedOfficials - currentElectedOfficials;
+  const currentResidentsPerOfficial = currentElectedOfficials
+    ? Math.round(totalPopulation / currentElectedOfficials / 100) * 100
+    : 0;
+  const proposedResidentsPerOfficial = proposedElectedOfficials
+    ? Math.round(totalPopulation / proposedElectedOfficials / 100) * 100
+    : 0;
+  const wardAllocation = useMemo(
+    () => allocateWardSeats(members, proposedCouncillorSeats),
+    [members, proposedCouncillorSeats]
+  );
+  const communityCouncilModel = useMemo(
+    () => buildCommunityCouncilModel(wardAllocation),
+    [wardAllocation]
+  );
+  const proposedCommunityRepresentatives = communityCouncilModel.reduce(
+    (sum, row) => sum + row.totalMembers,
+    0
+  );
+  const proposedCommunityOnlyRepresentatives = communityCouncilModel.reduce(
+    (sum, row) => sum + row.communityOnlySeats,
+    0
+  );
+  const proposedDistinctElectedPeople = proposedCommunityRepresentatives + 1;
+  const currentElectedRepresentatives = currentElectedOfficials - members.length;
+  const proposedRepresentationRoles =
+    proposedCouncillorSeats + proposedCommunityRepresentatives + 1;
+  const representationBarMaximum = Math.max(
+    currentElectedOfficials,
+    proposedRepresentationRoles,
+    1
+  );
+  const shareRepresentation = useMemo(
+    () => ({
+      beforeRepresentatives: currentElectedRepresentatives,
+      beforeMayors: members.length,
+      beforeTotal: currentElectedOfficials,
+      afterRepresentatives: proposedCouncillorSeats,
+      communityCouncilMembers: proposedCommunityRepresentatives,
+      afterTotal: proposedRepresentationRoles,
+    }),
+    [
+      currentElectedRepresentatives,
+      members.length,
+      currentElectedOfficials,
+      proposedCouncillorSeats,
+      proposedCommunityRepresentatives,
+      proposedRepresentationRoles,
+    ]
+  );
   const largest = [...members].sort((a, b) => b.pop - a.pop)[0];
   const largestShare = largest && totalPopulation ? Math.round((largest.pop / totalPopulation) * 100) : 0;
   const rising = rates.rows.filter((row) => row.change > 0);
   const falling = rates.rows.filter((row) => row.change < 0);
-  const maxRateChange = Math.max(
-    1,
-    ...rates.rows.map((row) => Math.abs(row.change || 0))
-  );
   const assetHigher = netAssets.rows.filter((row) => row.change > 0);
   const assetLower = netAssets.rows.filter((row) => row.change < 0);
-  const maxNetAssetChange = Math.max(
-    1,
-    ...netAssets.rows.map((row) => Math.abs(row.change || 0))
-  );
 
   const startRegion = () => {
     if (!region) return;
@@ -3431,7 +3700,14 @@ export default function App() {
       // A missing webfont only affects the card's typeface, not its content.
     }
     const canvas = document.createElement("canvas");
-    drawShareCard(canvas, finding, rates, netAssets, totalArea);
+    drawShareCard(
+      canvas,
+      finding,
+      rates,
+      netAssets,
+      totalArea,
+      shareRepresentation
+    );
     return canvas;
   };
 
@@ -3555,7 +3831,7 @@ export default function App() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen, finding, rates, netAssets, totalArea, members.length]);
+  }, [screen, finding, rates, netAssets, totalArea, members.length, shareRepresentation]);
 
   const renderCouncilChoice = (council) => {
     const checked = selectedIds.includes(council.id);
@@ -4149,10 +4425,294 @@ export default function App() {
               </p>
               <ResultShareBar members={members} />
               <p className="simpleFinePrint">
-                Population share is not voting power. Representation, wards, and local
-                boards would be decided separately.
+                Population share is not voting power. The illustrative
+                representation model below can be adjusted; final wards and
+                local arrangements would be decided separately.
               </p>
             </article>
+
+            <article className="simplePanel simpleRepresentation">
+              <p className="simpleEyebrow">Representation</p>
+              <h2>How many elected roles would there be?</h2>
+              <p className="simpleAnswer">
+                A simple comparison of the current councils with the
+                illustrative merged model.
+              </p>
+
+              <div className="simpleRepresentationBars" aria-live="polite">
+                <div className="simpleRepresentationBarRow">
+                  <div className="simpleRepresentationBarCopy">
+                    <strong>Before</strong>
+                    <span>
+                      {currentElectedRepresentatives} elected representatives · {members.length} {members.length === 1 ? "mayor" : "mayors"}
+                    </span>
+                  </div>
+                  <div className="simpleRepresentationBarTrack" aria-hidden="true">
+                    <div
+                      className="simpleRepresentationBar"
+                      style={{ width: `${(currentElectedOfficials / representationBarMaximum) * 100}%` }}
+                    >
+                      <span
+                        className="simpleRepresentationSegment simpleRepresentationElected"
+                        style={{ width: `${(currentElectedRepresentatives / currentElectedOfficials) * 100}%` }}
+                      />
+                      <span
+                        className="simpleRepresentationSegment simpleRepresentationMayors"
+                        style={{ width: `${(members.length / currentElectedOfficials) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <strong className="simpleRepresentationBarTotal">{currentElectedOfficials}</strong>
+                </div>
+
+                <div className="simpleRepresentationBarRow">
+                  <div className="simpleRepresentationBarCopy">
+                    <strong>After</strong>
+                    <span>
+                      {proposedCouncillorSeats} elected representatives · {proposedCommunityRepresentatives} Community Council members · 1 mayor
+                    </span>
+                  </div>
+                  <div className="simpleRepresentationBarTrack" aria-hidden="true">
+                    <div
+                      className="simpleRepresentationBar"
+                      style={{ width: `${(proposedRepresentationRoles / representationBarMaximum) * 100}%` }}
+                    >
+                      <span
+                        className="simpleRepresentationSegment simpleRepresentationElected"
+                        style={{ width: `${(proposedCouncillorSeats / proposedRepresentationRoles) * 100}%` }}
+                      />
+                      <span
+                        className="simpleRepresentationSegment simpleRepresentationCommunity"
+                        style={{ width: `${(proposedCommunityRepresentatives / proposedRepresentationRoles) * 100}%` }}
+                      />
+                      <span
+                        className="simpleRepresentationSegment simpleRepresentationMayors"
+                        style={{ width: `${100 / proposedRepresentationRoles}%` }}
+                      />
+                    </div>
+                  </div>
+                  <strong className="simpleRepresentationBarTotal">{proposedRepresentationRoles}</strong>
+                </div>
+              </div>
+
+              <p className="simpleFinePrint">
+                The totals are elected roles. Some representatives would sit
+                on both tiers. See About &amp; method for the assumptions and
+                counting rules.
+              </p>
+            </article>
+
+            {false && <article className="simplePanel simpleRepresentation">
+              <div className="simpleRepresentationHead">
+                <div>
+                  <p className="simpleEyebrow">Representation</p>
+                  <h2>Who would represent the new council?</h2>
+                  <p className="simpleAnswer">
+                    Compare today&apos;s elected positions with an illustrative
+                    merged governing body. You can test three council sizes.
+                  </p>
+                </div>
+                <div className="simpleCouncilSize" role="group" aria-label="Set illustrative council size">
+                  <span>Set council size</span>
+                  <div>
+                    {governanceSeatOptions.map((seatCount) => (
+                      <button
+                        className={`simpleSizeChoice ${
+                          seatCount === proposedCouncillorSeats
+                            ? "simpleSizeChoiceSelected"
+                            : ""
+                        }`}
+                        type="button"
+                        key={seatCount}
+                        aria-pressed={seatCount === proposedCouncillorSeats}
+                        onClick={() =>
+                          setGovernanceSeatsByScenario((current) => ({
+                            ...current,
+                            [governanceScenarioKey]: seatCount,
+                          }))
+                        }
+                      >
+                        {seatCount}
+                      </button>
+                    ))}
+                  </div>
+                  <small>councillors, plus one separately elected mayor</small>
+                </div>
+              </div>
+
+              {regionalSeatOverlaps.length > 0 && (
+                <label className="simpleRegionalAssumption">
+                  <input
+                    type="checkbox"
+                    checked={regionalFunctionsIncluded}
+                    onChange={(event) =>
+                      setRegionalFunctionsByScenario((current) => ({
+                        ...current,
+                        [governanceScenarioKey]: event.target.checked,
+                      }))
+                    }
+                  />
+                  <span>
+                    <strong>Regional functions included</strong>
+                    <small>
+                      Count the regional councillors whose constituencies are
+                      estimated to overlap this proposal, because those separate
+                      positions would be consolidated into the new authority.
+                    </small>
+                  </span>
+                </label>
+              )}
+
+              <div className="simpleRepresentationStats" aria-live="polite">
+                <div>
+                  <span>Today</span>
+                  <strong>{currentElectedOfficials}</strong>
+                  <small>
+                    {currentTerritorialOfficials} territorial
+                    {overlappingRegionalSeats > 0
+                      ? ` + ${overlappingRegionalSeats} regional`
+                      : ""}
+                  </small>
+                </div>
+                <div>
+                  <span>Illustrative model</span>
+                  <strong>{proposedElectedOfficials}</strong>
+                  <small>one mayor + {proposedCouncillorSeats} councillors</small>
+                </div>
+                <div className="simpleRepresentationChange">
+                  <span>Change</span>
+                  <strong>
+                    {electedOfficialChange > 0 ? "+" : "−"}
+                    {Math.abs(electedOfficialChange)}
+                  </strong>
+                  <small>elected positions</small>
+                </div>
+              </div>
+
+              <div className="simpleRepresentationRatio">
+                <span>Residents per elected official</span>
+                <strong>
+                  {currentResidentsPerOfficial.toLocaleString("en-NZ")}
+                  <span aria-hidden="true"> → </span>
+                  <span className="srOnly">to</span>
+                  {proposedResidentsPerOfficial.toLocaleString("en-NZ")}
+                </strong>
+              </div>
+
+              <div className="simpleCommunitySummary">
+                <div>
+                  <span>Community Councils</span>
+                  <strong>{communityCouncilModel.length}</strong>
+                  <small>one based on each former council area</small>
+                </div>
+                <div>
+                  <span>Community representatives</span>
+                  <strong>{proposedCommunityRepresentatives}</strong>
+                  <small>
+                    {proposedCouncillorSeats} dual-role + {proposedCommunityOnlyRepresentatives} local-only
+                  </small>
+                </div>
+                <div>
+                  <span>Distinct elected people</span>
+                  <strong>{proposedDistinctElectedPeople}</strong>
+                  <small>community representatives + regional mayor</small>
+                </div>
+              </div>
+
+              <div className="simpleWardTable simpleCommunityTable">
+                <div className="simpleWardHeader" aria-hidden="true">
+                  <span>Community Council area</span>
+                  <span>On both tiers</span>
+                  <span>Total local members</span>
+                </div>
+                {communityCouncilModel.map(({ member, unitarySeats, totalMembers }) => (
+                  <div className="simpleWardRow" key={member.id}>
+                    <span>{member.name}</span>
+                    <strong>{unitarySeats}</strong>
+                    <strong>{totalMembers}</strong>
+                  </div>
+                ))}
+                <div className="simpleWardTotal">
+                  <span>Total</span>
+                  <strong>{proposedCouncillorSeats}</strong>
+                  <strong>{proposedCommunityRepresentatives}</strong>
+                </div>
+              </div>
+              <p className="simpleFinePrint">
+                Community Councils are a separate local tier. Their chairs and
+                unitary councillors are counted in both tiers but only once in
+                the distinct-people total. Each former council area receives at
+                least four local members; larger areas scale at about one per
+                15,000 residents.
+              </p>
+
+              <div className="simpleWardTable">
+                <div className="simpleWardHeader" aria-hidden="true">
+                  <span>Former council area</span>
+                  <span>Today</span>
+                  <span>Illustrative ward seats</span>
+                </div>
+                {wardAllocation.map(({ member, seats }) => (
+                  <div className="simpleWardRow" key={member.id}>
+                    <span>{member.name}</span>
+                    <strong>{1 + (COUNCILLOR_SEATS[member.id] || 0)}</strong>
+                    <strong>{seats}</strong>
+                  </div>
+                ))}
+                {regionalFunctionsIncluded &&
+                  regionalSeatOverlaps.map((regionalCouncil) => (
+                    <div
+                      className="simpleWardRow simpleWardRegionalRow"
+                      key={regionalCouncil.region}
+                    >
+                      <span>
+                        {regionalCouncil.name}
+                        <small>
+                          {regionalCouncil.wholeRegion
+                            ? "whole region selected"
+                            : `${Math.round(
+                                regionalCouncil.populationShare * 100
+                              )}% of regional population selected`}
+                        </small>
+                      </span>
+                      <strong>{regionalCouncil.overlappingSeats}</strong>
+                      <strong>consolidated</strong>
+                    </div>
+                  ))}
+                <div className="simpleWardTotal">
+                  <span>Total</span>
+                  <strong>{currentElectedOfficials}</strong>
+                  <strong>{proposedCouncillorSeats}</strong>
+                </div>
+              </div>
+              <p className="simpleFinePrint">
+                The illustrative ward seats are allocated by population using
+                whole seats, with at least one seat for each former council
+                area. The proposed mayor is additional. Partial-region regional
+                seats are estimated from the proposal&apos;s share of regional
+                population; they are not mapped from constituency boundaries.
+              </p>
+
+              <details className="simpleDisclosure">
+                <summary>How this estimate works</summary>
+                <p>
+                  Current positions use the 2025 Local Authority Election
+                  Statistics, with Tauranga&apos;s current 2024–28 arrangement.
+                  Regional positions use the same official dataset. A
+                  whole-region proposal includes every regional seat; a
+                  partial-region proposal estimates the overlapping seats by
+                  population share. The default merged size is a simple
+                  population-based illustration. The Community Council layer
+                  applies the broad MartinJenkins July 2026 model: roughly one
+                  local representative per 15,000 residents, a four-member
+                  minimum for small areas, and dual membership for unitary
+                  councillors. It is not a recommendation or forecast. Final
+                  representation would be determined through
+                  the statutory reorganisation and representation-review
+                  processes.
+                </p>
+              </details>
+            </article>}
 
             <article className="simplePanel">
               <div className="simplePanelHead">
@@ -4218,9 +4778,9 @@ export default function App() {
                                   <span
                                     className={`simpleRateFill ${row.change > 0 ? "simpleRateMore" : "simpleRateLess"}`}
                                     style={{
-                                      width: `${Math.max(
-                                        2,
-                                        (Math.abs(row.change) / maxRateChange) * 50
+                                      width: `${Math.min(
+                                        50,
+                                        (Math.abs(row.change) / Math.abs(rates.blended)) * 50
                                       )}%`,
                                     }}
                                   />
@@ -4251,7 +4811,10 @@ export default function App() {
                   and multi-year transition arrangements. These can alter the size, timing
                   and direction of a property-level change. Establishment costs and savings
                   are not included. The bars share one scale within this result, so the
-                  longest bar is the largest dollar difference between averages.
+                  bar length is the difference divided by the combined weighted
+                  average. The same percentage difference therefore has the same
+                  length in every result; half the track represents a difference
+                  equal to 100% of the combined figure.
                 </p>
                 <p>
                   Water follows a historical continuity basis. Each 2024/25 figure retains
@@ -4324,9 +4887,10 @@ export default function App() {
                               <span
                                 className={`simpleRateFill ${row.change > 0 ? "simpleAssetHigher" : "simpleAssetLower"}`}
                                 style={{
-                                  width: `${Math.max(
-                                    2,
-                                    (Math.abs(row.change) / maxNetAssetChange) * 50
+                                  width: `${Math.min(
+                                    50,
+                                    (Math.abs(row.change) /
+                                      Math.abs(netAssets.mergedPerResident)) * 50
                                   )}%`,
                                 }}
                               />
@@ -4349,6 +4913,12 @@ export default function App() {
                   TLA’s historic net assets per resident. It shows the direction of
                   that comparison, not what residents would receive or what a final
                   merger agreement would allocate.
+                </p>
+                <p>
+                  Bar length is the difference divided by the combined net-assets
+                  figure per resident. The same percentage difference therefore
+                  has the same length in every result; half the track represents
+                  a difference equal to 100% of the combined figure.
                 </p>
                 <p>
                   This is an accounting comparison, not a cash gain or loss. It
@@ -4493,7 +5063,7 @@ export default function App() {
           aria-label="More information"
           onClickCapture={trackExplanatoryLink}
         >
-          <a href="about/">About &amp; method</a>
+          <a href="/about/index.html">About &amp; method</a>
           <a href="privacy-policy/">Privacy</a>
           <a href="council-data/">Council data</a>
           <a href="the-amalgamator-data.csv" download>Download the data</a>
@@ -5327,6 +5897,306 @@ const SIMPLE_CSS = `
   margin-bottom: 20px;
   font-size: 18px;
 }
+.simpleRepresentation {
+  border-color: rgba(25, 48, 54, 0.34);
+}
+.simpleRepresentationHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+}
+.simpleRepresentationHead .simpleAnswer {
+  margin-bottom: 0;
+}
+.simpleRegionalAssumption {
+  margin-top: 22px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(217, 71, 32, 0.07);
+  border-left: 5px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  cursor: pointer;
+}
+.simpleRegionalAssumption input {
+  width: 19px;
+  height: 19px;
+  margin: 2px 0 0;
+  flex: none;
+  accent-color: var(--accent-dark);
+}
+.simpleRegionalAssumption > span {
+  display: grid;
+  gap: 3px;
+}
+.simpleRegionalAssumption strong { color: var(--ink); }
+.simpleRegionalAssumption small {
+  max-width: 72ch;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.simpleCouncilSize {
+  min-width: 250px;
+  display: grid;
+  gap: 7px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+.simpleCouncilSize > span {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+.simpleCouncilSize > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+}
+.simpleSizeChoice {
+  min-height: 40px;
+  padding: 8px 14px;
+  background: var(--white);
+  color: var(--ink);
+  border: 0;
+  border-right: 1px solid var(--line);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+.simpleSizeChoice:last-child { border-right: 0; }
+.simpleSizeChoice:hover { background: rgba(217, 71, 32, 0.08); }
+.simpleSizeChoiceSelected {
+  background: var(--accent);
+  color: var(--white);
+}
+.simpleSizeChoiceSelected:hover { background: var(--accent-dark); }
+.simpleRepresentationStats {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.simpleRepresentationStats > div {
+  min-width: 0;
+  padding: 18px 18px 18px 0;
+  display: grid;
+  gap: 3px;
+  border-right: 1px solid var(--line);
+}
+.simpleRepresentationStats > div + div { padding-left: 18px; }
+.simpleRepresentationStats > div:last-child { border-right: 0; }
+.simpleRepresentationStats span,
+.simpleRepresentationStats small {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.simpleRepresentationStats strong {
+  color: var(--ink);
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1;
+}
+.simpleRepresentationStats .simpleRepresentationChange strong {
+  color: var(--accent-dark);
+}
+.simpleBeforeAfter {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.simpleBeforeAfter section {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.simpleBeforeAfter section:last-child {
+  border-color: rgba(217, 71, 32, 0.45);
+  background: rgba(217, 71, 32, 0.055);
+}
+.simpleBeforeAfter h3 { margin: 0 0 12px; font-size: 18px; }
+.simpleBeforeAfter section > div {
+  min-height: 45px;
+  padding-top: 10px;
+  margin-top: 10px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+}
+.simpleBeforeAfter span {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+.simpleBeforeAfter strong {
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 1;
+}
+.simpleRepresentationBars {
+  margin-top: 22px;
+  display: grid;
+  gap: 20px;
+}
+.simpleRepresentationBarRow {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.8fr) minmax(180px, 1.2fr) 48px;
+  align-items: center;
+  gap: 18px;
+}
+.simpleRepresentationBarCopy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.simpleRepresentationBarCopy > strong { font-size: 16px; }
+.simpleRepresentationBarCopy > span {
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.simpleRepresentationBarTrack {
+  height: 22px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: rgba(25, 48, 54, 0.1);
+}
+.simpleRepresentationBar {
+  height: 100%;
+  min-width: 2px;
+  display: flex;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.simpleRepresentationSegment { display: block; height: 100%; }
+.simpleRepresentationElected { background: var(--ink); }
+.simpleRepresentationCommunity { background: var(--accent); }
+.simpleRepresentationMayors { background: #d39a27; }
+.simpleRepresentationBarTotal {
+  color: var(--ink);
+  font-size: 26px;
+  text-align: right;
+}
+.simpleCommunitySummary {
+  margin: 18px 0 6px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.simpleCommunitySummary > div {
+  min-width: 0;
+  padding: 14px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(217, 71, 32, 0.055);
+}
+.simpleCommunitySummary span,
+.simpleCommunitySummary small {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.simpleCommunitySummary strong {
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1;
+}
+.simpleCommunityTable { margin-top: 16px; }
+.simpleRepresentationRatio {
+  padding: 18px 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.simpleRepresentationRatio > span {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+.simpleRepresentationRatio strong {
+  color: var(--ink);
+  font-size: clamp(22px, 4vw, 32px);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.simpleWardTable {
+  margin-top: 18px;
+  display: grid;
+}
+.simpleWardHeader,
+.simpleWardRow,
+.simpleWardTotal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px 160px;
+  align-items: center;
+  gap: 16px;
+}
+.simpleWardHeader {
+  padding: 0 0 8px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.simpleWardHeader span:not(:first-child),
+.simpleWardRow strong,
+.simpleWardTotal strong {
+  text-align: right;
+}
+.simpleWardRow,
+.simpleWardTotal {
+  min-height: 44px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+.simpleWardRow > span {
+  min-width: 0;
+  font-weight: 700;
+}
+.simpleWardRegionalRow {
+  background: rgba(217, 71, 32, 0.055);
+}
+.simpleWardRegionalRow > span {
+  padding-left: 10px;
+  display: grid;
+  gap: 2px;
+}
+.simpleWardRegionalRow small {
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 500;
+}
+.simpleWardRegionalRow strong:last-child {
+  color: var(--accent-dark);
+  font-size: 12px;
+}
+.simpleWardTotal {
+  border-top: 2px solid var(--ink);
+  font-weight: 800;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .simpleRateChart {
   display: grid;
   gap: 4px;
@@ -5696,6 +6566,41 @@ const SIMPLE_CSS = `
   }
   .simpleStats > div:last-child { border-bottom: 0; }
   .simplePanelHead { display: block; }
+  .simpleRepresentationHead {
+    display: grid;
+    gap: 20px;
+  }
+  .simpleCouncilSize { min-width: 0; }
+  .simpleRepresentationStats { grid-template-columns: 1fr; }
+  .simpleBeforeAfter { grid-template-columns: 1fr; }
+  .simpleRepresentationBarRow {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 10px;
+  }
+  .simpleRepresentationBarCopy { grid-column: 1 / -1; }
+  .simpleCommunitySummary { grid-template-columns: 1fr; }
+  .simpleRepresentationStats > div {
+    padding: 15px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .simpleRepresentationStats > div + div { padding-left: 0; }
+  .simpleRepresentationStats > div:last-child { border-bottom: 0; }
+  .simpleRepresentationRatio {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .simpleWardHeader,
+  .simpleWardRow,
+  .simpleWardTotal {
+    grid-template-columns: minmax(0, 1fr) 58px 78px;
+    gap: 9px;
+  }
+  .simpleWardHeader {
+    font-size: 9px;
+    letter-spacing: 0;
+  }
   .simpleBlend {
     margin-bottom: 20px;
     display: flex;

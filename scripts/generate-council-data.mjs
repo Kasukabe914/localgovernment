@@ -1,10 +1,16 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  COUNCILLOR_SEATS,
+  ELECTION_STATISTICS_URL,
+  REGIONAL_COUNCILS,
+} from "../src/electedOfficials.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE_PATH = join(ROOT, "public", "the-amalgamator-data.csv");
 const OUTPUT_PATH = join(ROOT, "public", "council-data", "index.html");
+const ELECTED_OUTPUT_PATH = join(ROOT, "public", "elected-officials-data.csv");
 
 const parseQuotedCsvLine = (line) =>
   [...line.matchAll(/"((?:[^"]|"")*)"/g)].map((match) =>
@@ -31,6 +37,55 @@ const escapeHtml = (value) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+const quoteCsv = (value) => `"${String(value).replaceAll('"', '""')}"`;
+
+const electedCsv = [
+  [
+    "id",
+    "name",
+    "authority_type",
+    "region",
+    "councillors_current",
+    "mayors_current",
+    "governing_body_elected_total",
+    "election_year",
+    "source_url",
+    "notes",
+  ],
+  ...councils.map((council) => {
+    const councillors = COUNCILLOR_SEATS[council.id];
+    if (!Number.isInteger(councillors)) {
+      throw new Error(`Missing elected-official count for ${council.id}.`);
+    }
+    const tauranga = council.id === "tauranga";
+    return [
+      council.id,
+      council.name,
+      "territorial authority",
+      council.region,
+      councillors,
+      1,
+      councillors + 1,
+      tauranga ? 2024 : 2025,
+      ELECTION_STATISTICS_URL,
+      tauranga ? "Tauranga 2024–28 representation arrangement; not included in the 2025 election statistics." : "",
+    ];
+  }),
+  ...Object.entries(REGIONAL_COUNCILS).map(([region, council]) => [
+    `regional-${region.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
+    council.name,
+    "regional council",
+    region,
+    council.seats,
+    0,
+    council.seats,
+    2025,
+    ELECTION_STATISTICS_URL,
+    "Regional councils do not elect mayors; their chair is selected by council members.",
+  ]),
+]
+  .map((row) => row.map(quoteCsv).join(","))
+  .join("\n");
 
 const formatNumber = new Intl.NumberFormat("en-NZ", {
   maximumFractionDigits: 0,
@@ -91,6 +146,9 @@ const rows = councils
               <td class="number">${formatNumber.format(Number(council.land_area_km2))} km²</td>
               <td class="number">${rateCell}</td>
               <td class="number">$${formatNumber.format(netAssetsPerResident)}</td>
+              <td class="number">${formatNumber.format(COUNCILLOR_SEATS[council.id])}</td>
+              <td class="number">1</td>
+              <td class="number">${formatNumber.format(COUNCILLOR_SEATS[council.id] + 1)}</td>
             </tr>`;
   })
   .join("\n");
@@ -120,6 +178,9 @@ const schema = {
     "Published average residential rates bill, 2024/25",
     "Net assets at 30 June 2024",
     "Net assets per resident",
+    "Current councillor positions",
+    "Current mayoral positions",
+    "Current elected governing-body positions",
   ],
   citation: "https://www.amalgamator.nz/about/#sources",
   license: "https://www.amalgamator.nz/about/#licence",
@@ -377,7 +438,8 @@ ${JSON.stringify(schema, null, 2)
         council or browse the figures by region.
       </p>
       <div class="actions">
-        <a href="/the-amalgamator-data.csv" download>Download the complete CSV</a>
+        <a href="/the-amalgamator-data.csv" download>Download the financial and demographic CSV</a>
+        <a href="/elected-officials-data.csv" download>Download elected officials (CSV)</a>
         <a href="/about/#sources">Read the sources and methodology</a>
       </div>
 
@@ -417,6 +479,9 @@ ${JSON.stringify(schema, null, 2)
               <th scope="col" class="number">Land area<br />2025</th>
               <th scope="col" class="number">Average residential rates<br />2024/25</th>
               <th scope="col" class="number">Net assets per resident<br />30 June 2024</th>
+              <th scope="col" class="number">Councillors<br />current term</th>
+              <th scope="col" class="number">Mayors<br />current term</th>
+              <th scope="col" class="number">Governing-body elected total</th>
             </tr>
           </thead>
           <tbody>
@@ -488,4 +553,6 @@ ${rows}
 
 mkdirSync(dirname(OUTPUT_PATH), { recursive: true });
 writeFileSync(OUTPUT_PATH, html, "utf8");
+writeFileSync(ELECTED_OUTPUT_PATH, `${electedCsv}\n`, "utf8");
 console.log(`Generated council data page with ${councils.length} rows.`);
+console.log(`Generated elected-officials CSV with ${councils.length + Object.keys(REGIONAL_COUNCILS).length} rows.`);

@@ -32,7 +32,7 @@
     "description": "Who built this tool, where the data comes from, and what the indicative rate figures do and do not show.",
     "url": "https://www.amalgamator.nz/about/",
     "datePublished": "2026-07-28",
-    "dateModified": "2026-07-28",
+    "dateModified": "2026-08-01",
     "author": {
       "@type": "Person",
       "name": "Brenden Mischewski",
@@ -262,7 +262,7 @@
     <p class="eyebrow">Local Government Amalgamator</p>
     <h1>About &amp; method</h1>
     <p class="standfirst">Who built this tool, where its data comes from, and what its indicative figures do and do not show.</p>
-    <p class="updated">Last substantively updated <time datetime="2026-07-28">28 July 2026</time>.</p>
+    <p class="updated">Last substantively updated <time datetime="2026-08-01">1 August 2026</time>.</p>
 
     <div class="trust-grid" aria-label="At a glance">
       <div><span>Built by</span><strong>Brenden Mischewski</strong></div>
@@ -314,6 +314,12 @@
             </tr>
           </thead>
           <tbody>
+            <tr>
+              <td>Ministry for Cities, Environment, Regions and Transport / Department of Internal Affairs</td>
+              <td><a href="https://www.mcert.govt.nz/our-work/local-government/local-elections-and-voting/local-authority-election-statistics/local-authority-election-statistics-2025/">Local Authority Election Statistics 2025</a>: current councillor and mayoral positions used in the representation comparison. The source page publishes the official election record and downloadable CSV and Excel files. Tauranga uses its separate 2024&ndash;28 representation arrangement.</td>
+              <td>2025; Tauranga 2024</td>
+              <td>1 August 2026</td>
+            </tr>
             <tr>
               <td>Department of Internal Affairs</td>
               <td><a href="https://www.dia.govt.nz/local-government-performance-metrics">Data release for council profiles</a>: population, land area, actual and forecast rates revenue</td>
@@ -378,8 +384,9 @@
         </table>
       </div>
       <p>
-        <a href="../council-data/">Browse the 67-authority data table</a> ·
-        <a href="../the-amalgamator-data.csv" download>Download the 67-authority dataset (CSV)</a> ·
+        <a href="../council-data/index.html">Browse the 67-authority data table</a> ·
+        <a href="../the-amalgamator-data.csv" download>Download the financial and demographic dataset (CSV)</a> ·
+        <a href="../elected-officials-data.csv" download>Download elected officials (CSV)</a> ·
         <a href="../source-register.csv" download>Download the detailed source register (CSV)</a>
       </p>
     </section>
@@ -409,6 +416,12 @@
       <p>This choice provides a consistent historical comparison through an in-flight national transition. It does not reconstruct every water organisation or claim to show a council’s post-reform legal balance sheet or a household’s current combined council-and-water charge.</p>
       <h3>Historic net assets per resident — 30 June 2024</h3>
       <p>For the balance-sheet comparison, the tool subtracts liabilities from assets for every selected council, pools those dollar amounts, and divides by the combined population. It then compares that pooled figure with each council’s historic net assets per resident. Water assets and liabilities held directly by councils at 30 June 2024 remain included; assets already held outside the council-only accounts remain excluded. Later water transfers are ignored. This is an accounting comparison, not a transfer payable to residents or a post-reform legal balance sheet.</p>
+      <h3>How elected representation is estimated</h3>
+      <p><strong>Before amalgamation:</strong> elected representatives are the councillors on the selected territorial authorities plus the regional councillors estimated to overlap the selected area. Mayors are shown separately. The territorial and regional figures come from the 2025 Local Authority Election Statistics, with Tauranga&rsquo;s current 2024&ndash;28 arrangement.</p>
+      <p>When every territorial authority in a region is selected, the model includes every regional councillor. For a partial-region proposal, it estimates the number of overlapping regional councillors from the selected councils&rsquo; share of the regional population. This is an approximation because regional constituency boundaries are not mapped in the tool.</p>
+      <p><strong>After amalgamation:</strong> the illustrative governing body has approximately one elected representative per 25,000 residents, rounded to a whole seat. It has a minimum of six and a maximum of 20 representatives, and at least one representative for every former council area. The mayor is additional. Governing-body seats are allocated between former council areas by population using the largest-remainder method.</p>
+      <p><strong>Community Councils:</strong> the model applies the broad approach illustrated by MartinJenkins in July 2026: approximately one Community Council member per 15,000 residents, with at least four members for every former council area. If a former council area receives more governing-body representatives than its Community Council would otherwise contain, the Community Council expands to accommodate them.</p>
+      <p>Governing-body representatives are assumed to serve on both the unitary governing body and their Community Council. The bars therefore compare <em>elected roles</em>; their categories should not be added together to estimate the number of unique people. These calculations are illustrative, not a recommendation or forecast. Final boundaries, wards, M&#257;ori representation and membership would be determined through detailed design and statutory representation processes.</p>
       <h3>Why the Wellington financial report differs</h3>
       <p>The <a href="https://huttcity.infocouncil.biz/Open/2026/08/HCC_05082026_AGN_6478_AT.PDF">July 2026 Wellington/Wairarapa financial analysis</a> removes water activities from council forecasts, except Kāpiti Coast’s in-house water services. Its rates, debt and financial-resilience findings therefore use a different, post-transfer financial perimeter and are not directly comparable with this tool’s historical water-continuity figures.</p>
     </section>
@@ -463,6 +476,17 @@
       <h2 id="changes-heading">Change log</h2>
       <ol class="change-log">
         <li>
+          <time datetime="2026-08-01">1 August 2026</time>
+          <div><strong>Corrected comparison-bar scaling.</strong> Rates and net-assets bars now show each difference relative to the combined council figure, using the same percentage scale across results.</div>
+        </li>
+        <li>
+          <time datetime="2026-08-01">1 August 2026</time>
+          <div>
+            <strong>Added elected-representation comparisons.</strong>
+            Results now show a simple before-and-after bar comparing elected representatives and mayors with an illustrative merged governing body, Community Council membership and one mayor. Current regional-council overlap is included, while the proposed Community Council model applies the broad population ratios illustrated by MartinJenkins. Minimum membership and allocation safeguards protect representation for smaller former council areas. The full assumptions, dual-role counting rule and limitations are documented in the methodology above.
+          </div>
+        </li>
+        <li>
           <time datetime="2026-07-28">28 July 2026</time>
           <div>
             <strong>Published <cite>Build a bigger council</cite>, Version 1.0.</strong>
@@ -481,7 +505,7 @@
     </div>
     <nav aria-label="Related links">
       <a href="../">Tool</a>
-      <a href="../privacy-policy/">Privacy</a>
+      <a href="../privacy-policy/index.html">Privacy</a>
       <a href="https://github.com/Kasukabe914/localgovernment">Source code</a>
     </nav>
   </footer>

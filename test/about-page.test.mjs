@@ -17,6 +17,7 @@ const shareWorker = read("share/worker.js");
 const robots = read("public/robots.txt");
 const sitemap = read("public/sitemap.xml");
 const councilData = read("public/council-data/index.html");
+const electedOfficialsCsv = read("public/elected-officials-data.csv");
 const councilCsv = read("public/the-amalgamator-data.csv");
 const bingSiteAuth = read("public/BingSiteAuth.xml");
 
@@ -47,7 +48,7 @@ test("the About page has authoritative, indexable metadata and valid JSON-LD", (
   const structuredData = JSON.parse(match[1]);
   assert.equal(structuredData["@type"], "WebPage");
   assert.equal(structuredData.author.name, "Brenden Mischewski");
-  assert.equal(structuredData.dateModified, "2026-07-28");
+  assert.equal(structuredData.dateModified, "2026-08-01");
 });
 
 test("the About page remains useful with JavaScript disabled", () => {
@@ -149,6 +150,8 @@ test("the council data directory is canonical, crawlable and reconciles to the C
   assert.match(councilData, /id="dataTable"/);
   assert.match(councilData, /id="councilSearch"/);
   assert.match(councilData, /id="regionFilter"/);
+  assert.match(councilData, /Councillors<br \/>current term/);
+  assert.match(councilData, /Governing-body elected total/);
   assert.match(councilData, /href="\/about\/#licence">Data terms and attribution<\/a>/);
 
   const sourceLines = councilCsv.trim().split(/\r?\n/);
@@ -180,6 +183,31 @@ test("the council data directory is canonical, crawlable and reconciles to the C
     structuredData.distribution.contentUrl,
     "https://www.amalgamator.nz/the-amalgamator-data.csv"
   );
+});
+
+test("the elected-officials download covers all territorial authorities", () => {
+  const lines = electedOfficialsCsv.trim().split(/\r?\n/);
+  assert.equal(lines.length, 79, "header plus 67 territorial and 11 regional councils");
+  assert.match(lines[0], /"authority_type"/);
+  assert.match(lines[0], /"councillors_current"/);
+  assert.match(lines[0], /"mayors_current"/);
+  assert.match(lines[0], /"governing_body_elected_total"/);
+  assert.match(lines.find((line) => line.startsWith('"farnorth",')), /"territorial authority".*,"10","1","11","2025",/);
+  assert.match(lines.find((line) => line.startsWith('"tauranga",')), /"territorial authority".*,"9","1","10","2024",/);
+  assert.match(lines.find((line) => line.startsWith('"regional-wellington",')), /"regional council","Wellington","14","0","14","2025",/);
+  assert.match(
+    about,
+    /href="\.\.\/elected-officials-data\.csv" download>Download elected officials \(CSV\)/
+  );
+});
+
+test("About page links target preview-addressable static files", () => {
+  assert.match(
+    about,
+    /href="\.\.\/council-data\/index\.html">Browse the 67-authority data table<\/a>/
+  );
+  assert.match(about, /href="\.\.\/privacy-policy\/index\.html">Privacy<\/a>/);
+  assert.doesNotMatch(about, /href="\.\.\/council-data\/"/);
 });
 
 test("the interactive homepage repeats the static comparison summary", () => {
@@ -324,7 +352,7 @@ test("rates and assets use an explicit historical water-continuity basis", () =>
 
 test("About & method is persistent and the old methodology URL is a canonical compatibility redirect", () => {
   assert.equal(
-    [...app.matchAll(/href="about\/">About &amp; method<\/a>/g)].length,
+    [...app.matchAll(/(?:href="about\/"|href="\/about\/index\.html")>About &amp; method<\/a>/g)].length,
     3,
     "opening disclosure and both app footers link to About & method"
   );
@@ -378,6 +406,11 @@ test("the source register is complete at source-family level and exposes its his
   assert.match(ratepayersReport.fields_or_use, /households_published_2026/);
   assert.match(ratepayersReport.notes, /not the council-defined residential rating-unit count/);
   assert.match(about, /href="\.\.\/source-register\.csv"/);
+  assert.match(about, /Local Authority Election Statistics 2025/);
+  assert.match(
+    about,
+    /mcert\.govt\.nz\/our-work\/local-government\/local-elections-and-voting\/local-authority-election-statistics/
+  );
 });
 
 test("the briefing report is discoverable outside the change log", () => {
@@ -418,6 +451,9 @@ test("code, outputs and source data have distinct licence statements", () => {
     /<section class="panel" aria-labelledby="changes-heading">([\s\S]*?)<\/section>/
   )?.[1] || "";
   assert.match(changeLogSection, /<time datetime="2026-07-28">28 July 2026<\/time>/);
+  assert.match(changeLogSection, /<time datetime="2026-08-01">1 August 2026<\/time>/);
+  assert.match(changeLogSection, /Added elected-representation comparisons/);
+  assert.match(changeLogSection, /Corrected comparison-bar scaling/);
   assert.match(changeLogSection, /Build a bigger council<\/cite>, Version 1\.0/);
   assert.match(changeLogSection, /authoritative live tool/i);
   assert.match(changeLogSection, /any combination not shown/i);
