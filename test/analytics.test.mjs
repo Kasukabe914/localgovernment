@@ -175,6 +175,8 @@ test("Umami configuration, event schema, and privacy disclosure are wired into p
   assert.equal((app.match(/chosen_name: councilName/g) || []).length, 4);
 
   for (const event of [
+    "viewedHomepageVariantA",
+    "viewedHomepageVariantB",
     "startedAmalgamation",
     "selectedFirstCouncil",
     "addedAnotherCouncil",

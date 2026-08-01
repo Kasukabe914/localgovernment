@@ -402,9 +402,9 @@ const CROSS_LINKS = [
   { a: "ruapehu", b: "taupo", label: "northern Ruapehu's Taupō option" },
 ];
 
-// Dated council status notes that supplement, but do not change, the starter
-// combinations in PRESETS.article. Some councils are exploring, some have
-// declined to submit, and some are pursuing an alternative approach.
+// Dated council status notes that supplement the starter combinations in
+// PRESETS.article. Some councils are exploring, some have declined to submit,
+// and some are pursuing an alternative approach.
 const EXPLORING = {
   kaipara: "Resolved not to submit a Head Start proposal and does not support Whangārei District Council's preferred pairing with Kaipara.",
   thames: "Community feedback favoured an East Waikato option with Hauraki, Matamata-Piako and South Waikato (54%). Thames-Coromandel was due to make its final decision on 6 August.",
@@ -426,8 +426,6 @@ const EXPLORING = {
   waitaki: "Prefers an Aoraki grouping with Waimate, Mackenzie and Timaru, but this is not yet a shared, mutually resolved grouping.",
   mackenzie: "Is named in the Aoraki preferences of Waimate and Waitaki, but the grouping is not yet shared and mutually resolved.",
   timaru: "Is named in the Aoraki preferences of Waimate and Waitaki, but the grouping is not yet shared and mutually resolved.",
-  centralotago: "Completed community consultation and was exploring local government reform options across Otago, with no settled configuration reported.",
-  clutha: "Released community survey submissions and supported continued collaborative reform discussions, with no settled grouping reported.",
   rangitikei: "Tested three options: the whole Horizons region, a western grouping with Whanganui and Ruapehu, and a rural districts grouping (27%, 26%, 23% support). Decision due 30 July.",
   ruapehu: "Options include Whanganui, Rangitīkei or Manawatū in the south, and Taupō in the north. None selected.",
   tararua: "Weighing 'go west' into Horizons or 'go south' toward Wairarapa; overall prefers a different reform approach.",
@@ -786,7 +784,7 @@ function ShareBar({ members, color, compact }) {
 // ---------------------------------------------------------------------------
 const PRESETS = {
   article: {
-    label: "Where talks stand, mid-July",
+    label: "Where talks stand, 1 August",
     groups: [
       { name: "The Winterless Council", ids: ["farnorth", "whangarei"] },
       { name: "The Fruit Bowl", ids: ["hastings", "napier", "chb"] },
@@ -799,6 +797,16 @@ const PRESETS = {
       { name: "Wine & Whales", ids: ["marlborough", "kaikoura"] },
       { name: "The Coast", ids: ["buller", "grey", "westland"] },
       { name: "Aoraki Council", ids: ["timaru", "mackenzie", "waimate", "waitaki"] },
+      {
+        name: "Inland Otago",
+        ids: ["centralotago", "clutha", "qldc"],
+        note: "Central Otago and Clutha support this option; Queenstown Lakes was due to consider it on 3 August.",
+      },
+      {
+        name: "Inland Otago + Gore",
+        ids: ["centralotago", "clutha", "qldc", "gore"],
+        note: "A reported Clutha mayoral option; agreement from Queenstown Lakes and Gore was not reported.",
+      },
       { name: "The Deep South", ids: ["southlandd", "gore"] },
     ],
   },
@@ -838,6 +846,26 @@ const OTHER_HEAD_START_COUNCILS = COUNCILS.filter(
     !EXPLORING[council.id]
 );
 const OUTSIDE_HEAD_START_COUNCILS = COUNCILS.filter((council) => council.locked);
+const HOMEPAGE_VARIANT_KEY = "amalgamator-homepage-variant-v1";
+
+function chooseHomepageExperiment() {
+  if (typeof window === "undefined") return { variant: "a", isOverride: false };
+  const requested = new URLSearchParams(window.location.search).get("variant");
+  if (requested === "a" || requested === "b") {
+    return { variant: requested, isOverride: true };
+  }
+  try {
+    const saved = window.localStorage.getItem(HOMEPAGE_VARIANT_KEY);
+    if (saved === "a" || saved === "b") {
+      return { variant: saved, isOverride: false };
+    }
+    const assigned = Math.random() < 0.5 ? "a" : "b";
+    window.localStorage.setItem(HOMEPAGE_VARIANT_KEY, assigned);
+    return { variant: assigned, isOverride: false };
+  } catch (error) {
+    return { variant: Math.random() < 0.5 ? "a" : "b", isOverride: false };
+  }
+}
 
 // Build a preset's state. Used for the opening view as well as the buttons, so
 // first-time visitors land on a populated map rather than an empty board.
@@ -3236,6 +3264,8 @@ function ResultShareBar({ members }) {
 }
 
 export default function App() {
+  const [homepageExperiment] = useState(chooseHomepageExperiment);
+  const homepageVariant = homepageExperiment.variant;
   const [screen, setScreen] = useState("start");
   const [region, setRegion] = useState("");
   const [allCouncils, setAllCouncils] = useState(false);
@@ -3249,6 +3279,23 @@ export default function App() {
   const [governanceSeatsByScenario, setGovernanceSeatsByScenario] = useState({});
   const [regionalFunctionsByScenario, setRegionalFunctionsByScenario] = useState({});
   const revisingScenario = useRef(false);
+  const homepageExposureTracked = useRef(false);
+
+  useEffect(() => {
+    if (
+      screen !== "start" ||
+      homepageExperiment.isOverride ||
+      homepageExposureTracked.current
+    ) {
+      return;
+    }
+    homepageExposureTracked.current = true;
+    trackJourney(
+      homepageVariant === "b"
+        ? JOURNEY_EVENTS.viewedHomepageVariantB
+        : JOURNEY_EVENTS.viewedHomepageVariantA
+    );
+  }, [screen, homepageExperiment.isOverride, homepageVariant]);
 
   useEffect(() => {
     try {
@@ -3616,7 +3663,10 @@ export default function App() {
   const startOver = () => {
     try {
       if (/^https?:$/.test(window.location.protocol)) {
-        window.history.replaceState(null, "", window.location.pathname);
+        const reviewQuery = homepageExperiment.isOverride
+          ? `?variant=${homepageVariant}`
+          : "";
+        window.history.replaceState(null, "", `${window.location.pathname}${reviewQuery}`);
       }
     } catch (error) {
       // Clearing a fragment is optional in embedded previews.
@@ -3889,7 +3939,7 @@ export default function App() {
       </header>
 
       <main id="simpleMain">
-        {screen === "start" && (
+        {screen === "start" && homepageVariant === "a" && (
           <section className="simpleStart">
             <p className="simpleEyebrow">Aotearoa local government explorer</p>
             <h1>Build a bigger council.</h1>
@@ -4043,19 +4093,35 @@ export default function App() {
           </section>
         )}
 
-        {screen === "talks" && (
+        {(screen === "talks" || (screen === "start" && homepageVariant === "b")) && (
           <section className="simpleTalks">
             <div className="simplePageHead">
-              <p className="simpleEyebrow">Optional starting point</p>
+              <p className="simpleEyebrow">
+                {screen === "start" ? "Aotearoa local government explorer" : "Optional starting point"}
+              </p>
               <h1>Where talks stand</h1>
               <p>
-                Every reported combination in this snapshot is shown below. Choose one
-                to explore it, then change the councils if you want.
+                {screen === "start"
+                  ? "Explore council combinations being discussed, or choose any councils to build your own."
+                  : "Every reported combination in this snapshot is shown below. Choose one to explore it, then change the councils if you want."}
               </p>
             </div>
 
+            {screen === "start" && (
+              <div className="simpleTalksHomeActions">
+                <button
+                  className="simplePrimary simpleHeroPrimary"
+                  type="button"
+                  onClick={startAcrossRegions}
+                >
+                  Choose any councils
+                </button>
+                <span>No sign-up · uses published council data</span>
+              </div>
+            )}
+
             <div className="simpleTalksNotice">
-              <strong>Snapshot updated 26 July 2026</strong>
+              <strong>Snapshot updated 1 August 2026</strong>
               <span>
                 These are reported discussions and stated positions, not endorsements,
                 predictions, or final proposals.
@@ -4082,6 +4148,9 @@ export default function App() {
                     <span className="simpleTalkMeta">
                       {combinationMembers.length} councils · {fmtPop(combinationPopulation)} people
                     </span>
+                    {combination.note && (
+                      <span className="simpleTalkNote">{combination.note}</span>
+                    )}
                   </button>
                 );
               })}
@@ -4094,7 +4163,7 @@ export default function App() {
                   Status notes updated 28 July 2026. This list includes councils
                   still exploring, councils that have decided not to submit, and
                   councils pursuing alternative approaches. The starter
-                  combinations above are unchanged. Select a council to test who
+                  combinations above reflect the latest sourced snapshot. Select a council to test who
                   it could join.
                 </p>
                 <div className="simpleStatusRegions">
@@ -4195,9 +4264,15 @@ export default function App() {
               </div>
             </details>
 
-            <button className="simpleSecondary" type="button" onClick={startOver}>
-              Back to the start
-            </button>
+            {screen === "talks" ? (
+              <button className="simpleSecondary" type="button" onClick={startOver}>
+                Back to the start
+              </button>
+            ) : (
+              <button className="simpleSecondary" type="button" onClick={startAcrossRegions}>
+                Build your own combination
+              </button>
+            )}
           </section>
         )}
 
@@ -5198,6 +5273,14 @@ const SIMPLE_CSS = `
   line-height: 1.4;
 }
 
+.simpleHeroPrimary {
+  min-height: 54px;
+  padding-inline: 24px;
+  min-width: 210px;
+  box-shadow: 5px 5px 0 var(--ink);
+  font-size: 17px;
+}
+
 .simpleStartCard {
   position: relative;
   z-index: 1;
@@ -5361,6 +5444,17 @@ const SIMPLE_CSS = `
 .simpleBuild .simplePageHead > h1 { font-size: clamp(38px, 7vw, 64px); }
 
 .simpleTalks .simplePageHead > h1 { font-size: clamp(42px, 8vw, 70px); }
+.simpleTalksHomeActions {
+  margin: -8px 0 30px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.simpleTalksHomeActions > span {
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
 .simpleTalksNotice {
   margin-bottom: 20px;
   padding: 16px 18px;
@@ -5422,6 +5516,12 @@ const SIMPLE_CSS = `
 .simpleTalkMeta {
   margin-top: auto;
   font-weight: 700;
+}
+.simpleTalkNote {
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.45;
 }
 .simpleExploring {
   margin: 4px 0 22px;
@@ -6547,6 +6647,11 @@ const SIMPLE_CSS = `
   }
   .simpleCrossRegion .simpleSecondary { width: 100%; }
   .simpleTalkGrid { grid-template-columns: 1fr; }
+  .simpleTalksHomeActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .simpleTalksHomeActions > span { text-align: center; }
   .simpleTalkCard { min-height: 0; }
   .simpleTalkOrigin {
     align-items: flex-start;

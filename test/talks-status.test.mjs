@@ -9,9 +9,30 @@ const app = read("src/App.jsx");
 const about = read("public/about/index.html");
 const sourceRegister = read("public/source-register.csv");
 
-test("the main current-talks starter combinations remain unchanged", () => {
+test("homepage variants use stable assignment and exclude review overrides", () => {
+  assert.match(
+    app,
+    /new URLSearchParams\(window\.location\.search\)\.get\("variant"\)/
+  );
+  assert.match(app, /HOMEPAGE_VARIANT_KEY = "amalgamator-homepage-variant-v1"/);
+  assert.match(app, /window\.localStorage\.getItem\(HOMEPAGE_VARIANT_KEY\)/);
+  assert.match(app, /window\.localStorage\.setItem\(HOMEPAGE_VARIANT_KEY, assigned\)/);
+  assert.match(app, /Math\.random\(\) < 0\.5 \? "a" : "b"/);
+  assert.match(app, /homepageExperiment\.isOverride/);
+  assert.match(app, /JOURNEY_EVENTS\.viewedHomepageVariantA/);
+  assert.match(app, /JOURNEY_EVENTS\.viewedHomepageVariantB/);
+  assert.match(app, /screen === "start" && homepageVariant === "a"/);
+  assert.match(
+    app,
+    /screen === "talks" \|\| \(screen === "start" && homepageVariant === "b"\)/
+  );
+  assert.match(app, /Choose any councils/);
+  assert.match(app, /Build your own combination/);
+});
+
+test("the main current-talks starter combinations include the reported Otago options", () => {
   const articlePreset = app.match(
-    /article:\s*\{\s*label: "Where talks stand, mid-July",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
+    /article:\s*\{\s*label: "Where talks stand, 1 August",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
   )?.[1];
 
   assert.ok(articlePreset, "current-talks preset is present");
@@ -27,12 +48,16 @@ test("the main current-talks starter combinations remain unchanged", () => {
     '{ name: "Wine & Whales", ids: ["marlborough", "kaikoura"] }',
     '{ name: "The Coast", ids: ["buller", "grey", "westland"] }',
     '{ name: "Aoraki Council", ids: ["timaru", "mackenzie", "waimate", "waitaki"] }',
+    'name: "Inland Otago",',
+    'ids: ["centralotago", "clutha", "qldc"],',
+    'name: "Inland Otago + Gore",',
+    'ids: ["centralotago", "clutha", "qldc", "gore"],',
     '{ name: "The Deep South", ids: ["southlandd", "gore"] }',
   ];
 
   assert.equal(
-    [...articlePreset.matchAll(/\{ name: /g)].length,
-    expectedGroups.length
+    [...articlePreset.matchAll(/name: "/g)].length,
+    14
   );
   for (const group of expectedGroups) {
     assert.ok(articlePreset.includes(group), group);
@@ -52,7 +77,7 @@ test("the exploring section includes the 28 July council status updates", () => 
     assert.ok(app.includes(statement), statement);
   }
   assert.match(app, /Status notes updated 28 July 2026/);
-  assert.match(app, /The starter\s+combinations above are unchanged/);
+  assert.match(app, /combinations above reflect the latest sourced snapshot/);
 
   const additionalStatusIds = [
     "thames",
@@ -66,8 +91,6 @@ test("the exploring section includes the 28 July council status updates", () => 
     "waimakariri",
     "christchurch",
     "selwyn",
-    "centralotago",
-    "clutha",
     "kapiti",
     "horowhenua",
     "nelson",
@@ -132,7 +155,7 @@ test("where things stand accounts for all territorial authorities", () => {
     ...councilBlock.matchAll(/\{ id: "([^"]+)"[^\n]+locked: true/g),
   ].map((match) => match[1]);
   const currentTalksBlock = app.match(
-    /article:\s*\{\s*label: "Where talks stand, mid-July",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
+    /article:\s*\{\s*label: "Where talks stand, 1 August",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
   )?.[1] || "";
   const currentTalksIds = [
     ...currentTalksBlock.matchAll(/"([a-z0-9]+)"/g),
@@ -158,7 +181,7 @@ test("where things stand accounts for all territorial authorities", () => {
 
   assert.equal(allCouncilIds.length, 67);
   assert.deepEqual(lockedCouncilIds, ["auckland"]);
-  assert.equal(otherEligibleIds.length, 5);
+  assert.equal(otherEligibleIds.length, 4);
   assert.equal(represented.size, allCouncilIds.length);
 });
 
@@ -210,4 +233,17 @@ test("Amalgamation.nz is included as a supplementary source", () => {
   );
   assert.match(sourceRegister, /not as a numerical model input/);
   assert.match(sourceRegister, /A tag or mention alone is not treated as a council decision/);
+});
+
+test("the reported Otago options are qualified and sourced", () => {
+  assert.match(app, /Central Otago and Clutha support this option/);
+  assert.match(app, /agreement from Queenstown Lakes and Gore was not reported/);
+  assert.match(
+    sourceRegister,
+    /"otago_unitary_options","RNZ; Local Democracy Reporting"/
+  );
+  assert.match(
+    about,
+    /Otago councils want to form unitary authority â€” without Dunedin/
+  );
 });

@@ -1,6 +1,8 @@
 const SOCIAL_PLATFORMS = new Set(["facebook", "linkedin", "x", "reddit"]);
 
 export const JOURNEY_EVENTS = Object.freeze({
+  viewedHomepageVariantA: "homepage-variant-a-viewed",
+  viewedHomepageVariantB: "homepage-variant-b-viewed",
   startedAmalgamation: "journey-started-amalgamation",
   selectedFirstCouncil: "journey-selected-first-council",
   addedAnotherCouncil: "journey-added-another-council",
