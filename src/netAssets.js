@@ -83,10 +83,12 @@ export function calculateNetAssetsPerCapita(members) {
   if (usable.length < 2 || usable.length !== members.length) {
     return {
       mergedPerResident: null,
+      mergedLiabilitiesPerResident: null,
       totalAssets: null,
       totalLiabilities: null,
       totalNetAssets: null,
       rows: [],
+      liabilityRows: [],
       missing: members.filter((member) => !hasFinancialPosition(member)),
     };
   }
@@ -99,6 +101,7 @@ export function calculateNetAssetsPerCapita(members) {
   );
   const totalNetAssets = totalAssets - totalLiabilities;
   const mergedPerResident = totalNetAssets / totalPopulation;
+  const mergedLiabilitiesPerResident = totalLiabilities / totalPopulation;
   const rows = usable
     .map((council) => {
       const before = (council.assets24 - council.liabilities24) / council.pop;
@@ -107,16 +110,30 @@ export function calculateNetAssetsPerCapita(members) {
         before,
         after: mergedPerResident,
         change: mergedPerResident - before,
+        liabilitiesPerResident: council.liabilities24 / council.pop,
+      };
+    })
+    .sort((a, b) => b.change - a.change);
+  const liabilityRows = usable
+    .map((council) => {
+      const before = council.liabilities24 / council.pop;
+      return {
+        council,
+        before,
+        after: mergedLiabilitiesPerResident,
+        change: mergedLiabilitiesPerResident - before,
       };
     })
     .sort((a, b) => b.change - a.change);
 
   return {
     mergedPerResident,
+    mergedLiabilitiesPerResident,
     totalAssets,
     totalLiabilities,
     totalNetAssets,
     rows,
+    liabilityRows,
     missing: [],
   };
 }

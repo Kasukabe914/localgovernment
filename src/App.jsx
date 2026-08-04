@@ -784,13 +784,15 @@ function ShareBar({ members, color, compact }) {
 // ---------------------------------------------------------------------------
 const PRESETS = {
   article: {
-    label: "Where talks stand, 1 August",
+    label: "Where talks stand, 5 August",
     groups: [
       { name: "The Winterless Council", ids: ["farnorth", "whangarei"] },
       { name: "The Fruit Bowl", ids: ["hastings", "napier", "chb"] },
       { name: "The Sunrise Coast", ids: ["whakatane", "kawerau", "opotiki"] },
-      { name: "Megatron", ids: ["waikatod", "hamilton", "waipa", "swaikato", "taupo"] },
-      { name: "Kiwiana Country", ids: ["otorohanga", "waitomo"] },
+      {
+        name: "Megatron",
+        ids: ["waikatod", "hamilton", "waipa", "swaikato", "otorohanga", "waitomo", "taupo"],
+      },
       { name: "Stratford–South Taranaki", ids: ["stratford", "staranaki"] },
       { name: "The Big Windy", ids: ["wellington", "hutt", "porirua", "upperhutt"] },
       { name: "The Wairarapa Three", ids: ["masterton", "carterton", "swairarapa"] },
@@ -816,12 +818,18 @@ const PRESETS = {
       { name: "Greater Wellington", ids: ["wellington", "hutt", "upperhutt", "porirua", "kapiti", "masterton", "carterton", "swairarapa"] },
     ],
   },
-  megatron: { label: "Megatron", groups: [{ name: "Megatron", ids: ["thames", "hauraki", "waikatod", "matamata", "hamilton", "waipa", "otorohanga", "swaikato", "waitomo", "taupo"] }] },
+  megatron: {
+    label: "Megatron: Western Waikato",
+    groups: [{
+      name: "Megatron",
+      ids: ["waikatod", "hamilton", "waipa", "swaikato", "otorohanga", "waitomo", "taupo"],
+    }],
+  },
   regional: {
     label: "One council per region",
     groups: [
       { name: "Northlandia", ids: ["farnorth", "whangarei", "kaipara"] },
-      { name: "Megatron", ids: ["thames", "hauraki", "waikatod", "matamata", "hamilton", "waipa", "otorohanga", "swaikato", "waitomo", "taupo"] },
+      { name: "Waikato-wide", ids: ["thames", "hauraki", "waikatod", "matamata", "hamilton", "waipa", "otorohanga", "swaikato", "waitomo", "taupo"] },
       { name: "Plentyville", ids: ["wbop", "tauranga", "rotorua", "whakatane", "kawerau", "opotiki"] },
       { name: "The Fruit Bowl", ids: ["wairoa", "hastings", "napier", "chb"] },
       { name: "The Naki", ids: ["newplymouth", "stratford", "staranaki"] },
@@ -3556,6 +3564,8 @@ export default function App() {
   const falling = rates.rows.filter((row) => row.change < 0);
   const assetHigher = netAssets.rows.filter((row) => row.change > 0);
   const assetLower = netAssets.rows.filter((row) => row.change < 0);
+  const liabilityHigher = netAssets.liabilityRows.filter((row) => row.change > 0);
+  const liabilityLower = netAssets.liabilityRows.filter((row) => row.change < 0);
 
   const startRegion = () => {
     if (!region) return;
@@ -4121,7 +4131,7 @@ export default function App() {
             )}
 
             <div className="simpleTalksNotice">
-              <strong>Snapshot updated 1 August 2026</strong>
+              <strong>Snapshot updated 5 August 2026</strong>
               <span>
                 These are reported discussions and stated positions, not endorsements,
                 predictions, or final proposals.
@@ -4160,7 +4170,7 @@ export default function App() {
               <summary>Councils still exploring options</summary>
               <div>
                 <p className="simpleExploringIntro">
-                  Status notes updated 28 July 2026. This list includes councils
+                  Status notes updated 5 August 2026. This list includes councils
                   still exploring, councils that have decided not to submit, and
                   councils pursuing alternative approaches. The starter
                   combinations above reflect the latest sourced snapshot. Select a council to test who
@@ -4491,7 +4501,7 @@ export default function App() {
 
             <article className="simplePanel">
               <p className="simpleEyebrow">Balance of the new council</p>
-              <h2>Where would most people live?</h2>
+              <h2>How would the population be distributed?</h2>
               <p className="simpleAnswer">
                 <strong>{largest.name}</strong> would account for {largestShare}% of the population.
                 {largestShare > 50
@@ -4508,7 +4518,7 @@ export default function App() {
 
             <article className="simplePanel simpleRepresentation">
               <p className="simpleEyebrow">Representation</p>
-              <h2>How many elected roles would there be?</h2>
+              <h2>How would the number of elected roles change?</h2>
               <p className="simpleAnswer">
                 A simple comparison of the current councils with the
                 illustrative merged model.
@@ -4581,7 +4591,7 @@ export default function App() {
               <div className="simpleRepresentationHead">
                 <div>
                   <p className="simpleEyebrow">Representation</p>
-                  <h2>Who would represent the new council?</h2>
+                  <h2>How would elected representation be structured?</h2>
                   <p className="simpleAnswer">
                     Compare today&apos;s elected positions with an illustrative
                     merged governing body. You can test three council sizes.
@@ -4793,7 +4803,7 @@ export default function App() {
               <div className="simplePanelHead">
                 <div>
                   <p className="simpleEyebrow">Residential rates</p>
-                  <h2>How do the published council averages compare?</h2>
+                  <h2>How would rates change on average?</h2>
                 </div>
                 {rates.blended != null && (
                   <div className="simpleBlend">
@@ -4908,7 +4918,7 @@ export default function App() {
               <div className="simplePanelHead">
                 <div>
                   <p className="simpleEyebrow">Historic net assets per resident · 30 June 2024</p>
-                  <h2>How would the balance sheets combine?</h2>
+                  <h2>How would net assets change per resident?</h2>
                 </div>
                 {netAssets.mergedPerResident != null && (
                   <div className="simpleBlend">
@@ -5019,6 +5029,107 @@ export default function App() {
                     Stats NZ Local Authority Financial Statistics
                   </a>
                   .
+                </p>
+              </details>
+            </article>
+
+            <article className="simplePanel">
+              <div className="simplePanelHead">
+                <div>
+                  <p className="simpleEyebrow">Historic liabilities per resident · 30 June 2024</p>
+                  <h2>How would debt change per resident?</h2>
+                </div>
+                {netAssets.mergedLiabilitiesPerResident != null && (
+                  <div className="simpleBlend">
+                    <span>Merged average</span>
+                    <strong>{money(netAssets.mergedLiabilitiesPerResident)}</strong>
+                    <span>per resident</span>
+                  </div>
+                )}
+              </div>
+
+              {netAssets.mergedLiabilitiesPerResident == null ? (
+                <p className="simpleEmpty">
+                  There is not enough comparable liabilities data for this combination.
+                </p>
+              ) : (
+                <>
+                  <p className="simpleAnswer">
+                    If all liabilities were shared evenly by population, residents in {liabilityHigher.length} council {liabilityHigher.length === 1 ? "area would be associated" : "areas would be associated"} with
+                    a higher amount per person, while residents in {liabilityLower.length} would be associated with a lower amount.
+                  </p>
+                  <p>
+                    A plus means that after amalgamation the residents will have higher
+                    per capita debt, while a minus means a lower per capita debt.
+                  </p>
+                  <div
+                    className="simpleRateChart"
+                    aria-label="Change in liabilities per resident after pooling council balance sheets"
+                  >
+                    <div className="simpleRateAxis" aria-hidden="true">
+                      <span>Pooled average is lower</span>
+                      <span>Pooled average is higher</span>
+                    </div>
+                    <div className="simpleRateRows">
+                      {netAssets.liabilityRows.map((row) => (
+                        <div className="simpleRateRow simpleAssetRow" key={`${row.council.id}-liabilities`}>
+                          <div className="simpleRateCopy">
+                            <strong>{row.council.name}</strong>
+                            <span>{money(row.before)} per resident at 30 June 2024</span>
+                          </div>
+                          <strong
+                            className={row.change > 0 ? "simpleUp" : row.change < 0 ? "simpleDown" : "simpleFlat"}
+                          >
+                            {row.change > 0 ? "+" : row.change < 0 ? "−" : ""}
+                            {money(Math.abs(row.change))} per resident
+                          </strong>
+                          <div className="simpleRateBar" aria-hidden="true">
+                            <span className="simpleRateZero" />
+                            {row.change !== 0 && (
+                              <span
+                                className={`simpleRateFill ${row.change > 0 ? "simpleRateMore" : "simpleRateLess"}`}
+                                style={{
+                                  width: `${Math.min(
+                                    50,
+                                    (Math.abs(row.change) /
+                                      Math.abs(netAssets.mergedLiabilitiesPerResident)) * 50
+                                  )}%`,
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <details className="simpleDisclosure" onToggle={trackDisclosureToggle}>
+                <summary>What this comparison does—and does not—mean</summary>
+                <p>
+                  First, the tool divides each council's total liabilities at 30 June
+                  2024 by its population. It then adds together the selected councils'
+                  liabilities and populations to calculate one pooled average. The
+                  change shown for each council is simply the difference between its
+                  current figure and that pooled average.
+                </p>
+                <p>
+                  Total liabilities include debt as well as payables, provisions and
+                  other obligations, so this is not a measure of borrowings alone.
+                  The comparison does not mean residents personally owe this amount.
+                  Nor does amalgamation automatically spread every liability evenly:
+                  legacy debt could be ring-fenced or treated differently in a final
+                  agreement.
+                </p>
+                <p>
+                  Council-controlled organisations are excluded, and later transfers
+                  to separate water organisations are not reflected.
+                </p>
+                <p>
+                  Bar length is the difference divided by the combined liabilities per
+                  resident. Half the track represents a difference equal to 100% of
+                  that combined figure.
                 </p>
               </details>
             </article>

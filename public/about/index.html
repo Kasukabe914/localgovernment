@@ -290,7 +290,7 @@
 
     <section class="panel" aria-labelledby="shows-heading">
       <h2 id="shows-heading">What this tool shows</h2>
-      <p>The tool lets a user combine territorial authorities and compare four things: the population and land area of the combined council, how published 2024/25 average residential rates bills differ from a pooled average, each council’s historic net assets per resident at 30 June 2024 compared with the pooled position, and where the combined population would live.</p>
+      <p>The tool lets a user combine territorial authorities and compare five things: the population and land area of the combined council, how published 2024/25 average residential rates bills differ from a pooled average, each council’s historic net assets per resident at 30 June 2024 compared with the pooled position, each council’s historic total liabilities per resident compared with the pooled position, and where the combined population would live.</p>
       <p>The dataset covers all 67 territorial authorities: 12 city councils, 53 district councils, Auckland Council and Chatham Islands Council. It excludes the 11 regional councils and their separate rates. Five territorial authorities formally carry regional-council functions; Chatham Islands performs some regional functions. Any two or more territorial and/or unitary authorities may submit a Head Start outline proposal except Auckland. Auckland remains in the dataset and can be modelled only as an expressly hypothetical comparison.</p>
     </section>
 
@@ -340,7 +340,7 @@
             </tr>
             <tr>
               <td>Stats NZ</td>
-              <td><a href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/">Local Authority Financial Statistics</a>: council-only total assets and liabilities. Water assets and liabilities held directly by a council at the reference date remain included; assets already held in council-controlled organisations are excluded.</td>
+              <td><a href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/">Local Authority Financial Statistics</a>: council-only total assets and liabilities. Water assets and liabilities held directly by a council at the reference date remain included; assets already held in council-controlled organisations are excluded. The liabilities comparator uses total liabilities, not net debt or borrowings.</td>
               <td>Financial position at 30 June 2024</td>
               <td>27 July 2026</td>
             </tr>
@@ -386,8 +386,19 @@
               <td>1 August 2026</td>
               <td>1 August 2026</td>
             </tr>
+            <tr>
+              <td>RNZ / Local Democracy Reporting</td>
+              <td><a href="https://www.rnz.co.nz/news/politics/880431/taupo-s-mayor-fights-hostile-takeover-to-avoid-joining-possible-council-merger">Taupō's mayor fights 'hostile takeover' to avoid joining possible council merger</a>: reporting on the seven-council Western Waikato option, Taupō District Council's opposition to participating, and a separate net-debt-per-rating-unit comparison. It is a status and accounting-context source, not a numerical input to this tool.</td>
+              <td>4 August 2026</td>
+              <td>5 August 2026</td>
+            </tr>
           </tbody>
         </table>
+      </div>
+      <div class="method-note">
+        <p><strong>Why liabilities figures can differ from other reported debt figures</strong></p>
+        <p>The tool compares council-only <strong>total liabilities per resident</strong> at 30 June 2024. Public reporting may instead use net debt, borrowings, debt after water-service transfers, a later date, or rating units rather than residents. Those choices can produce very different numbers without either figure being wrong.</p>
+        <p>For example, the tool records Taupō District Council's total liabilities as $231.909 million, or $5,495 per resident using the 2024 population of 42,200. <a href="https://www.rnz.co.nz/news/politics/880431/taupo-s-mayor-fights-hostile-takeover-to-avoid-joining-possible-council-merger">RNZ reported separate 2026 modelling</a> that put Taupō's net debt at about $900 per rating unit and the proposed Western Waikato authority at almost $9,000 per rating unit. The numerator, denominator, date and treatment of water services differ, so the figures are not directly comparable.</p>
       </div>
       <p>
         <a href="../council-data/index.html">Browse the 67-authority data table</a> ·
@@ -422,6 +433,8 @@
       <p>This choice provides a consistent historical comparison through an in-flight national transition. It does not reconstruct every water organisation or claim to show a council’s post-reform legal balance sheet or a household’s current combined council-and-water charge.</p>
       <h3>Historic net assets per resident — 30 June 2024</h3>
       <p>For the balance-sheet comparison, the tool subtracts liabilities from assets for every selected council, pools those dollar amounts, and divides by the combined population. It then compares that pooled figure with each council’s historic net assets per resident. Water assets and liabilities held directly by councils at 30 June 2024 remain included; assets already held outside the council-only accounts remain excluded. Later water transfers are ignored. This is an accounting comparison, not a transfer payable to residents or a post-reform legal balance sheet.</p>
+      <h3>Historic total liabilities per resident — 30 June 2024</h3>
+      <p>The liabilities comparator adds the selected councils' council-only total liabilities and divides them by their combined population. It compares that pooled amount with each council's total liabilities per resident. It is not a measure of net debt, borrowings, debt per rating unit or the legal allocation of liabilities after amalgamation. The same historical water-continuity basis described above applies.</p>
       <h3>How elected representation is estimated</h3>
       <p><strong>Before amalgamation:</strong> elected representatives are the councillors on the selected territorial authorities plus the regional councillors estimated to overlap the selected area. Mayors are shown separately. The territorial and regional figures come from the 2025 Local Authority Election Statistics, with Tauranga&rsquo;s current 2024&ndash;28 arrangement.</p>
       <p>When every territorial authority in a region is selected, the model includes every regional councillor. For a partial-region proposal, it estimates the number of overlapping regional councillors from the selected councils&rsquo; share of the regional population. This is an approximation because regional constituency boundaries are not mapped in the tool.</p>
@@ -481,6 +494,14 @@
     <section class="panel" aria-labelledby="changes-heading">
       <h2 id="changes-heading">Change log</h2>
       <ol class="change-log">
+        <li>
+          <time datetime="2026-08-05">5 August 2026</time>
+          <div><strong>Added a liabilities comparator.</strong> Results now compare each selected council's total liabilities per resident with the pooled amount for the combined council. The sources and methodology now explain why this historic total-liabilities measure may differ from reported debt or net-debt figures.</div>
+        </li>
+        <li>
+          <time datetime="2026-08-05">5 August 2026</time>
+          <div><strong>Updated the Megatron starter combination.</strong> It now reflects the seven-council Western Waikato option reported by RNZ. Taupō is included because it is named in the reported option, with a note that Taupō District Council has not agreed to participate and has opposed being included.</div>
+        </li>
         <li>
           <time datetime="2026-08-01">1 August 2026</time>
           <div><strong>Started a homepage A/B test.</strong> Visitors are assigned consistently to either the original homepage or the talks-led homepage so completed-scenario rates can be compared.</div>

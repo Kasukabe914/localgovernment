@@ -77,12 +77,30 @@ test("the merged result pools dollars and population before dividing", () => {
 
   assert.equal(result.totalAssets, expectedAssets);
   assert.equal(result.totalLiabilities, expectedLiabilities);
+  assert.equal(
+    result.mergedLiabilitiesPerResident,
+    expectedLiabilities / expectedPopulation
+  );
   assert.equal(result.totalNetAssets, expectedAssets - expectedLiabilities);
   assert.equal(result.mergedPerResident, expectedMerged);
   assert.equal(result.rows.length, members.length);
   assert.ok(
     result.rows.every((row) => row.after === result.mergedPerResident),
     "every TLA is compared with the same merged benchmark"
+  );
+  assert.ok(
+    result.rows.every(
+      (row) =>
+        row.liabilitiesPerResident === row.council.liabilities24 / row.council.pop
+    ),
+    "every TLA exposes its liabilities per resident"
+  );
+  assert.equal(result.liabilityRows.length, members.length);
+  assert.ok(
+    result.liabilityRows.every(
+      (row) => row.after === result.mergedLiabilitiesPerResident
+    ),
+    "every TLA is compared with the same merged liabilities benchmark"
   );
 });
 
@@ -115,6 +133,8 @@ test("the calculation fails closed when any selected TLA lacks data", () => {
   const result = calculateNetAssetsPerCapita(members);
 
   assert.equal(result.mergedPerResident, null);
+  assert.equal(result.mergedLiabilitiesPerResident, null);
   assert.equal(result.rows.length, 0);
+  assert.equal(result.liabilityRows.length, 0);
   assert.deepEqual(result.missing.map((row) => row.id), ["missing"]);
 });

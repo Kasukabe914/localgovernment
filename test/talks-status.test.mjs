@@ -32,7 +32,7 @@ test("homepage variants use stable assignment and exclude review overrides", () 
 
 test("the main current-talks starter combinations include the reported Otago options", () => {
   const articlePreset = app.match(
-    /article:\s*\{\s*label: "Where talks stand, 1 August",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
+    /article:\s*\{\s*label: "Where talks stand, 5 August",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
   )?.[1];
 
   assert.ok(articlePreset, "current-talks preset is present");
@@ -40,8 +40,7 @@ test("the main current-talks starter combinations include the reported Otago opt
     '{ name: "The Winterless Council", ids: ["farnorth", "whangarei"] }',
     '{ name: "The Fruit Bowl", ids: ["hastings", "napier", "chb"] }',
     '{ name: "The Sunrise Coast", ids: ["whakatane", "kawerau", "opotiki"] }',
-    '{ name: "Megatron", ids: ["waikatod", "hamilton", "waipa", "swaikato", "taupo"] }',
-    '{ name: "Kiwiana Country", ids: ["otorohanga", "waitomo"] }',
+    'ids: ["waikatod", "hamilton", "waipa", "swaikato", "otorohanga", "waitomo", "taupo"],',
     '{ name: "Stratford–South Taranaki", ids: ["stratford", "staranaki"] }',
     '{ name: "The Big Windy", ids: ["wellington", "hutt", "porirua", "upperhutt"] }',
     '{ name: "The Wairarapa Three", ids: ["masterton", "carterton", "swairarapa"] }',
@@ -57,14 +56,14 @@ test("the main current-talks starter combinations include the reported Otago opt
 
   assert.equal(
     [...articlePreset.matchAll(/name: "/g)].length,
-    14
+    13
   );
   for (const group of expectedGroups) {
     assert.ok(articlePreset.includes(group), group);
   }
 });
 
-test("the exploring section includes the 28 July council status updates", () => {
+test("the exploring section includes the latest council status updates", () => {
   for (const statement of [
     "Resolved not to submit a Head Start proposal and does not support Whangārei District Council's preferred pairing with Kaipara.",
     "Resolved not to participate in the Head Start process.",
@@ -76,7 +75,7 @@ test("the exploring section includes the 28 July council status updates", () => 
   ]) {
     assert.ok(app.includes(statement), statement);
   }
-  assert.match(app, /Status notes updated 28 July 2026/);
+  assert.match(app, /Status notes updated 5 August 2026/);
   assert.match(app, /combinations above reflect the latest sourced snapshot/);
 
   const additionalStatusIds = [
@@ -155,7 +154,7 @@ test("where things stand accounts for all territorial authorities", () => {
     ...councilBlock.matchAll(/\{ id: "([^"]+)"[^\n]+locked: true/g),
   ].map((match) => match[1]);
   const currentTalksBlock = app.match(
-    /article:\s*\{\s*label: "Where talks stand, 1 August",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
+    /article:\s*\{\s*label: "Where talks stand, 5 August",\s*groups: \[([\s\S]*?)\],\s*\},\s*wgtnOne:/
   )?.[1] || "";
   const currentTalksIds = [
     ...currentTalksBlock.matchAll(/"([a-z0-9]+)"/g),

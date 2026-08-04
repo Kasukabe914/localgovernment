@@ -405,6 +405,12 @@ test("the source register is complete at source-family level and exposes its his
   assert.ok(ratepayersReport);
   assert.match(ratepayersReport.fields_or_use, /households_published_2026/);
   assert.match(ratepayersReport.notes, /not the council-defined residential rating-unit count/);
+  const westernWaikato = rows.find(
+    (row) => row.source_id === "rnz_western_waikato"
+  );
+  assert.ok(westernWaikato);
+  assert.match(westernWaikato.fields_or_use, /Taupō participation status/);
+  assert.match(westernWaikato.notes, /not a numerical model input/);
   assert.match(about, /href="\.\.\/source-register\.csv"/);
   assert.match(about, /Local Authority Election Statistics 2025/);
   assert.match(
@@ -452,6 +458,9 @@ test("code, outputs and source data have distinct licence statements", () => {
   )?.[1] || "";
   assert.match(changeLogSection, /<time datetime="2026-07-28">28 July 2026<\/time>/);
   assert.match(changeLogSection, /<time datetime="2026-08-01">1 August 2026<\/time>/);
+  assert.match(changeLogSection, /<time datetime="2026-08-05">5 August 2026<\/time>/);
+  assert.match(changeLogSection, /Added a liabilities comparator/);
+  assert.match(changeLogSection, /Updated the Megatron starter combination/);
   assert.match(changeLogSection, /Added elected-representation comparisons/);
   assert.match(changeLogSection, /Corrected comparison-bar scaling/);
   assert.match(changeLogSection, /Build a bigger council<\/cite>, Version 1\.0/);
