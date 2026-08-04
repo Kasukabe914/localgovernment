@@ -402,46 +402,90 @@ const CROSS_LINKS = [
   { a: "ruapehu", b: "taupo", label: "northern Ruapehu's Taupō option" },
 ];
 
-// Dated council status notes that supplement the starter combinations in
-// PRESETS.article. Some councils are exploring, some have declined to submit,
-// and some are pursuing an alternative approach.
-const EXPLORING = {
-  kaipara: "Resolved not to submit a Head Start proposal and does not support Whangārei District Council's preferred pairing with Kaipara.",
-  thames: "Community feedback favoured an East Waikato option with Hauraki, Matamata-Piako and South Waikato (54%). Thames-Coromandel was due to make its final decision on 6 August.",
+// Council-level resolutions and reported positions in the MartinJenkins map
+// snapshot at 3 August 2026. A council named in another council's preferred
+// option is not treated as having agreed to that option.
+const POSITION = {
+  PREFERRED: "preferred",
+  NOT_SUBMITTING: "not-submitting",
+  NON_CONFORMING: "non-conforming",
+  NO_RESOLUTION: "no-resolution",
+};
+const POSITION_LABEL = {
+  [POSITION.PREFERRED]: "Resolved preferred option",
+  [POSITION.NOT_SUBMITTING]: "Resolved not to submit",
+  [POSITION.NON_CONFORMING]: "Resolved non-conforming proposal",
+  [POSITION.NO_RESOLUTION]: "No preferred-option resolution",
+};
+
+const COUNCIL_POSITIONS = {
+  farnorth: { category: POSITION.PREFERRED, note: "Resolved on a Far North unitary-authority option." },
+  whangarei: { category: POSITION.PREFERRED, note: "Resolved on a preferred option with Kaipara. Kaipara has not agreed and resolved not to submit." },
+  kaipara: { category: POSITION.NOT_SUBMITTING, note: "Resolved not to submit a Head Start proposal and does not support Whangārei District Council's preferred pairing with Kaipara." },
+  thames: { category: POSITION.NO_RESOLUTION, note: "No resolution on a preferred option as at 3 August. Community feedback had favoured an East Waikato option; a final decision was due on 6 August." },
   hauraki: "Consulted its community and is named in Thames-Coromandel's preferred East Waikato option, but no shared and mutually resolved grouping is reported.",
   matamata: "Completed community consultation and is named in Thames-Coromandel's preferred East Waikato option, but no shared and mutually resolved grouping is reported.",
   tauranga: "A resident survey supported council-led reform and a larger Bay of Plenty council if it delivered efficiencies; Western Bay of Plenty was the preferred partner. No configuration has been selected.",
   wbop: "Is investigating two Head Start merger scenarios and has not selected a final configuration.",
-  rotorua: "Passed a motion to investigate becoming a unitary authority, potentially with neighbouring councils. Discussions are at an early stage and no preferred configuration is reported.",
-  wairoa: "Resolved not to participate in the Head Start process.",
-  newplymouth: "Intends to put an alternative, non-common Pathfinder proposal to the Minister.",
-  manawatu: "Resolved not to submit a Head Start proposal under the present circumstances.",
+  swaikato: { category: POSITION.PREFERRED, note: "Resolved on a preferred option with Hamilton, Waitomo, Ōtorohanga and Taupō. Being named does not establish those councils' agreement; Taupō resolved not to submit." },
+  rotorua: { category: POSITION.PREFERRED, note: "Resolved on a Rotorua unitary-authority option." },
+  napier: { category: POSITION.PREFERRED, note: "Resolved on a preferred option with Hastings and Central Hawke's Bay." },
+  hastings: { category: POSITION.PREFERRED, note: "Resolved on a preferred option with Napier and Central Hawke's Bay." },
+  chb: { category: POSITION.PREFERRED, note: "Resolved on a preferred option with Napier and Hastings." },
+  wairoa: { category: POSITION.NOT_SUBMITTING, note: "Resolved not to participate in the Head Start process." },
+  newplymouth: { category: POSITION.NO_RESOLUTION, note: "The 3 August map records no resolution on a preferred Head Start option." },
+  taupo: { category: POSITION.NOT_SUBMITTING, note: "Resolved not to submit a Head Start proposal." },
+  ruapehu: { category: POSITION.NOT_SUBMITTING, note: "Resolved not to submit a Head Start proposal." },
+  manawatu: { category: POSITION.NOT_SUBMITTING, note: "Resolved not to submit a Head Start proposal under the present circumstances." },
+  buller: { category: POSITION.NOT_SUBMITTING, note: "Resolved not to submit a Head Start proposal. Grey and Westland nevertheless identify Buller in their preferred West Coast option." },
+  tararua: { category: POSITION.NOT_SUBMITTING, note: "Resolved not to submit a Head Start proposal." },
+  stratford: { category: POSITION.PREFERRED, note: "Resolved on a preferred option with South Taranaki." },
+  staranaki: { category: POSITION.PREFERRED, note: "Resolved on a preferred option with Stratford." },
+  grey: { category: POSITION.PREFERRED, note: "Resolved on a preferred West Coast option with Westland and Buller. Buller resolved not to submit." },
+  westland: { category: POSITION.PREFERRED, note: "Resolved on a preferred West Coast option with Grey and Buller. Buller resolved not to submit." },
   ashburton: "Is named in Selwyn's shortlisted two-council option, but no separate Ashburton decision or shared grouping is reported.",
   hurunui: "Is named in North Canterbury and possible Greater Christchurch options. Waimakariri reported working with Hurunui and Kaikōura, but no shared grouping is settled.",
   waimakariri: "Community feedback favoured a North Canterbury authority with Hurunui and potentially Kaikōura (54.5%). A council decision was due on 4 August.",
   christchurch: "Received more than 7,000 community responses and is developing its position. It is also named in Selwyn's possible Greater Christchurch option.",
-  selwyn: "Shortlisted three options: a standalone unitary authority, a Selwyn-Ashburton authority, or a Greater Christchurch authority. Consultation was continuing.",
-  kaikoura: "Prefers a unitary authority with Marlborough, but this is not yet a shared, mutually resolved grouping.",
-  waimate: "Prefers an Aoraki grouping with Waitaki, Mackenzie and Timaru, but this is not yet a shared, mutually resolved grouping.",
-  waitaki: "Prefers an Aoraki grouping with Waimate, Mackenzie and Timaru, but this is not yet a shared, mutually resolved grouping.",
-  mackenzie: "Is named in the Aoraki preferences of Waimate and Waitaki, but the grouping is not yet shared and mutually resolved.",
-  timaru: "Is named in the Aoraki preferences of Waimate and Waitaki, but the grouping is not yet shared and mutually resolved.",
-  rangitikei: "Tested three options: the whole Horizons region, a western grouping with Whanganui and Ruapehu, and a rural districts grouping (27%, 26%, 23% support). Decision due 30 July.",
-  ruapehu: "Options include Whanganui, Rangitīkei or Manawatū in the south, and Taupō in the north. None selected.",
-  tararua: "Weighing 'go west' into Horizons or 'go south' toward Wairarapa; overall prefers a different reform approach.",
-  palmy: "In talks with neighbouring councils; no settled configuration. Decision due 5 August.",
+  selwyn: { category: POSITION.PREFERRED, note: "Resolved on a Selwyn unitary-authority option." },
+  kaikoura: { category: POSITION.PREFERRED, note: "Resolved on a preferred unitary-authority option with Marlborough; Marlborough had no preferred-option resolution in the snapshot." },
+  waimate: { category: POSITION.PREFERRED, note: "Resolved on an Aoraki option with Waitaki, Mackenzie, Timaru and Ashburton; Ashburton had no preferred-option resolution." },
+  waitaki: { category: POSITION.PREFERRED, note: "Resolved on an Aoraki option with Waimate, Mackenzie, Timaru and Ashburton; Ashburton had no preferred-option resolution." },
+  mackenzie: { category: POSITION.PREFERRED, note: "Resolved on an Aoraki option with Waitaki, Waimate, Timaru and Ashburton; Ashburton had no preferred-option resolution." },
+  timaru: { category: POSITION.PREFERRED, note: "Resolved on an Aoraki option with Waitaki, Waimate, Mackenzie and Ashburton; Ashburton had no preferred-option resolution." },
+  qldc: { category: POSITION.PREFERRED, note: "Resolved on an Inland Otago option with Central Otago and Clutha." },
+  centralotago: { category: POSITION.PREFERRED, note: "Resolved on an Inland Otago option with Clutha and Queenstown Lakes." },
+  clutha: { category: POSITION.PREFERRED, note: "Resolved on an Inland Otago option with Central Otago and Queenstown Lakes." },
+  dunedin: { category: POSITION.PREFERRED, note: "Resolved on an option with Clutha and potentially Waitaki; those councils do not reciprocate this exact option." },
+  rangitikei: { category: POSITION.NON_CONFORMING, note: "Resolved to submit a non-conforming proposal." },
+  palmy: { category: POSITION.NO_RESOLUTION, note: "No resolution on a preferred option as at 3 August; a decision was due on 5 August." },
   whanganui: "Engaging neighbours; its mayor says the Horizons councils won't have an agreed proposal by 9 August.",
+  wellington: { category: POSITION.NO_RESOLUTION, note: "No preferred-option resolution is recorded in the 3 August map. Wellington was developing a metropolitan proposal with Hutt and Porirua that includes Upper Hutt." },
+  hutt: { category: POSITION.NO_RESOLUTION, note: "No preferred-option resolution is recorded in the 3 August map. Hutt was participating in the metropolitan proposal, with a council decision scheduled after the snapshot." },
+  porirua: { category: POSITION.NO_RESOLUTION, note: "No preferred-option resolution is recorded in the 3 August map. Porirua was participating in the metropolitan proposal." },
+  upperhutt: { category: POSITION.NO_RESOLUTION, note: "No preferred-option resolution is recorded in the 3 August map. The developing metropolitan proposal includes Upper Hutt, but inclusion does not indicate Upper Hutt's agreement." },
   kapiti: "No decision has been made. In its community survey, a standalone Kāpiti authority was the first preference (43%) and Kāpiti with Horowhenua was the second preference (36.2%).",
   horowhenua: "In discussions with Kāpiti, where a Kāpiti-Horowhenua authority was the second preference in Kāpiti's community survey. No joint proposal has been agreed.",
   nelson: "Supports amalgamation with Tasman District Council, but there is no joint Nelson-Tasman position.",
   tasman: "Remains opposed to amalgamating with Nelson. No joint Nelson-Tasman proposal has been agreed.",
 };
 
+// Older qualified notes remain valid, but are normalised to structured records.
+Object.entries(COUNCIL_POSITIONS).forEach(([id, position]) => {
+  if (typeof position === "string") {
+    COUNCIL_POSITIONS[id] = { category: POSITION.NO_RESOLUTION, note: position };
+  }
+});
+
+const EXPLORING = Object.fromEntries(
+  Object.entries(COUNCIL_POSITIONS).map(([id, position]) => [id, position.note])
+);
+
 const EXPLORING_BY_REGION = [...REGIONS_N, ...REGIONS_S]
   .map((region) => ({
     region,
-    councils: Object.entries(EXPLORING)
-      .map(([id, status]) => ({ council: BY_ID[id], status }))
+    councils: Object.entries(COUNCIL_POSITIONS)
+      .map(([id, position]) => ({ council: BY_ID[id], status: position.note, category: position.category }))
       .filter(({ council }) => council?.region === region),
   }))
   .filter(({ councils }) => councils.length);
@@ -784,30 +828,25 @@ function ShareBar({ members, color, compact }) {
 // ---------------------------------------------------------------------------
 const PRESETS = {
   article: {
-    label: "Where talks stand, 1 August",
+    label: "Where talks stand, 3 August",
     groups: [
-      { name: "The Winterless Council", ids: ["farnorth", "whangarei"] },
-      { name: "The Fruit Bowl", ids: ["hastings", "napier", "chb"] },
-      { name: "The Sunrise Coast", ids: ["whakatane", "kawerau", "opotiki"] },
-      { name: "Megatron", ids: ["waikatod", "hamilton", "waipa", "swaikato", "taupo"] },
-      { name: "Kiwiana Country", ids: ["otorohanga", "waitomo"] },
+      { name: "Far North unitary option", ids: ["farnorth"], note: "Far North's resolved unitary-authority preference; shown as a position rather than a multi-council proposal." },
+      { name: "Whangārei–Kaipara option", ids: ["whangarei", "kaipara"], note: "Whangārei's preferred option. Kaipara resolved not to submit and does not support the pairing." },
+      { name: "The Fruit Bowl", ids: ["hastings", "napier", "chb"], note: "Matching preferred-option resolutions across all three councils." },
+      { name: "South Waikato option", ids: ["swaikato", "hamilton", "waitomo", "otorohanga", "taupo"], note: "South Waikato's resolved preference. The named councils are not all recorded as agreeing, and Taupō resolved not to submit." },
+      { name: "Rotorua unitary option", ids: ["rotorua"], note: "Rotorua Lakes' resolved unitary-authority preference; shown as a position rather than a multi-council proposal." },
       { name: "Stratford–South Taranaki", ids: ["stratford", "staranaki"] },
-      { name: "The Big Windy", ids: ["wellington", "hutt", "porirua", "upperhutt"] },
-      { name: "The Wairarapa Three", ids: ["masterton", "carterton", "swairarapa"] },
-      { name: "Wine & Whales", ids: ["marlborough", "kaikoura"] },
-      { name: "The Coast", ids: ["buller", "grey", "westland"] },
-      { name: "Aoraki Council", ids: ["timaru", "mackenzie", "waimate", "waitaki"] },
+      { name: "Metropolitan Wellington proposal in development", ids: ["wellington", "hutt", "porirua", "upperhutt"], note: "Wellington, Hutt and Porirua were developing a proposal that includes Upper Hutt. Upper Hutt's inclusion is permitted by the Head Start rules and does not imply its agreement; the 3 August map records no preferred-option resolution for any of the four." },
+      { name: "Kaikōura–Marlborough option", ids: ["kaikoura", "marlborough"], note: "Kaikōura's resolved preference; Marlborough had no preferred-option resolution in the snapshot." },
+      { name: "West Coast option", ids: ["buller", "grey", "westland"], note: "Grey and Westland's preferred option includes Buller, but Buller resolved not to submit." },
+      { name: "Aoraki option", ids: ["timaru", "mackenzie", "waimate", "waitaki", "ashburton"], note: "The four resolved Aoraki preferences name Ashburton; Ashburton had no preferred-option resolution in the snapshot." },
       {
         name: "Inland Otago",
         ids: ["centralotago", "clutha", "qldc"],
-        note: "Central Otago and Clutha support this option; Queenstown Lakes was due to consider it on 3 August.",
+        note: "Matching preferred-option resolutions across Central Otago, Clutha and Queenstown Lakes.",
       },
-      {
-        name: "Inland Otago + Gore",
-        ids: ["centralotago", "clutha", "qldc", "gore"],
-        note: "A reported Clutha mayoral option; agreement from Queenstown Lakes and Gore was not reported.",
-      },
-      { name: "The Deep South", ids: ["southlandd", "gore"] },
+      { name: "Dunedin preference", ids: ["dunedin", "clutha", "waitaki"], note: "Dunedin resolved on an option with Clutha and potentially Waitaki. The other councils' resolved preferences do not reciprocate this exact option." },
+      { name: "Selwyn unitary option", ids: ["selwyn"], note: "Selwyn's resolved unitary-authority preference; shown as a position rather than a multi-council proposal." },
     ],
   },
   wgtnOne: {
@@ -1514,7 +1553,7 @@ function LegacyApp() {
           </section>
         )}
         <p className="presetNote">
-          The opening map is a snapshot of reporting in late July 2026, not an official proposal, and a council can be
+          The opening map is a snapshot of council resolutions and reporting as at 3 August 2026, not an official proposal, and a council can be
           backing more than one option at once, which this model can't show. Proposals are due 9 August. Objecting isn't
           the same as escaping: check the regional mandate figure on any group you build.
         </p>
@@ -1575,13 +1614,13 @@ function LegacyApp() {
       <p className="mapLead">Tap the pieces to build a council. Whatever you tap joins the <strong>active</strong> group, shown at the bottom of the screen and in the list below the map.</p>
       {scope && [...new Set(COUNCILS.filter((c) => (c.region === scope || scope === "ALL") && EXPLORING[c.id] && !assignment[c.id]).map((c) => c.id))].length > 0 && (
         <details className="exploreBox">
-          <summary>Council status notes</summary>
+          <summary>Council decisions and current positions</summary>
           <ul>
             {COUNCILS.filter((c) => (c.region === scope || scope === "ALL") && EXPLORING[c.id] && !assignment[c.id]).map((c) => (
               <li key={c.id}><strong>{c.name}:</strong> {EXPLORING[c.id]}</li>
             ))}
           </ul>
-          <p>Updated 28 July 2026. These notes include exploratory positions, decisions not to submit, and alternative approaches. They do not change the starter combinations. Grouping any of these pieces is your scenario, not a settled position.</p>
+          <p>Snapshot as at 3 August 2026. A council being named in another council's preferred option does not mean it agreed. The Wellington metro proposal was still being developed and includes Upper Hutt despite Upper Hutt not agreeing.</p>
         </details>
       )}
       <main className="map" id="map">
@@ -4121,7 +4160,7 @@ export default function App() {
             )}
 
             <div className="simpleTalksNotice">
-              <strong>Snapshot updated 1 August 2026</strong>
+              <strong>Snapshot as at 3 August 2026</strong>
               <span>
                 These are reported discussions and stated positions, not endorsements,
                 predictions, or final proposals.
@@ -4157,14 +4196,13 @@ export default function App() {
             </div>
 
             <details className="simpleExploring" onToggle={trackDisclosureToggle}>
-              <summary>Councils still exploring options</summary>
+              <summary>Council decisions and current positions</summary>
               <div>
                 <p className="simpleExploringIntro">
-                  Status notes updated 28 July 2026. This list includes councils
-                  still exploring, councils that have decided not to submit, and
-                  councils pursuing alternative approaches. The starter
-                  combinations above reflect the latest sourced snapshot. Select a council to test who
-                  it could join.
+                  Snapshot as at 3 August 2026. This list distinguishes preferred-option
+                  resolutions, decisions not to submit, non-conforming proposals and
+                  councils with no preferred-option resolution. Being named in another
+                  council's option does not establish agreement. Select a council to test who it could join.
                 </p>
                 <div className="simpleStatusRegions">
                   {EXPLORING_BY_REGION.map(({ region, councils }) => (
@@ -4176,7 +4214,7 @@ export default function App() {
                         </span>
                       </h3>
                       <div>
-                        {councils.map(({ council, status }) => (
+                        {councils.map(({ council, status, category }) => (
                           <button
                             className="simpleExploringCouncil"
                             type="button"
@@ -4185,6 +4223,7 @@ export default function App() {
                           >
                             <span>
                               <strong>{council.name}</strong>
+                              <span>{POSITION_LABEL[category]}</span>
                               <span>{status}</span>
                             </span>
                             <span aria-hidden="true">Choose partners →</span>
