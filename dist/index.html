@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en-NZ">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="wsnsUIEg_zeQFEvR-QUSMpu5lSDun5ePL2bVyq35FMA" />
+    <title>New Zealand Council Amalgamation Calculator | The Amalgamator</title>
+    <meta
+      name="description"
+      content="Combine New Zealand councils and compare population, land area, published 2024/25 average residential rates and historic net assets per resident."
+    />
+    <meta property="og:title" content="Build a bigger council | The Amalgamator" />
+    <meta property="og:site_name" content="The Amalgamator" />
+    <meta
+      property="og:description"
+      content="Combine New Zealand councils and compare population, land area, published 2024/25 average residential rates and historic net assets per resident."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_NZ" />
+    <meta property="og:url" content="https://www.amalgamator.nz/" />
+    <meta property="og:image" content="https://www.amalgamator.nz/og-image-2.jpg" />
+    <meta property="og:image:secure_url" content="https://www.amalgamator.nz/og-image-2.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="627" />
+    <meta property="og:image:alt" content="The Amalgamator — build a bigger council and compare population, rates and net assets" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Build a bigger council | The Amalgamator" />
+    <meta
+      name="twitter:description"
+      content="Combine New Zealand councils and compare population, land area, published 2024/25 average residential rates and historic net assets per resident."
+    />
+    <meta name="twitter:image" content="https://www.amalgamator.nz/og-image-2.jpg" />
+    <link rel="canonical" href="https://www.amalgamator.nz/" />
+    <meta name="theme-color" content="#1A2E33" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://www.amalgamator.nz/#website",
+            "name": "The Amalgamator",
+            "url": "https://www.amalgamator.nz/",
+            "inLanguage": "en-NZ"
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://www.amalgamator.nz/#application",
+            "name": "The Amalgamator",
+            "url": "https://www.amalgamator.nz/",
+            "description": "An independent tool for exploring possible New Zealand council amalgamations.",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "Web",
+            "isAccessibleForFree": true,
+            "dateModified": "2026-07-31",
+            "featureList": [
+              "Combine two or more New Zealand territorial authorities",
+              "Compare combined population and land area",
+              "Compare published 2024/25 average residential rates",
+              "Compare historic net assets per resident",
+              "See where the combined population would live"
+            ],
+            "about": [
+              {
+                "@type": "Thing",
+                "name": "New Zealand local government"
+              },
+              {
+                "@type": "Thing",
+                "name": "Council amalgamation"
+              }
+            ],
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "NZD"
+            },
+            "creator": {
+              "@type": "Person",
+              "name": "Brenden Mischewski",
+              "url": "https://www.amalgamator.nz/about/"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://www.amalgamator.nz/#questions",
+            "url": "https://www.amalgamator.nz/#common-questions",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What does council amalgamation mean?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Council amalgamation means combining two or more existing councils into one local authority. Any actual reform would require an official process and decisions that this tool does not model."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Are the rates figures predictions?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. They compare published 2024/25 average residential rates. They do not predict the bill for an individual property or decisions a future council might make."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What do net assets per resident mean?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "This is a historic accounting comparison: council assets less liabilities at 30 June 2024, divided by population. It is not cash available to residents and does not forecast a merged council's balance sheet."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where does the information come from?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "The calculator uses published council and public-sector data. The full sources, calculation method and limitations are available on the About and method page."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <style>
+      .staticHome {
+        min-height: 100vh;
+        padding: 0 20px 56px;
+        background: #ddebec;
+        color: #193036;
+        font: 17px/1.55 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .staticHome header,
+      .staticHome main {
+        width: min(100%, 800px);
+        margin: 0 auto;
+      }
+      .staticHome header {
+        min-height: 68px;
+        display: flex;
+        align-items: center;
+      }
+      .staticHome header a {
+        color: inherit;
+        font-size: 18px;
+        font-weight: 800;
+        text-decoration: none;
+      }
+      .staticHome main {
+        padding-top: 52px;
+      }
+      .staticHome .eyebrow {
+        margin: 0 0 8px;
+        color: #4d6267;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .staticHome h1 {
+        max-width: 700px;
+        margin: 0 0 18px;
+        font-size: clamp(44px, 9vw, 78px);
+        line-height: 0.96;
+        letter-spacing: -0.055em;
+      }
+      .staticHome .lead {
+        max-width: 680px;
+        margin: 0 0 34px;
+        color: #4d6267;
+        font-size: clamp(18px, 3vw, 23px);
+        line-height: 1.4;
+      }
+      .staticHome section {
+        max-width: 680px;
+        padding: 22px;
+        background: #f7f2e6;
+        border: 2px solid #193036;
+        border-radius: 18px;
+        box-shadow: 6px 6px 0 #193036;
+      }
+      .staticHome section + section {
+        margin-top: 22px;
+      }
+      .staticHome h2 {
+        margin: 0 0 12px;
+        font-size: 22px;
+      }
+      .staticHome h3 {
+        margin: 20px 0 6px;
+        font-size: 17px;
+      }
+      .staticHome section p:last-child {
+        margin-bottom: 0;
+      }
+      .staticHome ol {
+        padding-left: 24px;
+      }
+      .staticHome ul {
+        margin: 0;
+        padding-left: 22px;
+      }
+      .staticHome .dataLinks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+      }
+      .staticHome .dataLinks a {
+        color: inherit;
+        font-weight: 700;
+        text-underline-offset: 4px;
+      }
+      .staticHome .independence {
+        max-width: 680px;
+        margin: 34px 0 16px;
+        color: #4d6267;
+      }
+      .staticHome nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+      }
+      .staticHome nav a {
+        color: inherit;
+        font-weight: 700;
+        text-underline-offset: 4px;
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-CJBrIosW.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-IHV9_mka.css">
+  </head>
+  <body>
+    <div id="root">
+      <div class="staticHome">
+        <header>
+          <a href="/">The Amalgamator</a>
+        </header>
+        <main>
+          <p class="eyebrow">Aotearoa local government explorer</p>
+          <h1>Build a bigger council.</h1>
+          <p class="lead">
+            Explore possible New Zealand council amalgamations. Choose territorial
+            authorities and compare their combined population, land area, published
+            2024/25 average residential rates and historic net assets per resident.
+          </p>
+          <section aria-labelledby="static-comparisons">
+            <h2 id="static-comparisons">What this tool compares</h2>
+            <ul>
+              <li>Combined population and land area.</li>
+              <li>Published 2024/25 average residential rates.</li>
+              <li>Historic net assets per resident at 30 June 2024.</li>
+              <li>Where the combined population would live.</li>
+            </ul>
+          </section>
+          <section aria-labelledby="static-how">
+            <h2 id="static-how">How the calculator works</h2>
+            <ol>
+              <li>Choose two or more of New Zealand’s 67 territorial authorities.</li>
+              <li>
+                The calculator combines their published population, land area and
+                historic balance-sheet figures.
+              </li>
+              <li>
+                It pools published 2024/25 average residential rates to show the
+                indicative direction of change.
+              </li>
+            </ol>
+            <p>
+              The result is a comparison, not a forecast or an official amalgamation
+              proposal.
+            </p>
+          </section>
+          <section id="common-questions" aria-labelledby="static-questions">
+            <h2 id="static-questions">Common questions</h2>
+            <h3>What does council amalgamation mean?</h3>
+            <p>
+              Council amalgamation means combining two or more existing councils into
+              one local authority. Any actual reform would require an official process
+              and decisions that this tool does not model.
+            </p>
+            <h3>Are the rates figures predictions?</h3>
+            <p>
+              No. They compare published 2024/25 average residential rates. They do not
+              predict the bill for an individual property or decisions a future council
+              might make. <a href="/about/#method">See the rates method.</a>
+            </p>
+            <h3>What do net assets per resident mean?</h3>
+            <p>
+              This is a historic accounting comparison: council assets less liabilities
+              at 30 June 2024, divided by population. It is not cash available to
+              residents and does not forecast a merged council’s balance sheet.
+              <a href="/about/#sources">See the source details.</a>
+            </p>
+            <h3>Where does the information come from?</h3>
+            <p>
+              The calculator uses published council and public-sector data. The full
+              sources, calculation method and limitations are available on the
+              <a href="/about/#sources">About and method page.</a>
+            </p>
+          </section>
+          <section aria-labelledby="static-coverage">
+            <h2 id="static-coverage">Data coverage</h2>
+            <p>
+              Covers all 67 New Zealand territorial authorities. Rates comparisons use
+              published 2024/25 averages. Net assets use council accounts at 30 June
+              2024.
+            </p>
+            <div class="dataLinks">
+              <a href="/about/#sources">See the sources and methodology</a>
+              <a href="/council-data/">Browse the council data</a>
+              <a href="/the-amalgamator-data.csv" download>Download the dataset</a>
+            </div>
+          </section>
+          <p class="independence">
+            Independent modelling tool. It is not an official proposal or a prediction
+            of any household’s rates.
+          </p>
+          <nav aria-label="Supporting information">
+            <a href="/about/">About, method and limitations</a>
+            <a href="/council-data/">Browse the council data</a>
+            <a href="/the-amalgamator-data.csv" download>Download the data</a>
+          </nav>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About &amp; method — Local Government Amalgamator</title>
+  <meta name="description" content="Who built this tool, where the data comes from, and what the indicative rate figures do and do not show.">
+  <meta name="theme-color" content="#1A2E33">
+  <link rel="canonical" href="https://www.amalgamator.nz/about/">
+  <meta property="og:title" content="About &amp; method — Local Government Amalgamator">
+  <meta property="og:description" content="Who built this tool, where the data comes from, and what the indicative rate figures do and do not show.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_NZ">
+  <meta property="og:url" content="https://www.amalgamator.nz/about/">
+  <meta property="og:site_name" content="The Amalgamator">
+  <meta property="og:image" content="https://www.amalgamator.nz/og-image-2.jpg">
+  <meta property="og:image:secure_url" content="https://www.amalgamator.nz/og-image-2.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="627">
+  <meta property="og:image:alt" content="The Amalgamator — build a bigger council and compare population, rates and net assets">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.amalgamator.nz/og-image-2.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&amp;display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "About & method — Local Government Amalgamator",
+    "description": "Who built this tool, where the data comes from, and what the indicative rate figures do and do not show.",
+    "url": "https://www.amalgamator.nz/about/",
+    "datePublished": "2026-07-28",
+    "dateModified": "2026-08-01",
+    "author": {
+      "@type": "Person",
+      "name": "Brenden Mischewski",
+      "homeLocation": {
+        "@type": "Place",
+        "name": "Porirua, New Zealand"
+      }
+    },
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Local Government Amalgamator",
+      "url": "https://www.amalgamator.nz/"
+    }
+  }
+  </script>
+  <style>
+    :root {
+      --ink: #1A2E33;
+      --ink-soft: #4B6065;
+      --paper: #F7F2E6;
+      --sky: #E2F1F2;
+      --accent: #D94816;
+      --line: #B8CCCE;
+      --white: #FFFFFF;
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--sky);
+      color: var(--ink);
+      font: 17px/1.62 "Bricolage Grotesque", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+    a:hover { text-decoration-thickness: 3px; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+    .skip-link {
+      position: absolute;
+      top: -80px;
+      left: 16px;
+      z-index: 20;
+      padding: 10px 14px;
+      background: var(--white);
+      color: var(--ink);
+      font-weight: 800;
+    }
+    .skip-link:focus { top: 12px; }
+    .site-bar {
+      border-bottom: 1px solid rgba(26, 46, 51, 0.16);
+      background: rgba(226, 241, 242, 0.94);
+    }
+    .site-bar-inner {
+      width: min(100% - 32px, 980px);
+      margin: 0 auto;
+      padding: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      font-size: 14px;
+    }
+    .site-name { font-weight: 800; text-decoration: none; }
+    main {
+      width: min(100% - 32px, 980px);
+      margin: 0 auto;
+      padding: 68px 0 96px;
+    }
+    .eyebrow {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(48px, 9vw, 88px);
+      line-height: 0.96;
+      letter-spacing: -0.055em;
+    }
+    .standfirst {
+      max-width: 720px;
+      margin: 24px 0 12px;
+      font-size: clamp(20px, 3vw, 27px);
+      line-height: 1.35;
+    }
+    .updated { margin: 0; color: var(--ink-soft); font-size: 14px; }
+    .trust-grid {
+      margin: 44px 0 22px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      overflow: hidden;
+      border-radius: 16px;
+      background: var(--ink);
+      color: var(--white);
+    }
+    .trust-grid div { padding: 20px; border-right: 1px solid rgba(255, 255, 255, 0.18); }
+    .trust-grid div:last-child { border-right: 0; }
+    .trust-grid span { display: block; margin-bottom: 4px; font-size: 12px; opacity: 0.72; }
+    .trust-grid strong { font-size: 18px; }
+    .panel {
+      margin-top: 18px;
+      padding: clamp(24px, 5vw, 48px);
+      border: 1.5px solid var(--line);
+      border-radius: 18px;
+      background: var(--paper);
+    }
+    section[id] { scroll-margin-top: 20px; }
+    h2 {
+      margin: 0 0 18px;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+    h3 { margin: 30px 0 8px; font-size: 21px; line-height: 1.2; }
+    p { max-width: 72ch; }
+    .declaration {
+      padding-left: 18px;
+      border-left: 5px solid var(--accent);
+      font-size: 19px;
+    }
+    .method-note {
+      margin: 22px 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--white);
+    }
+    .method-note p { margin: 0; }
+    .method-note p + p { margin-top: 10px; }
+    .method-note code {
+      overflow-wrap: anywhere;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.9em;
+    }
+    .table-wrap { overflow-x: auto; margin-top: 20px; }
+    table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; line-height: 1.45; }
+    th, td { padding: 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--ink); color: var(--white); }
+    td { background: rgba(255, 255, 255, 0.48); }
+    ol, ul { max-width: 76ch; padding-left: 24px; }
+    li + li { margin-top: 10px; }
+    .limitations {
+      padding: 22px 26px;
+      border-radius: 12px;
+      background: var(--white);
+    }
+    .closing {
+      margin-top: 24px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .result-return {
+      display: inline-flex;
+      align-items: center;
+      margin: 0 0 22px;
+      padding: 10px 15px;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--white);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .result-return:hover { background: var(--ink); color: var(--white); }
+    .contact {
+      display: inline-block;
+      margin: 6px 0;
+      font-size: clamp(20px, 4vw, 30px);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+    .citation {
+      margin: 18px 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--white);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.55;
+      user-select: all;
+    }
+    .licence-list { display: grid; gap: 12px; }
+    .licence-list p { margin: 0; }
+    .change-log { margin: 0; padding: 0; list-style: none; }
+    .change-log li {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 18px;
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+    }
+    footer {
+      width: min(100% - 32px, 980px);
+      margin: 0 auto;
+      padding: 32px 0 48px;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+    footer nav { display: flex; gap: 16px; flex-wrap: wrap; }
+    @media (max-width: 700px) {
+      main { padding-top: 44px; }
+      .trust-grid { grid-template-columns: 1fr; }
+      .trust-grid div { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.18); }
+      .trust-grid div:last-child { border-bottom: 0; }
+      .change-log li { grid-template-columns: 1fr; gap: 3px; }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="site-bar">
+    <div class="site-bar-inner">
+      <a class="site-name" href="../">The Amalgamator</a>
+      <a href="../">Back to the tool</a>
+    </div>
+  </header>
+
+  <main id="content">
+    <p class="eyebrow">Local Government Amalgamator</p>
+    <h1>About &amp; method</h1>
+    <p class="standfirst">Who built this tool, where its data comes from, and what its indicative figures do and do not show.</p>
+    <p class="updated">Last substantively updated <time datetime="2026-08-04">4 August 2026</time>.</p>
+
+    <div class="trust-grid" aria-label="At a glance">
+      <div><span>Built by</span><strong>Brenden Mischewski</strong></div>
+      <div><span>Commissioned or funded by</span><strong>Nobody</strong></div>
+      <div><span>Position on amalgamation</span><strong>None</strong></div>
+    </div>
+
+    <section class="panel" aria-labelledby="author-heading">
+      <h2 id="author-heading">Who built this</h2>
+      <p>This tool was built by Brenden Mischewski, based in Porirua.</p>
+      <p>I work at Mischewski Consulting Limited, with a background in research and policy analysis in New Zealand.</p>
+    </section>
+
+    <section class="panel" id="independence" aria-labelledby="independence-heading">
+      <h2 id="independence-heading">Independent work</h2>
+      <p class="declaration"><strong>This is independent work.</strong> Nobody commissioned it, nobody paid for it, and it represents no client, council, government agency, political party or campaign. It is built entirely from published public data—every source is listed below. It uses no information obtained through any professional engagement. It is not connected to any submission being made under the Head Start process.</p>
+      <p>If I am ever engaged on work related to local government reorganisation, I will say so here and date it. If that engagement is for a party to a live proposal, I will retire this tool rather than continue running it alongside the work.</p>
+    </section>
+
+    <section class="panel" id="no-position" aria-labelledby="position-heading">
+      <h2 id="position-heading">No position on amalgamation</h2>
+      <p class="declaration"><strong>This tool takes no position on amalgamation.</strong> It does not argue that any council should merge, or should not. It models the arithmetic consequences of combinations that users choose themselves, including combinations nobody has proposed and nobody wants. What follows from those numbers is a political judgement, and it is yours to make, not mine.</p>
+      <p>Anyone is welcome to use this tool, cite it or link to it, including in submissions and campaigns. Use by any group does not imply that I endorse that group’s position.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="shows-heading">
+      <h2 id="shows-heading">What this tool shows</h2>
+      <p>The tool lets a user combine territorial authorities and compare four things: the population and land area of the combined council, how published 2024/25 average residential rates bills differ from a pooled average, each council’s historic net assets per resident at 30 June 2024 compared with the pooled position, and where the combined population would live.</p>
+      <p>The dataset covers all 67 territorial authorities: 12 city councils, 53 district councils, Auckland Council and Chatham Islands Council. It excludes the 11 regional councils and their separate rates. Five territorial authorities formally carry regional-council functions; Chatham Islands performs some regional functions. Any two or more territorial and/or unitary authorities may submit a Head Start outline proposal except Auckland. Auckland remains in the dataset and can be modelled only as an expressly hypothetical comparison.</p>
+    </section>
+
+    <section class="panel" id="briefing" aria-labelledby="briefing-heading">
+      <h2 id="briefing-heading">Briefing report</h2>
+      <p><strong>Published <cite>Build a bigger council</cite>, Version 1.0.</strong> This six-slide briefing records the tool’s purpose, method and selected figures as at 28 July 2026. The live tool remains authoritative for current numbers and combinations not shown in the briefing.</p>
+      <p><a href="../reports/amalgamator-build-a-bigger-council-v1.0.pptx" download>Download the six-slide briefing (PowerPoint, Version 1.0)</a></p>
+    </section>
+
+    <section class="panel" id="sources" aria-labelledby="sources-heading">
+      <h2 id="sources-heading">Data sources</h2>
+      <p>The application stores a fixed, published vintage of each input so that a shared result remains reproducible. The downloadable dataset contains the values used by the model.</p>
+      <div class="table-wrap" role="region" aria-label="Data-source table" tabindex="0">
+        <table>
+          <thead>
+            <tr>
+              <th>Publisher</th>
+              <th>Dataset and use</th>
+              <th>Vintage or release</th>
+              <th>Retrieved</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ministry for Cities, Environment, Regions and Transport / Department of Internal Affairs</td>
+              <td><a href="https://www.mcert.govt.nz/our-work/local-government/local-elections-and-voting/local-authority-election-statistics/local-authority-election-statistics-2025/">Local Authority Election Statistics 2025</a>: current councillor and mayoral positions used in the representation comparison. The source page publishes the official election record and downloadable CSV and Excel files. Tauranga uses its separate 2024&ndash;28 representation arrangement.</td>
+              <td>2025; Tauranga 2024</td>
+              <td>1 August 2026</td>
+            </tr>
+            <tr>
+              <td>Department of Internal Affairs</td>
+              <td><a href="https://www.dia.govt.nz/local-government-performance-metrics">Data release for council profiles</a>: population, land area, actual and forecast rates revenue</td>
+              <td>July 2025 release, updated October 2025; population reference year 2024</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>Stats NZ</td>
+              <td><a href="https://infoshare.stats.govt.nz/">Subnational population estimates</a> and <a href="https://datafinder.stats.govt.nz/">territorial-authority land area</a>, republished in the DIA release</td>
+              <td>2024 population; 2025 land area</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>New Zealand Taxpayers’ Union</td>
+              <td><a href="https://ratepayersreport.nz/">Ratepayers’ Report 2026</a>: published average residential rates bills and household counts. The report says its household data comes from Stats NZ; these counts are used here as approximate weights and are not council-defined residential rating units. Water retains the treatment in the source-year published figure.</td>
+              <td>Year ended 30 June 2025</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>Stats NZ</td>
+              <td><a href="https://www.stats.govt.nz/information-releases/local-authority-financial-statistics-year-ended-june-2024/">Local Authority Financial Statistics</a>: council-only total assets and liabilities. Water assets and liabilities held directly by a council at the reference date remain included; assets already held in council-controlled organisations are excluded.</td>
+              <td>Financial position at 30 June 2024</td>
+              <td>27 July 2026</td>
+            </tr>
+            <tr>
+              <td>Local Government Commission and Department of Internal Affairs</td>
+              <td><a href="https://www.lgc.govt.nz/our-work/local-government-reorganisation/about-local-government-reorganisation/">Current local-authority structure</a> and <a href="https://www.mcert.govt.nz/our-work/local-government/local-government-policy/simplifying-local-government/head-start-for-simplifying-local-government/">Head Start scope and eligibility</a></td>
+              <td>Current at 28 July 2026</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>MartinJenkins</td>
+              <td><a href="https://nz.linkedin.com/in/nick-carlaw-66526427b">Carlaw, N. (2026). <cite>Head Start map update</cite>. MartinJenkins. LinkedIn. 28 July 2026.</a> Council preference and participation notes shown under “Councils still exploring options”.</td>
+              <td>28 July 2026</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>MartinJenkins / Tessa McGregor (Irving)</td>
+              <td><cite>Head Start – map update</cite>: council-level resolution categories and preferred options. A council named in another council's option is not assumed to agree. The metropolitan Wellington option is separately identified as a proposal in development that includes Upper Hutt without implying Upper Hutt's support.</td>
+              <td>3 August 2026</td>
+              <td>4 August 2026</td>
+            </tr>
+            <tr>
+              <td>Hutt City Council / MartinJenkins</td>
+              <td><a href="https://huttcity.infocouncil.biz/Open/2026/08/HCC_05082026_AGN_6478_AT.PDF"><cite>Wellington/Wairarapa Financial Analysis Report</cite></a>: contextual transition-cost, efficiency, debt and resilience analysis. It is not a numerical input to this tool.</td>
+              <td>27 July 2026 council agenda</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>Amalgamation.nz</td>
+              <td><a href="https://amalgamation.nz/">Council amalgamation and merger news</a>: supplementary reporting used for qualified status notes where it records a council consultation, shortlist, motion or reported option. A tag or mention alone is not treated as a council decision. It is a news aggregator, not a numerical model input.</td>
+              <td>Current at 28 July 2026</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>Kāpiti Coast District Council</td>
+              <td><a href="https://www.kapiticoast.govt.nz/council/news-and-information/news-and-stories/2026/july/simplifying-local-government-reforms/">Simplifying local government reforms</a>: official update on the standalone Kāpiti and Kāpiti-Horowhenua options and community survey results.</td>
+              <td>23 July 2026</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>1News / Local Democracy Reporting</td>
+              <td><a href="https://www.1news.co.nz/2026/07/27/a-giant-dating-game-where-councils-stand-as-merger-deadline-looms/">Where councils stand as the merger deadline looms</a>: recent reporting on Nelson's support for amalgamation and Tasman's opposition.</td>
+              <td>27 July 2026</td>
+              <td>28 July 2026</td>
+            </tr>
+            <tr>
+              <td>RNZ / Local Democracy Reporting</td>
+              <td><a href="https://www.rnz.co.nz/news/regions_otago/854923/otago-councils-want-to-form-unitary-authority-without-dunedin">Otago councils want to form unitary authority â€” without Dunedin</a>: reporting on the Central Otagoâ€“Cluthaâ€“Queenstown Lakes option, an alternative adding Gore, and an option involving only rural parts of Dunedin City.</td>
+              <td>1 August 2026</td>
+              <td>1 August 2026</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <a href="../council-data/index.html">Browse the 67-authority data table</a> ·
+        <a href="../the-amalgamator-data.csv" download>Download the financial and demographic dataset (CSV)</a> ·
+        <a href="../elected-officials-data.csv" download>Download elected officials (CSV)</a> ·
+        <a href="../source-register.csv" download>Download the detailed source register (CSV)</a>
+      </p>
+    </section>
+
+    <section class="panel" id="method" aria-labelledby="method-heading">
+      <h2 id="method-heading">How the rate figures are calculated</h2>
+      <p>The main result uses two figures published for each council in the New Zealand Taxpayers’ Union’s <cite>Ratepayers’ Report 2026</cite>: the published 2024/25 average residential rates bill and the report’s separately published household count, which the report attributes to Stats NZ. The household count is used as a weight. Population figures elsewhere in the tool are separate 2024 Stats NZ estimates published through the Department of Internal Affairs.</p>
+      <ol>
+        <li>Start with each selected council’s published average residential rates bill for 2024/25.</li>
+        <li>Multiply that bill by the report’s published household count for the council.</li>
+        <li>Add those weighted amounts across the selected councils.</li>
+        <li>Divide by the combined published household count. This produces one household-weighted comparison.</li>
+        <li>Compare that figure with each council’s own published average. The chart shows the dollar difference between those council-wide averages.</li>
+      </ol>
+      <div class="method-note">
+        <p><strong>How the weighted amount differs from the actual residential total</strong></p>
+        <p>For council <em>i</em>, let <em>Aᵢ</em> be the published average bill, <em>Hᵢ</em> the published household count, and <em>Zᵢ</em> the council-defined residential rating-unit count used to calculate that average.</p>
+        <p><code>Tool’s implied amount = Σ(Aᵢ × Hᵢ)</code></p>
+        <p><code>Actual residential rates and applicable charges = Σ(Aᵢ × Zᵢ)</code></p>
+        <p><code>Difference = Σ[Aᵢ × (Hᵢ − Zᵢ)]</code></p>
+        <p>The public report does not expose <em>Zᵢ</em>, or the underlying residential rates and applicable charges, so the exact dollar difference cannot be calculated from the published dataset. Total council rates revenue is available, but it includes non-residential rates and is not a valid substitute for the residential total.</p>
+      </div>
+      <p><strong>This does not reproduce the Taxpayers’ Union’s residential-rates calculation.</strong> Its methodology defines an average bill as residential rates and applicable charges divided by council-defined residential rating units. The underlying rates, charges and residential rating-unit count—its X, Y and Z—are not exposed in the public report data. The separate household count used by this tool is therefore not necessarily the denominator used to calculate the published bill.</p>
+      <p>If a council has no comparable published bill, it is shown as “no data” and is not included in the weighted comparison. The output compares published council-wide averages. It does not reconstruct the residential rates pool, forecast an individual property, or determine the rating policy a merged council would adopt.</p>
+      <h3>Historical water-continuity basis</h3>
+      <p>The rates and balance-sheet comparisons retain water services exactly as they appeared in each published source at its stated date. Later transfers of water services, assets, liabilities, debt and customer billing to separate water organisations under Local Water Done Well are not modelled or substituted. Where water was already separately owned, billed or excluded at the source date, that published treatment remains.</p>
+      <p>This choice provides a consistent historical comparison through an in-flight national transition. It does not reconstruct every water organisation or claim to show a council’s post-reform legal balance sheet or a household’s current combined council-and-water charge.</p>
+      <h3>Historic net assets per resident — 30 June 2024</h3>
+      <p>For the balance-sheet comparison, the tool subtracts liabilities from assets for every selected council, pools those dollar amounts, and divides by the combined population. It then compares that pooled figure with each council’s historic net assets per resident. Water assets and liabilities held directly by councils at 30 June 2024 remain included; assets already held outside the council-only accounts remain excluded. Later water transfers are ignored. This is an accounting comparison, not a transfer payable to residents or a post-reform legal balance sheet.</p>
+      <h3>How elected representation is estimated</h3>
+      <p><strong>Before amalgamation:</strong> elected representatives are the councillors on the selected territorial authorities plus the regional councillors estimated to overlap the selected area. Mayors are shown separately. The territorial and regional figures come from the 2025 Local Authority Election Statistics, with Tauranga&rsquo;s current 2024&ndash;28 arrangement.</p>
+      <p>When every territorial authority in a region is selected, the model includes every regional councillor. For a partial-region proposal, it estimates the number of overlapping regional councillors from the selected councils&rsquo; share of the regional population. This is an approximation because regional constituency boundaries are not mapped in the tool.</p>
+      <p><strong>After amalgamation:</strong> the illustrative governing body has approximately one elected representative per 25,000 residents, rounded to a whole seat. It has a minimum of six and a maximum of 20 representatives, and at least one representative for every former council area. The mayor is additional. Governing-body seats are allocated between former council areas by population using the largest-remainder method.</p>
+      <p><strong>Community Councils:</strong> the model applies the broad approach illustrated by MartinJenkins in July 2026: approximately one Community Council member per 15,000 residents, with at least four members for every former council area. If a former council area receives more governing-body representatives than its Community Council would otherwise contain, the Community Council expands to accommodate them.</p>
+      <p>Governing-body representatives are assumed to serve on both the unitary governing body and their Community Council. The bars therefore compare <em>elected roles</em>; their categories should not be added together to estimate the number of unique people. These calculations are illustrative, not a recommendation or forecast. Final boundaries, wards, M&#257;ori representation and membership would be determined through detailed design and statutory representation processes.</p>
+      <h3>Why the Wellington financial report differs</h3>
+      <p>The <a href="https://huttcity.infocouncil.biz/Open/2026/08/HCC_05082026_AGN_6478_AT.PDF">July 2026 Wellington/Wairarapa financial analysis</a> removes water activities from council forecasts, except Kāpiti Coast’s in-house water services. Its rates, debt and financial-resilience findings therefore use a different, post-transfer financial perimeter and are not directly comparable with this tool’s historical water-continuity figures.</p>
+    </section>
+
+    <section class="panel" id="limitations" aria-labelledby="limitations-heading">
+      <h2 id="limitations-heading">What these numbers are not</h2>
+      <a class="result-return" href="../" onclick="if (document.referrer.indexOf(location.origin + '/') === 0) { history.back(); return false; }">← Back to your result</a>
+      <p>The indicative rate figures are a household-weighted comparison of published council-wide averages. They are not a redistribution across the actual residential rating base and do <strong>not</strong> model:</p>
+      <ul class="limitations">
+        <li>the residential rates, applicable charges and council-defined residential rating-unit counts used to produce each published average;</li>
+        <li>transition and implementation costs;</li>
+        <li>debt harmonisation or ring-fencing across merging entities;</li>
+        <li>service-level changes, up or down;</li>
+        <li>differential rating, targeted rates, uniform charges or remission policy in a merged entity;</li>
+        <li>efficiency gains or losses;</li>
+        <li>property values or the circumstances of an individual property;</li>
+        <li>the separate regional-council rates layer;</li>
+        <li>later transfers of water services, assets, liabilities, debt or customer billing to separate water organisations;</li>
+        <li>a uniform treatment of water where it was already separately owned, billed or excluded at the source date;</li>
+        <li>the location, condition or remaining life of council assets; or</li>
+        <li>any decision an amalgamated council would actually make about its rating structure.</li>
+      </ul>
+      <p class="closing">These are not forecasts. They show a possible direction when published council-wide averages are compared using a separate household weight. A real amalgamation would set a new rating structure, and the size, timing and direction of property-level changes could differ. Treat the outputs as a starting point for a question, not an answer to one.</p>
+      <h3>Auckland is not evidence either way</h3>
+      <p>The tool does not use the 2010 Auckland amalgamation as evidence for or against current proposals. Its post-merger rates and efficiency outcomes are contested, and this model does not attempt to resolve that literature.</p>
+    </section>
+
+    <section class="panel" id="corrections" aria-labelledby="corrections-heading">
+      <h2 id="corrections-heading">Corrections</h2>
+      <p><strong>Found a mistake?</strong> Email:</p>
+      <p><a class="contact" href="mailto:brenden@mischewski.co.nz">brenden@mischewski.co.nz</a></p>
+      <p>Include the link to the combination you were looking at. Errors in the data, the method or my interpretation are all fair game. I read everything, and I will correct anything I can confirm is wrong. Substantive corrections will be recorded in the change log rather than silently absorbed.</p>
+    </section>
+
+    <section class="panel" id="licence" aria-labelledby="licence-heading">
+      <h2 id="licence-heading">Licence and citation</h2>
+      <div class="licence-list">
+        <p><strong>Code:</strong> MIT License. Copyright © 2026 Mischewski Consulting Limited.</p>
+        <p><strong>Original outputs:</strong> charts, figures, screenshots and original text are CC BY 4.0, except where third-party rights apply.</p>
+        <p><strong>Source data:</strong> remains subject to each publisher’s terms and attribution requirements.</p>
+      </div>
+      <p>Suggested citation:</p>
+      <p class="citation">Mischewski, B. (2026). <cite>Local Government Amalgamator</cite>. https://www.amalgamator.nz/. Accessed [day month year].</p>
+      <p>
+        <a href="https://github.com/Kasukabe914/localgovernment/blob/main/LICENSE">Code licence</a> ·
+        <a href="https://github.com/Kasukabe914/localgovernment/blob/main/OUTPUT-LICENCE.md">Output licence</a> ·
+        <a href="https://github.com/Kasukabe914/localgovernment/blob/main/DATA-LICENCE.md">Data terms</a>
+      </p>
+    </section>
+
+    <section class="panel" aria-labelledby="changes-heading">
+      <h2 id="changes-heading">Change log</h2>
+      <ol class="change-log">
+        <li>
+          <time datetime="2026-08-04">4 August 2026</time>
+          <div><strong>Updated the Head Start snapshot to 3 August.</strong> Council positions now distinguish preferred-option resolutions, decisions not to submit, a non-conforming proposal and councils with no preferred-option resolution. The Wellington metro proposal is shown as including Upper Hutt while explicitly recording that inclusion does not imply Upper Hutt's agreement.</div>
+        </li>
+        <li>
+          <time datetime="2026-08-01">1 August 2026</time>
+          <div><strong>Started a homepage A/B test.</strong> Visitors are assigned consistently to either the original homepage or the talks-led homepage so completed-scenario rates can be compared.</div>
+        </li>
+        <li>
+          <time datetime="2026-08-01">1 August 2026</time>
+          <div><strong>Corrected comparison-bar scaling.</strong> Rates and net-assets bars now show each difference relative to the combined council figure, using the same percentage scale across results.</div>
+        </li>
+        <li>
+          <time datetime="2026-08-01">1 August 2026</time>
+          <div>
+            <strong>Added elected-representation comparisons.</strong>
+            Results now show a simple before-and-after bar comparing elected representatives and mayors with an illustrative merged governing body, Community Council membership and one mayor. Current regional-council overlap is included, while the proposed Community Council model applies the broad population ratios illustrated by MartinJenkins. Minimum membership and allocation safeguards protect representation for smaller former council areas. The full assumptions, dual-role counting rule and limitations are documented in the methodology above.
+          </div>
+        </li>
+        <li>
+          <time datetime="2026-07-28">28 July 2026</time>
+          <div>
+            <strong>Published <cite>Build a bigger council</cite>, Version 1.0.</strong>
+            The six-slide briefing records figures current at this date and directs readers to the authoritative live tool for current numbers and any combination not shown.
+            <a href="../reports/amalgamator-build-a-bigger-council-v1.0.pptx" download>Download the report (PowerPoint, Version 1.0).</a>
+          </div>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      <strong>The Amalgamator</strong><br>
+      Independent modelling for local-government reform.
+    </div>
+    <nav aria-label="Related links">
+      <a href="../">Tool</a>
+      <a href="../privacy-policy/index.html">Privacy</a>
+      <a href="https://github.com/Kasukabe914/localgovernment">Source code</a>
+    </nav>
+  </footer>
+</body>
+</html>

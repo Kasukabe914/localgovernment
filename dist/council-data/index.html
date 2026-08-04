@@ -1,0 +1,1156 @@
+<!doctype html>
+<html lang="en-NZ">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Zealand Council Data: Population, Rates and Net Assets | The Amalgamator</title>
+    <meta
+      name="description"
+      content="Browse population, land area, published 2024/25 average residential rates and 2024 net assets for all 67 New Zealand territorial authorities."
+    />
+    <link rel="canonical" href="https://www.amalgamator.nz/council-data/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="The Amalgamator" />
+    <meta property="og:title" content="New Zealand council data | The Amalgamator" />
+    <meta
+      property="og:description"
+      content="Browse the published figures used by The Amalgamator for all 67 New Zealand territorial authorities."
+    />
+    <meta property="og:url" content="https://www.amalgamator.nz/council-data/" />
+    <meta property="og:image" content="https://www.amalgamator.nz/og-image-2.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="New Zealand council data | The Amalgamator" />
+    <meta
+      name="twitter:description"
+      content="Browse the published figures used by The Amalgamator for all 67 New Zealand territorial authorities."
+    />
+    <meta name="twitter:image" content="https://www.amalgamator.nz/og-image-2.jpg" />
+    <meta name="theme-color" content="#1A2E33" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "@id": "https://www.amalgamator.nz/council-data/#dataset",
+        "name": "The Amalgamator council data",
+        "description": "Population, land area, published 2024/25 average residential rates and 2024 net assets for all 67 New Zealand territorial authorities.",
+        "url": "https://www.amalgamator.nz/council-data/",
+        "dateModified": "2026-07-31",
+        "temporalCoverage": "2024/2025",
+        "spatialCoverage": {
+          "@type": "Place",
+          "name": "New Zealand"
+        },
+        "creator": {
+          "@type": "Person",
+          "name": "Brenden Mischewski",
+          "url": "https://www.amalgamator.nz/about/"
+        },
+        "variableMeasured": [
+          "Usually resident population, 2024",
+          "Land area, 2025",
+          "Published average residential rates bill, 2024/25",
+          "Net assets at 30 June 2024",
+          "Net assets per resident",
+          "Current councillor positions",
+          "Current mayoral positions",
+          "Current elected governing-body positions"
+        ],
+        "citation": "https://www.amalgamator.nz/about/#sources",
+        "license": "https://www.amalgamator.nz/about/#licence",
+        "distribution": {
+          "@type": "DataDownload",
+          "encodingFormat": "text/csv",
+          "contentUrl": "https://www.amalgamator.nz/the-amalgamator-data.csv"
+        }
+      }
+    </script>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #193036;
+        --ink-soft: #4d6267;
+        --wash: #ddebec;
+        --paper: #f7f2e6;
+        --line: #b8c9ca;
+        --accent: #006d5b;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--wash);
+        color: var(--ink);
+        font: 16px/1.55 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      a { color: inherit; text-underline-offset: 3px; }
+      a:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 3px solid #ffb703;
+        outline-offset: 3px;
+      }
+      .skip {
+        position: absolute;
+        left: 12px;
+        top: -80px;
+        padding: 10px 14px;
+        background: var(--ink);
+        color: white;
+        z-index: 10;
+      }
+      .skip:focus { top: 12px; }
+      header {
+        min-height: 68px;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      header > a {
+        font-size: 18px;
+        font-weight: 850;
+        text-decoration: none;
+      }
+      header nav { display: flex; gap: 18px; }
+      header nav a { font-size: 14px; font-weight: 700; }
+      main {
+        width: min(100% - 32px, 1180px);
+        margin: 0 auto;
+        padding: 54px 0 64px;
+      }
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+      h1 {
+        max-width: 900px;
+        margin: 0 0 18px;
+        font-size: clamp(38px, 7vw, 68px);
+        line-height: .98;
+        letter-spacing: -.045em;
+      }
+      .lead {
+        max-width: 780px;
+        margin: 0 0 28px;
+        color: var(--ink-soft);
+        font-size: clamp(18px, 2.5vw, 22px);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        margin-bottom: 36px;
+      }
+      .actions a { font-weight: 800; }
+      .panel {
+        padding: 22px;
+        background: var(--paper);
+        border: 1.5px solid var(--ink);
+        border-radius: 16px;
+      }
+      .filters {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) minmax(200px, 300px);
+        gap: 14px;
+        align-items: end;
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      input,
+      select {
+        width: 100%;
+        min-height: 46px;
+        padding: 9px 12px;
+        background: white;
+        border: 1.5px solid var(--line);
+        border-radius: 10px;
+        color: var(--ink);
+        font: inherit;
+      }
+      #resultCount {
+        margin: 14px 0 0;
+        color: var(--ink-soft);
+        font-size: 14px;
+      }
+      .regions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px 14px;
+        margin: 24px 0;
+      }
+      .regions strong { width: 100%; }
+      .regions a { font-size: 14px; }
+      .tableWrap {
+        overflow-x: auto;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+      }
+      table {
+        width: 100%;
+        min-width: 940px;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #dce4e5;
+        text-align: left;
+        vertical-align: top;
+      }
+      thead th {
+        position: sticky;
+        top: 0;
+        background: var(--ink);
+        color: white;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      tbody th { font-weight: 800; }
+      tbody tr:last-child th,
+      tbody tr:last-child td { border-bottom: 0; }
+      tbody tr:hover { background: #f2f8f7; }
+      .number { text-align: right; white-space: nowrap; }
+      .notPublished { color: var(--ink-soft); font-style: italic; }
+      .notes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 24px;
+      }
+      .notes h2 { margin: 0 0 8px; font-size: 21px; }
+      .notes p { margin: 0; color: var(--ink-soft); }
+      footer {
+        padding: 24px 20px;
+        background: var(--ink);
+        color: white;
+        font-size: 13px;
+        text-align: center;
+      }
+      [hidden] { display: none !important; }
+      .visuallyHidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      @media (max-width: 720px) {
+        header { align-items: flex-start; padding-top: 18px; padding-bottom: 18px; }
+        header nav { flex-direction: column; gap: 4px; text-align: right; }
+        main { padding-top: 38px; }
+        .filters,
+        .notes { grid-template-columns: 1fr; }
+        .panel { padding: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#dataTable">Skip to the council data</a>
+    <header>
+      <a href="/">The Amalgamator</a>
+      <nav aria-label="Site">
+        <a href="/">Build a council</a>
+        <a href="/about/">About and method</a>
+      </nav>
+    </header>
+    <main>
+      <p class="eyebrow">The published source figures</p>
+      <h1>Council data for all 67 territorial authorities</h1>
+      <p class="lead">
+        This table contains the source values used by The Amalgamator. It is a
+        fixed-vintage comparison dataset, not live council data. Search for a
+        council or browse the figures by region.
+      </p>
+      <div class="actions">
+        <a href="/the-amalgamator-data.csv" download>Download the financial and demographic CSV</a>
+        <a href="/elected-officials-data.csv" download>Download elected officials (CSV)</a>
+        <a href="/about/#sources">Read the sources and methodology</a>
+      </div>
+
+      <section class="panel" aria-labelledby="find-heading">
+        <h2 id="find-heading" class="visuallyHidden">Find council data</h2>
+        <div class="filters">
+          <label for="councilSearch">
+            Search by council name
+            <input id="councilSearch" type="search" autocomplete="off" placeholder="For example, Whangārei" />
+          </label>
+          <label for="regionFilter">
+            Filter by region
+            <select id="regionFilter">
+              <option value="">All regions</option>
+              <option value="Northland">Northland</option>
+              <option value="Auckland">Auckland</option>
+              <option value="Waikato">Waikato</option>
+              <option value="Bay of Plenty">Bay of Plenty</option>
+              <option value="Gisborne">Gisborne</option>
+              <option value="Hawke&#39;s Bay">Hawke&#39;s Bay</option>
+              <option value="Taranaki">Taranaki</option>
+              <option value="Manawatū-Whanganui">Manawatū-Whanganui</option>
+              <option value="Wellington">Wellington</option>
+              <option value="Nelson-Tasman">Nelson-Tasman</option>
+              <option value="Marlborough">Marlborough</option>
+              <option value="West Coast">West Coast</option>
+              <option value="Canterbury">Canterbury</option>
+              <option value="Otago">Otago</option>
+              <option value="Southland">Southland</option>
+              <option value="Chatham Islands">Chatham Islands</option>
+            </select>
+          </label>
+        </div>
+        <p id="resultCount" aria-live="polite">67 councils shown</p>
+      </section>
+
+      <nav class="regions" aria-label="Jump to a region">
+        <strong>Jump to a region</strong>
+        <a href="#region-northland">Northland</a>
+          <a href="#region-auckland">Auckland</a>
+          <a href="#region-waikato">Waikato</a>
+          <a href="#region-bay-of-plenty">Bay of Plenty</a>
+          <a href="#region-gisborne">Gisborne</a>
+          <a href="#region-hawke-s-bay">Hawke&#39;s Bay</a>
+          <a href="#region-taranaki">Taranaki</a>
+          <a href="#region-manawatu-whanganui">Manawatū-Whanganui</a>
+          <a href="#region-wellington">Wellington</a>
+          <a href="#region-nelson-tasman">Nelson-Tasman</a>
+          <a href="#region-marlborough">Marlborough</a>
+          <a href="#region-west-coast">West Coast</a>
+          <a href="#region-canterbury">Canterbury</a>
+          <a href="#region-otago">Otago</a>
+          <a href="#region-southland">Southland</a>
+          <a href="#region-chatham-islands">Chatham Islands</a>
+      </nav>
+
+      <div class="tableWrap" role="region" aria-label="Council data table" tabindex="0">
+        <table id="dataTable">
+          <caption class="visuallyHidden">
+            Population, land area, average residential rates and net assets per resident for New Zealand territorial authorities
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Council</th>
+              <th scope="col">Region</th>
+              <th scope="col" class="number">Population<br />2024</th>
+              <th scope="col" class="number">Land area<br />2025</th>
+              <th scope="col" class="number">Average residential rates<br />2024/25</th>
+              <th scope="col" class="number">Net assets per resident<br />30 June 2024</th>
+              <th scope="col" class="number">Councillors<br />current term</th>
+              <th scope="col" class="number">Mayors<br />current term</th>
+              <th scope="col" class="number">Governing-body elected total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="region-northland" data-council="far north" data-region="Northland">
+              <th scope="row">Far North</th>
+              <td>Northland</td>
+              <td class="number">73,500</td>
+              <td class="number">6,687 km²</td>
+              <td class="number">$3,276</td>
+              <td class="number">$35,407</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="whangārei" data-region="Northland">
+              <th scope="row">Whangārei</th>
+              <td>Northland</td>
+              <td class="number">100,500</td>
+              <td class="number">2,711 km²</td>
+              <td class="number">$3,113</td>
+              <td class="number">$24,734</td>
+              <td class="number">13</td>
+              <td class="number">1</td>
+              <td class="number">14</td>
+            </tr>
+            <tr data-council="kaipara" data-region="Northland">
+              <th scope="row">Kaipara</th>
+              <td>Northland</td>
+              <td class="number">26,800</td>
+              <td class="number">3,109 km²</td>
+              <td class="number">$3,181</td>
+              <td class="number">$41,546</td>
+              <td class="number">8</td>
+              <td class="number">1</td>
+              <td class="number">9</td>
+            </tr>
+            <tr id="region-auckland" data-council="auckland" data-region="Auckland">
+              <th scope="row">Auckland</th>
+              <td>Auckland</td>
+              <td class="number">1,797,300</td>
+              <td class="number">4,940 km²</td>
+              <td class="number">$3,520</td>
+              <td class="number">$19,144</td>
+              <td class="number">20</td>
+              <td class="number">1</td>
+              <td class="number">21</td>
+            </tr>
+            <tr id="region-waikato" data-council="thames-coromandel" data-region="Waikato">
+              <th scope="row">Thames-Coromandel</th>
+              <td>Waikato</td>
+              <td class="number">32,400</td>
+              <td class="number">2,208 km²</td>
+              <td class="number">$4,267</td>
+              <td class="number">$65,958</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="hauraki" data-region="Waikato">
+              <th scope="row">Hauraki</th>
+              <td>Waikato</td>
+              <td class="number">21,900</td>
+              <td class="number">1,270 km²</td>
+              <td class="number">$3,754</td>
+              <td class="number">$34,698</td>
+              <td class="number">13</td>
+              <td class="number">1</td>
+              <td class="number">14</td>
+            </tr>
+            <tr data-council="waikato district" data-region="Waikato">
+              <th scope="row">Waikato District</th>
+              <td>Waikato</td>
+              <td class="number">90,600</td>
+              <td class="number">4,404 km²</td>
+              <td class="number">$4,410</td>
+              <td class="number">$27,714</td>
+              <td class="number">13</td>
+              <td class="number">1</td>
+              <td class="number">14</td>
+            </tr>
+            <tr data-council="matamata-piako" data-region="Waikato">
+              <th scope="row">Matamata-Piako</th>
+              <td>Waikato</td>
+              <td class="number">39,100</td>
+              <td class="number">1,755 km²</td>
+              <td class="number">$3,346</td>
+              <td class="number">$24,506</td>
+              <td class="number">12</td>
+              <td class="number">1</td>
+              <td class="number">13</td>
+            </tr>
+            <tr data-council="hamilton city" data-region="Waikato">
+              <th scope="row">Hamilton City</th>
+              <td>Waikato</td>
+              <td class="number">189,700</td>
+              <td class="number">110 km²</td>
+              <td class="number">$3,620</td>
+              <td class="number">$29,310</td>
+              <td class="number">14</td>
+              <td class="number">1</td>
+              <td class="number">15</td>
+            </tr>
+            <tr data-council="waipā" data-region="Waikato">
+              <th scope="row">Waipā</th>
+              <td>Waikato</td>
+              <td class="number">61,400</td>
+              <td class="number">1,470 km²</td>
+              <td class="number">$3,896</td>
+              <td class="number">$37,946</td>
+              <td class="number">11</td>
+              <td class="number">1</td>
+              <td class="number">12</td>
+            </tr>
+            <tr data-council="ōtorohanga" data-region="Waikato">
+              <th scope="row">Ōtorohanga</th>
+              <td>Waikato</td>
+              <td class="number">10,750</td>
+              <td class="number">1,999 km²</td>
+              <td class="number">$2,554</td>
+              <td class="number">$38,237</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr data-council="south waikato" data-region="Waikato">
+              <th scope="row">South Waikato</th>
+              <td>Waikato</td>
+              <td class="number">25,900</td>
+              <td class="number">1,819 km²</td>
+              <td class="number">$3,736</td>
+              <td class="number">$22,578</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="waitomo" data-region="Waikato">
+              <th scope="row">Waitomo</th>
+              <td>Waikato</td>
+              <td class="number">9,950</td>
+              <td class="number">3,535 km²</td>
+              <td class="number">$3,622</td>
+              <td class="number">$67,287</td>
+              <td class="number">6</td>
+              <td class="number">1</td>
+              <td class="number">7</td>
+            </tr>
+            <tr data-council="taupō" data-region="Waikato">
+              <th scope="row">Taupō</th>
+              <td>Waikato</td>
+              <td class="number">42,200</td>
+              <td class="number">6,333 km²</td>
+              <td class="number">$4,090</td>
+              <td class="number">$45,606</td>
+              <td class="number">12</td>
+              <td class="number">1</td>
+              <td class="number">13</td>
+            </tr>
+            <tr id="region-bay-of-plenty" data-council="western bay of plenty" data-region="Bay of Plenty">
+              <th scope="row">Western Bay of Plenty</th>
+              <td>Bay of Plenty</td>
+              <td class="number">60,800</td>
+              <td class="number">1,944 km²</td>
+              <td class="number"><span class="notPublished">Not published</span></td>
+              <td class="number">$29,492</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr data-council="tauranga city" data-region="Bay of Plenty">
+              <th scope="row">Tauranga City</th>
+              <td>Bay of Plenty</td>
+              <td class="number">161,300</td>
+              <td class="number">142 km²</td>
+              <td class="number">$4,534</td>
+              <td class="number">$40,259</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr data-council="rotorua lakes" data-region="Bay of Plenty">
+              <th scope="row">Rotorua Lakes</th>
+              <td>Bay of Plenty</td>
+              <td class="number">77,100</td>
+              <td class="number">2,409 km²</td>
+              <td class="number">$4,032</td>
+              <td class="number">$22,796</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="whakatāne" data-region="Bay of Plenty">
+              <th scope="row">Whakatāne</th>
+              <td>Bay of Plenty</td>
+              <td class="number">38,300</td>
+              <td class="number">4,444 km²</td>
+              <td class="number">$4,508</td>
+              <td class="number">$31,344</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="kawerau" data-region="Bay of Plenty">
+              <th scope="row">Kawerau</th>
+              <td>Bay of Plenty</td>
+              <td class="number">7,670</td>
+              <td class="number">29 km²</td>
+              <td class="number">$3,130</td>
+              <td class="number">$13,346</td>
+              <td class="number">8</td>
+              <td class="number">1</td>
+              <td class="number">9</td>
+            </tr>
+            <tr data-council="ōpōtiki" data-region="Bay of Plenty">
+              <th scope="row">Ōpōtiki</th>
+              <td>Bay of Plenty</td>
+              <td class="number">10,300</td>
+              <td class="number">3,090 km²</td>
+              <td class="number">$3,163</td>
+              <td class="number">$32,303</td>
+              <td class="number">7</td>
+              <td class="number">1</td>
+              <td class="number">8</td>
+            </tr>
+            <tr id="region-gisborne" data-council="gisborne" data-region="Gisborne">
+              <th scope="row">Gisborne</th>
+              <td>Gisborne</td>
+              <td class="number">53,000</td>
+              <td class="number">8,385 km²</td>
+              <td class="number">$3,786</td>
+              <td class="number">$51,230</td>
+              <td class="number">13</td>
+              <td class="number">1</td>
+              <td class="number">14</td>
+            </tr>
+            <tr id="region-hawke-s-bay" data-council="wairoa" data-region="Hawke&#39;s Bay">
+              <th scope="row">Wairoa</th>
+              <td>Hawke&#39;s Bay</td>
+              <td class="number">8,920</td>
+              <td class="number">4,079 km²</td>
+              <td class="number">$3,421</td>
+              <td class="number">$56,285</td>
+              <td class="number">6</td>
+              <td class="number">1</td>
+              <td class="number">7</td>
+            </tr>
+            <tr data-council="hastings" data-region="Hawke&#39;s Bay">
+              <th scope="row">Hastings</th>
+              <td>Hawke&#39;s Bay</td>
+              <td class="number">89,200</td>
+              <td class="number">5,227 km²</td>
+              <td class="number">$4,368</td>
+              <td class="number">$32,569</td>
+              <td class="number">15</td>
+              <td class="number">1</td>
+              <td class="number">16</td>
+            </tr>
+            <tr data-council="napier city" data-region="Hawke&#39;s Bay">
+              <th scope="row">Napier City</th>
+              <td>Hawke&#39;s Bay</td>
+              <td class="number">66,800</td>
+              <td class="number">105 km²</td>
+              <td class="number">$3,559</td>
+              <td class="number">$36,417</td>
+              <td class="number">11</td>
+              <td class="number">1</td>
+              <td class="number">12</td>
+            </tr>
+            <tr data-council="central hawke&#39;s bay" data-region="Hawke&#39;s Bay">
+              <th scope="row">Central Hawke&#39;s Bay</th>
+              <td>Hawke&#39;s Bay</td>
+              <td class="number">16,050</td>
+              <td class="number">3,333 km²</td>
+              <td class="number">$3,697</td>
+              <td class="number">$64,638</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr id="region-taranaki" data-council="new plymouth" data-region="Taranaki">
+              <th scope="row">New Plymouth</th>
+              <td>Taranaki</td>
+              <td class="number">90,300</td>
+              <td class="number">2,205 km²</td>
+              <td class="number">$3,664</td>
+              <td class="number">$40,142</td>
+              <td class="number">14</td>
+              <td class="number">1</td>
+              <td class="number">15</td>
+            </tr>
+            <tr data-council="stratford" data-region="Taranaki">
+              <th scope="row">Stratford</th>
+              <td>Taranaki</td>
+              <td class="number">10,400</td>
+              <td class="number">2,163 km²</td>
+              <td class="number">$3,664</td>
+              <td class="number">$47,484</td>
+              <td class="number">11</td>
+              <td class="number">1</td>
+              <td class="number">12</td>
+            </tr>
+            <tr data-council="south taranaki" data-region="Taranaki">
+              <th scope="row">South Taranaki</th>
+              <td>Taranaki</td>
+              <td class="number">29,900</td>
+              <td class="number">3,575 km²</td>
+              <td class="number">$2,976</td>
+              <td class="number">$43,531</td>
+              <td class="number">13</td>
+              <td class="number">1</td>
+              <td class="number">14</td>
+            </tr>
+            <tr id="region-manawatu-whanganui" data-council="ruapehu" data-region="Manawatū-Whanganui">
+              <th scope="row">Ruapehu</th>
+              <td>Manawatū-Whanganui</td>
+              <td class="number">13,550</td>
+              <td class="number">6,734 km²</td>
+              <td class="number">$4,002</td>
+              <td class="number">$39,574</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr data-council="whanganui" data-region="Manawatū-Whanganui">
+              <th scope="row">Whanganui</th>
+              <td>Manawatū-Whanganui</td>
+              <td class="number">48,900</td>
+              <td class="number">2,373 km²</td>
+              <td class="number">$3,861</td>
+              <td class="number">$27,570</td>
+              <td class="number">12</td>
+              <td class="number">1</td>
+              <td class="number">13</td>
+            </tr>
+            <tr data-council="rangitīkei" data-region="Manawatū-Whanganui">
+              <th scope="row">Rangitīkei</th>
+              <td>Manawatū-Whanganui</td>
+              <td class="number">16,200</td>
+              <td class="number">4,484 km²</td>
+              <td class="number">$3,440</td>
+              <td class="number">$46,638</td>
+              <td class="number">11</td>
+              <td class="number">1</td>
+              <td class="number">12</td>
+            </tr>
+            <tr data-council="manawatū" data-region="Manawatū-Whanganui">
+              <th scope="row">Manawatū</th>
+              <td>Manawatū-Whanganui</td>
+              <td class="number">33,700</td>
+              <td class="number">2,567 km²</td>
+              <td class="number">$3,791</td>
+              <td class="number">$32,762</td>
+              <td class="number">11</td>
+              <td class="number">1</td>
+              <td class="number">12</td>
+            </tr>
+            <tr data-council="palmerston north" data-region="Manawatū-Whanganui">
+              <th scope="row">Palmerston North</th>
+              <td>Manawatū-Whanganui</td>
+              <td class="number">91,300</td>
+              <td class="number">395 km²</td>
+              <td class="number">$3,648</td>
+              <td class="number">$22,438</td>
+              <td class="number">15</td>
+              <td class="number">1</td>
+              <td class="number">16</td>
+            </tr>
+            <tr data-council="tararua" data-region="Manawatū-Whanganui">
+              <th scope="row">Tararua</th>
+              <td>Manawatū-Whanganui</td>
+              <td class="number">19,050</td>
+              <td class="number">4,365 km²</td>
+              <td class="number">$3,738</td>
+              <td class="number">$59,301</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr data-council="horowhenua" data-region="Manawatū-Whanganui">
+              <th scope="row">Horowhenua</th>
+              <td>Manawatū-Whanganui</td>
+              <td class="number">38,200</td>
+              <td class="number">1,064 km²</td>
+              <td class="number">$4,402</td>
+              <td class="number">$20,966</td>
+              <td class="number">12</td>
+              <td class="number">1</td>
+              <td class="number">13</td>
+            </tr>
+            <tr id="region-wellington" data-council="kāpiti coast" data-region="Wellington">
+              <th scope="row">Kāpiti Coast</th>
+              <td>Wellington</td>
+              <td class="number">57,700</td>
+              <td class="number">732 km²</td>
+              <td class="number">$4,357</td>
+              <td class="number">$35,533</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="porirua city" data-region="Wellington">
+              <th scope="row">Porirua City</th>
+              <td>Wellington</td>
+              <td class="number">61,800</td>
+              <td class="number">175 km²</td>
+              <td class="number">$5,591</td>
+              <td class="number">$32,613</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="upper hutt city" data-region="Wellington">
+              <th scope="row">Upper Hutt City</th>
+              <td>Wellington</td>
+              <td class="number">47,500</td>
+              <td class="number">540 km²</td>
+              <td class="number">$3,393</td>
+              <td class="number">$30,268</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="hutt city" data-region="Wellington">
+              <th scope="row">Hutt City</th>
+              <td>Wellington</td>
+              <td class="number">113,400</td>
+              <td class="number">376 km²</td>
+              <td class="number">$4,004</td>
+              <td class="number">$26,804</td>
+              <td class="number">13</td>
+              <td class="number">1</td>
+              <td class="number">14</td>
+            </tr>
+            <tr data-council="wellington city" data-region="Wellington">
+              <th scope="row">Wellington City</th>
+              <td>Wellington</td>
+              <td class="number">209,900</td>
+              <td class="number">290 km²</td>
+              <td class="number">$5,094</td>
+              <td class="number">$49,246</td>
+              <td class="number">15</td>
+              <td class="number">1</td>
+              <td class="number">16</td>
+            </tr>
+            <tr data-council="masterton" data-region="Wellington">
+              <th scope="row">Masterton</th>
+              <td>Wellington</td>
+              <td class="number">28,700</td>
+              <td class="number">2,300 km²</td>
+              <td class="number">$3,378</td>
+              <td class="number">$38,255</td>
+              <td class="number">8</td>
+              <td class="number">1</td>
+              <td class="number">9</td>
+            </tr>
+            <tr data-council="carterton" data-region="Wellington">
+              <th scope="row">Carterton</th>
+              <td>Wellington</td>
+              <td class="number">10,300</td>
+              <td class="number">1,180 km²</td>
+              <td class="number">$4,771</td>
+              <td class="number">$26,213</td>
+              <td class="number">8</td>
+              <td class="number">1</td>
+              <td class="number">9</td>
+            </tr>
+            <tr data-council="south wairarapa" data-region="Wellington">
+              <th scope="row">South Wairarapa</th>
+              <td>Wellington</td>
+              <td class="number">12,250</td>
+              <td class="number">2,388 km²</td>
+              <td class="number">$4,494</td>
+              <td class="number">$50,693</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr id="region-nelson-tasman" data-council="tasman" data-region="Nelson-Tasman">
+              <th scope="row">Tasman</th>
+              <td>Nelson-Tasman</td>
+              <td class="number">59,800</td>
+              <td class="number">9,616 km²</td>
+              <td class="number">$4,241</td>
+              <td class="number">$38,770</td>
+              <td class="number">14</td>
+              <td class="number">1</td>
+              <td class="number">15</td>
+            </tr>
+            <tr data-council="nelson city" data-region="Nelson-Tasman">
+              <th scope="row">Nelson City</th>
+              <td>Nelson-Tasman</td>
+              <td class="number">54,400</td>
+              <td class="number">422 km²</td>
+              <td class="number">$4,650</td>
+              <td class="number">$41,076</td>
+              <td class="number">12</td>
+              <td class="number">1</td>
+              <td class="number">13</td>
+            </tr>
+            <tr id="region-marlborough" data-council="marlborough" data-region="Marlborough">
+              <th scope="row">Marlborough</th>
+              <td>Marlborough</td>
+              <td class="number">51,600</td>
+              <td class="number">10,458 km²</td>
+              <td class="number">$3,828</td>
+              <td class="number">$43,340</td>
+              <td class="number">14</td>
+              <td class="number">1</td>
+              <td class="number">15</td>
+            </tr>
+            <tr id="region-west-coast" data-council="buller" data-region="West Coast">
+              <th scope="row">Buller</th>
+              <td>West Coast</td>
+              <td class="number">10,600</td>
+              <td class="number">7,943 km²</td>
+              <td class="number">$3,090</td>
+              <td class="number">$49,631</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="grey district" data-region="West Coast">
+              <th scope="row">Grey District</th>
+              <td>West Coast</td>
+              <td class="number">14,400</td>
+              <td class="number">3,474 km²</td>
+              <td class="number">$2,703</td>
+              <td class="number">$37,899</td>
+              <td class="number">8</td>
+              <td class="number">1</td>
+              <td class="number">9</td>
+            </tr>
+            <tr data-council="westland" data-region="West Coast">
+              <th scope="row">Westland</th>
+              <td>West Coast</td>
+              <td class="number">9,270</td>
+              <td class="number">11,829 km²</td>
+              <td class="number"><span class="notPublished">Not published</span></td>
+              <td class="number">$56,810</td>
+              <td class="number">8</td>
+              <td class="number">1</td>
+              <td class="number">9</td>
+            </tr>
+            <tr id="region-canterbury" data-council="kaikōura" data-region="Canterbury">
+              <th scope="row">Kaikōura</th>
+              <td>Canterbury</td>
+              <td class="number">4,380</td>
+              <td class="number">2,049 km²</td>
+              <td class="number">$4,019</td>
+              <td class="number">$68,615</td>
+              <td class="number">7</td>
+              <td class="number">1</td>
+              <td class="number">8</td>
+            </tr>
+            <tr data-council="hurunui" data-region="Canterbury">
+              <th scope="row">Hurunui</th>
+              <td>Canterbury</td>
+              <td class="number">14,200</td>
+              <td class="number">8,641 km²</td>
+              <td class="number">$3,042</td>
+              <td class="number">$48,441</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="waimakariri" data-region="Canterbury">
+              <th scope="row">Waimakariri</th>
+              <td>Canterbury</td>
+              <td class="number">69,000</td>
+              <td class="number">2,217 km²</td>
+              <td class="number">$3,940</td>
+              <td class="number">$38,061</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="christchurch city" data-region="Canterbury">
+              <th scope="row">Christchurch City</th>
+              <td>Canterbury</td>
+              <td class="number">412,000</td>
+              <td class="number">1,415 km²</td>
+              <td class="number">$3,923</td>
+              <td class="number">$43,815</td>
+              <td class="number">16</td>
+              <td class="number">1</td>
+              <td class="number">17</td>
+            </tr>
+            <tr data-council="selwyn" data-region="Canterbury">
+              <th scope="row">Selwyn</th>
+              <td>Canterbury</td>
+              <td class="number">85,200</td>
+              <td class="number">6,381 km²</td>
+              <td class="number">$4,307</td>
+              <td class="number">$33,153</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="ashburton" data-region="Canterbury">
+              <th scope="row">Ashburton</th>
+              <td>Canterbury</td>
+              <td class="number">36,800</td>
+              <td class="number">6,181 km²</td>
+              <td class="number">$3,143</td>
+              <td class="number">$26,588</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr data-council="timaru" data-region="Canterbury">
+              <th scope="row">Timaru</th>
+              <td>Canterbury</td>
+              <td class="number">49,500</td>
+              <td class="number">2,732 km²</td>
+              <td class="number">$3,381</td>
+              <td class="number">$35,794</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr data-council="mackenzie" data-region="Canterbury">
+              <th scope="row">Mackenzie</th>
+              <td>Canterbury</td>
+              <td class="number">5,500</td>
+              <td class="number">7,139 km²</td>
+              <td class="number">$3,311</td>
+              <td class="number">$72,280</td>
+              <td class="number">7</td>
+              <td class="number">1</td>
+              <td class="number">8</td>
+            </tr>
+            <tr data-council="waimate" data-region="Canterbury">
+              <th scope="row">Waimate</th>
+              <td>Canterbury</td>
+              <td class="number">8,500</td>
+              <td class="number">3,554 km²</td>
+              <td class="number">$2,901</td>
+              <td class="number">$62,436</td>
+              <td class="number">8</td>
+              <td class="number">1</td>
+              <td class="number">9</td>
+            </tr>
+            <tr id="region-otago" data-council="waitaki" data-region="Otago">
+              <th scope="row">Waitaki</th>
+              <td>Otago</td>
+              <td class="number">24,300</td>
+              <td class="number">7,108 km²</td>
+              <td class="number"><span class="notPublished">Not published</span></td>
+              <td class="number">$50,986</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="central otago" data-region="Otago">
+              <th scope="row">Central Otago</th>
+              <td>Otago</td>
+              <td class="number">25,500</td>
+              <td class="number">9,933 km²</td>
+              <td class="number">$3,743</td>
+              <td class="number">$45,284</td>
+              <td class="number">10</td>
+              <td class="number">1</td>
+              <td class="number">11</td>
+            </tr>
+            <tr data-council="queenstown-lakes" data-region="Otago">
+              <th scope="row">Queenstown-Lakes</th>
+              <td>Otago</td>
+              <td class="number">52,900</td>
+              <td class="number">8,719 km²</td>
+              <td class="number">$4,848</td>
+              <td class="number">$47,478</td>
+              <td class="number">11</td>
+              <td class="number">1</td>
+              <td class="number">12</td>
+            </tr>
+            <tr data-council="dunedin city" data-region="Otago">
+              <th scope="row">Dunedin City</th>
+              <td>Otago</td>
+              <td class="number">131,800</td>
+              <td class="number">3,286 km²</td>
+              <td class="number">$3,532</td>
+              <td class="number">$32,995</td>
+              <td class="number">14</td>
+              <td class="number">1</td>
+              <td class="number">15</td>
+            </tr>
+            <tr data-council="clutha" data-region="Otago">
+              <th scope="row">Clutha</th>
+              <td>Otago</td>
+              <td class="number">18,700</td>
+              <td class="number">6,335 km²</td>
+              <td class="number">$2,678</td>
+              <td class="number">$96,428</td>
+              <td class="number">9</td>
+              <td class="number">1</td>
+              <td class="number">10</td>
+            </tr>
+            <tr id="region-southland" data-council="southland district" data-region="Southland">
+              <th scope="row">Southland District</th>
+              <td>Southland</td>
+              <td class="number">33,300</td>
+              <td class="number">29,586 km²</td>
+              <td class="number">$2,996</td>
+              <td class="number">$67,452</td>
+              <td class="number">12</td>
+              <td class="number">1</td>
+              <td class="number">13</td>
+            </tr>
+            <tr data-council="gore" data-region="Southland">
+              <th scope="row">Gore</th>
+              <td>Southland</td>
+              <td class="number">13,000</td>
+              <td class="number">1,254 km²</td>
+              <td class="number">$3,712</td>
+              <td class="number">$37,925</td>
+              <td class="number">11</td>
+              <td class="number">1</td>
+              <td class="number">12</td>
+            </tr>
+            <tr data-council="invercargill city" data-region="Southland">
+              <th scope="row">Invercargill City</th>
+              <td>Southland</td>
+              <td class="number">57,600</td>
+              <td class="number">390 km²</td>
+              <td class="number">$2,894</td>
+              <td class="number">$20,886</td>
+              <td class="number">12</td>
+              <td class="number">1</td>
+              <td class="number">13</td>
+            </tr>
+            <tr id="region-chatham-islands" data-council="chatham islands" data-region="Chatham Islands">
+              <th scope="row">Chatham Islands</th>
+              <td>Chatham Islands</td>
+              <td class="number">610</td>
+              <td class="number">795 km²</td>
+              <td class="number"><span class="notPublished">Not published</span></td>
+              <td class="number">$161,489</td>
+              <td class="number">8</td>
+              <td class="number">1</td>
+              <td class="number">9</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <section class="notes" aria-label="How to interpret the data">
+        <div class="panel">
+          <h2>Data coverage</h2>
+          <p>
+            Population figures are 2024 estimates and land areas are the 2025 values
+            republished in the Department of Internal Affairs council-profile release.
+            Average residential rates are published 2024/25 figures. Net assets are
+            council assets less liabilities at 30 June 2024.
+          </p>
+        </div>
+        <div class="panel">
+          <h2>Important limitations</h2>
+          <p>
+            The figures come from different published sources and reference dates.
+            They should not be interpreted as a current financial ranking or a forecast
+            of amalgamation outcomes. 4 councils have no published average
+            residential rates figure in the source used here.
+          </p>
+        </div>
+      </section>
+    </main>
+    <footer>
+      Independent modelling by Brenden Mischewski ·
+      <a href="/about/#licence">Data terms and attribution</a>
+    </footer>
+    <script>
+      (() => {
+        const search = document.getElementById("councilSearch");
+        const region = document.getElementById("regionFilter");
+        const rows = [...document.querySelectorAll("#dataTable tbody tr")];
+        const resultCount = document.getElementById("resultCount");
+        const normalize = (value) =>
+          value
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLocaleLowerCase("en-NZ");
+
+        const applyFilters = () => {
+          const query = normalize(search.value.trim());
+          const selectedRegion = region.value;
+          let shown = 0;
+
+          rows.forEach((row) => {
+            const matchesName = !query || normalize(row.dataset.council).includes(query);
+            const matchesRegion = !selectedRegion || row.dataset.region === selectedRegion;
+            const visible = matchesName && matchesRegion;
+            row.hidden = !visible;
+            if (visible) shown += 1;
+          });
+
+          resultCount.textContent = shown === 1 ? "1 council shown" : `${shown} councils shown`;
+        };
+
+        search.addEventListener("input", applyFilters);
+        region.addEventListener("change", applyFilters);
+      })();
+    </script>
+  </body>
+</html>
